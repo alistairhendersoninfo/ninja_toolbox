@@ -87,6 +87,7 @@ class ScriptInfo:
     tags: List[str] = field(default_factory=list)
     check_command: str = ""  # Command to check if installed (e.g., "claude --version")
     check_path: str = ""     # Path to check if exists (e.g., "/usr/bin/claude")
+    script_type: str = "install"  # "install" = Install/Uninstall, "config" = Run only
 
 
 @dataclass
@@ -139,6 +140,7 @@ def parse_yaml_header(script_path: Path) -> Optional[ScriptInfo]:
             tags=data.get('tags', []),
             check_command=data.get('check_command', ''),
             check_path=data.get('check_path', ''),
+            script_type=data.get('type', 'install'),  # "install" or "config"
         )
         # Dynamically check if installed
         info.installed = check_if_installed(info)
@@ -329,26 +331,39 @@ def gum_menu(directory: Path, breadcrumb: List[str] = None) -> None:
 def gum_script_action(script_info: ScriptInfo) -> None:
     """Show script actions using gum."""
     while True:
-        # Build info display
-        info_lines = [
-            f"Name: {script_info.name}",
-            f"Description: {script_info.description}",
-            f"Version: {script_info.version}",
-            f"Requires Root: {'Yes' if script_info.root else 'No'}",
-            f"Installed: {'Yes' if script_info.installed else 'No'}",
-        ]
+        # Build info display based on script type
+        if script_info.script_type == "config":
+            info_lines = [
+                f"Name: {script_info.name}",
+                f"Description: {script_info.description}",
+                f"Version: {script_info.version}",
+                f"Type: Configuration",
+                f"Requires Root: {'Yes' if script_info.root else 'No'}",
+            ]
+            choices = [
+                "▶️  Run",
+                "📋 View Log",
+                "📄 View Script",
+                "⬅️  Back"
+            ]
+        else:
+            info_lines = [
+                f"Name: {script_info.name}",
+                f"Description: {script_info.description}",
+                f"Version: {script_info.version}",
+                f"Requires Root: {'Yes' if script_info.root else 'No'}",
+                f"Installed: {'Yes' if script_info.installed else 'No'}",
+            ]
+            choices = ["▶️  Install"]
+            if script_info.installed:
+                choices.append("🗑️  Uninstall")
+            choices.extend([
+                "📋 View Log",
+                "📄 View Script",
+                "⬅️  Back"
+            ])
 
         print("\n" + "\n".join(info_lines) + "\n")
-
-        # Build action choices
-        choices = ["▶️  Install"]
-        if script_info.installed:
-            choices.append("🗑️  Uninstall")
-        choices.extend([
-            "📋 View Log",
-            "📄 View Script",
-            "⬅️  Back"
-        ])
 
         try:
             result = subprocess.run(
@@ -367,10 +382,10 @@ def gum_script_action(script_info: ScriptInfo) -> None:
 
             if selection.startswith("▶️"):
                 run_script(script_info, "install")
-                # Re-parse to get updated installed status
-                updated = parse_yaml_header(script_info.path)
-                if updated:
-                    script_info.installed = updated.installed
+                if script_info.script_type != "config":
+                    updated = parse_yaml_header(script_info.path)
+                    if updated:
+                        script_info.installed = updated.installed
                 input("\nPress Enter to continue...")
 
             elif selection.startswith("🗑️"):
@@ -477,24 +492,38 @@ def whiptail_menu(directory: Path, breadcrumb: List[str] = None) -> None:
 def whiptail_script_action(script_info: ScriptInfo) -> None:
     """Show script actions using whiptail."""
     while True:
-        status = "✅ Installed" if script_info.installed else "⬜ Not Installed"
         root = "🔐 Yes" if script_info.root else "No"
-        info = (
-            f"{script_info.name} (v{script_info.version})\n"
-            f"{script_info.description}\n"
-            f"Status: {status}  |  Root: {root}"
-        )
 
-        menu_items = [
-            "install", "Install",
-        ]
-        if script_info.installed:
-            menu_items.extend(["uninstall", "Uninstall"])
-        menu_items.extend([
-            "log", "View Log",
-            "view", "View Script",
-            "back", "Back"
-        ])
+        # Different display for config vs install scripts
+        if script_info.script_type == "config":
+            info = (
+                f"{script_info.name} (v{script_info.version})\n"
+                f"{script_info.description}\n"
+                f"Type: Configuration  |  Root: {root}"
+            )
+            menu_items = [
+                "run", "▶️  Run",
+                "log", "View Log",
+                "view", "View Script",
+                "back", "Back"
+            ]
+        else:
+            status = "✅ Installed" if script_info.installed else "⬜ Not Installed"
+            info = (
+                f"{script_info.name} (v{script_info.version})\n"
+                f"{script_info.description}\n"
+                f"Status: {status}  |  Root: {root}"
+            )
+            menu_items = [
+                "install", "Install",
+            ]
+            if script_info.installed:
+                menu_items.extend(["uninstall", "Uninstall"])
+            menu_items.extend([
+                "log", "View Log",
+                "view", "View Script",
+                "back", "Back"
+            ])
 
         try:
             cmd = [
@@ -523,7 +552,11 @@ def whiptail_script_action(script_info: ScriptInfo) -> None:
             if selection == "back" or not selection:
                 return
 
-            if selection == "install":
+            if selection == "run":
+                run_script(script_info, "install")  # Config scripts use install action
+                input("\nPress Enter to continue...")
+
+            elif selection == "install":
                 run_script(script_info, "install")
                 updated = parse_yaml_header(script_info.path)
                 if updated:
@@ -666,10 +699,14 @@ if HAS_TEXTUAL:
 
             if item and item.script_info:
                 info = item.script_info
-                status = "✅ Installed" if info.installed else "⬜ Not installed"
                 root = " | 🔐 Root" if info.root else ""
                 tags = f" | Tags: {', '.join(info.tags)}" if info.tags else ""
-                info_panel.update(f"{info.description}\n[{status}{root}{tags}]")
+
+                if info.script_type == "config":
+                    info_panel.update(f"{info.description}\n[⚙️ Config{root}{tags}] Press Enter to run")
+                else:
+                    status = "✅ Installed" if info.installed else "⬜ Not installed"
+                    info_panel.update(f"{info.description}\n[{status}{root}{tags}]")
             elif item and item.is_submenu:
                 info_panel.update(f"📁 {item.name}\nPress Enter to open submenu")
             else:

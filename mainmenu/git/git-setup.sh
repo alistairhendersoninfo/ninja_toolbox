@@ -1,16 +1,17 @@
 #!/bin/bash
 # ---
 # name: "Git & GitHub Setup"
-# description: "Install git, create SSH key, configure GitHub authentication, init repo"
-# version: "1.0.0"
+# description: "Install git/gh, create SSH key, create GitHub repo, initial push"
+# version: "2.0.0"
 # author: "System"
 # root: false
-# order: 5
+# order: 10
 # hidden: false
 # installed: false
-# check_command: "git --version"
+# check_command: "gh auth status"
 # check_path: "~/.ssh/id_ed25519"
-# dependencies: []
+# dependencies:
+#   - curl
 # tags:
 #   - git
 #   - github
@@ -65,8 +66,23 @@ install() {
     fi
     echo ""
 
-    # Step 2: Configure git user
-    log_step "2. Configuring git user..."
+    # Step 2: Install GitHub CLI
+    log_step "2. Installing GitHub CLI (gh)..."
+    if command -v gh &>/dev/null; then
+        log_success "GitHub CLI already installed: $(gh --version | head -1)"
+    else
+        log_info "Installing GitHub CLI..."
+        curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | sudo dd of=/usr/share/keyrings/githubcli-archive-keyring.gpg 2>/dev/null
+        sudo chmod go+r /usr/share/keyrings/githubcli-archive-keyring.gpg
+        echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" | sudo tee /etc/apt/sources.list.d/github-cli.list > /dev/null
+        sudo apt-get update
+        sudo apt-get install -y gh
+        log_success "GitHub CLI installed: $(gh --version | head -1)"
+    fi
+    echo ""
+
+    # Step 3: Configure git user
+    log_step "3. Configuring git user..."
 
     current_name=$(git config --global user.name 2>/dev/null || echo "")
     current_email=$(git config --global user.email 2>/dev/null || echo "")
@@ -95,11 +111,14 @@ install() {
         git config --global user.email "$git_email"
     fi
 
+    # Set default branch to main
+    git config --global init.defaultBranch main
+
     log_success "Git configured as: $(git config --global user.name) <$(git config --global user.email)>"
     echo ""
 
-    # Step 3: Create SSH key
-    log_step "3. Creating SSH key for GitHub..."
+    # Step 4: Create SSH key
+    log_step "4. Creating SSH key for GitHub..."
 
     SSH_KEY="$HOME/.ssh/id_ed25519"
     SSH_KEY_PUB="$HOME/.ssh/id_ed25519.pub"
@@ -107,14 +126,13 @@ install() {
     if [[ -f "$SSH_KEY" ]]; then
         log_warn "SSH key already exists at $SSH_KEY"
         read -p "Create a new key? (y/N): " create_new
-        if [[ "$create_new" != "y" && "$create_new" != "Y" ]]; then
-            log_info "Using existing SSH key"
-        else
-            # Backup old key
+        if [[ "$create_new" == "y" || "$create_new" == "Y" ]]; then
             mv "$SSH_KEY" "$SSH_KEY.backup.$(date +%Y%m%d_%H%M%S)"
             mv "$SSH_KEY_PUB" "$SSH_KEY_PUB.backup.$(date +%Y%m%d_%H%M%S)"
             ssh-keygen -t ed25519 -C "$(git config --global user.email)" -f "$SSH_KEY" -N ""
             log_success "New SSH key created"
+        else
+            log_info "Using existing SSH key"
         fi
     else
         mkdir -p "$HOME/.ssh"
@@ -122,72 +140,122 @@ install() {
         ssh-keygen -t ed25519 -C "$(git config --global user.email)" -f "$SSH_KEY" -N ""
         log_success "SSH key created at $SSH_KEY"
     fi
-    echo ""
 
-    # Step 4: Start SSH agent and add key
-    log_step "4. Adding key to SSH agent..."
-    eval "$(ssh-agent -s)"
-    ssh-add "$SSH_KEY"
+    # Start SSH agent and add key
+    eval "$(ssh-agent -s)" >/dev/null
+    ssh-add "$SSH_KEY" 2>/dev/null
     log_success "Key added to SSH agent"
     echo ""
 
-    # Step 5: Display the public key and instructions
-    log_step "5. Add this SSH key to GitHub"
-    echo ""
-    echo -e "${MAGENTA}╔══════════════════════════════════════════════════════════════════════════════╗${NC}"
-    echo -e "${MAGENTA}║${NC}  ${BOLD}Your SSH Public Key (copy everything below):${NC}                               ${MAGENTA}║${NC}"
-    echo -e "${MAGENTA}╠══════════════════════════════════════════════════════════════════════════════╣${NC}"
-    echo ""
-    cat "$SSH_KEY_PUB"
-    echo ""
-    echo -e "${MAGENTA}╠══════════════════════════════════════════════════════════════════════════════╣${NC}"
-    echo -e "${MAGENTA}║${NC}  ${BOLD}How to add this key to GitHub:${NC}                                              ${MAGENTA}║${NC}"
-    echo -e "${MAGENTA}║${NC}                                                                              ${MAGENTA}║${NC}"
-    echo -e "${MAGENTA}║${NC}  1. Go to: ${CYAN}https://github.com/settings/keys${NC}                                 ${MAGENTA}║${NC}"
-    echo -e "${MAGENTA}║${NC}  2. Click ${GREEN}\"New SSH key\"${NC}                                                     ${MAGENTA}║${NC}"
-    echo -e "${MAGENTA}║${NC}  3. Title: ${YELLOW}$(hostname) - $(date +%Y-%m-%d)${NC}                                  ${MAGENTA}║${NC}"
-    echo -e "${MAGENTA}║${NC}  4. Key type: ${YELLOW}Authentication Key${NC}                                            ${MAGENTA}║${NC}"
-    echo -e "${MAGENTA}║${NC}  5. Paste the key above into the \"Key\" field                                 ${MAGENTA}║${NC}"
-    echo -e "${MAGENTA}║${NC}  6. Click ${GREEN}\"Add SSH key\"${NC}                                                     ${MAGENTA}║${NC}"
-    echo -e "${MAGENTA}╚══════════════════════════════════════════════════════════════════════════════╝${NC}"
-    echo ""
+    # Step 5: Authenticate with GitHub CLI
+    log_step "5. Authenticating with GitHub..."
 
-    # Copy to clipboard if xclip is available
-    if command -v xclip &>/dev/null; then
-        cat "$SSH_KEY_PUB" | xclip -selection clipboard
-        log_success "Key copied to clipboard!"
-    elif command -v xsel &>/dev/null; then
-        cat "$SSH_KEY_PUB" | xsel --clipboard
-        log_success "Key copied to clipboard!"
+    if gh auth status &>/dev/null; then
+        log_success "Already authenticated with GitHub"
+        gh auth status
     else
-        log_info "Install xclip to auto-copy: sudo apt install xclip"
+        echo ""
+        echo -e "${MAGENTA}╔══════════════════════════════════════════════════════════════════════════════╗${NC}"
+        echo -e "${MAGENTA}║${NC}  ${BOLD}GitHub CLI Authentication${NC}                                                   ${MAGENTA}║${NC}"
+        echo -e "${MAGENTA}║${NC}                                                                              ${MAGENTA}║${NC}"
+        echo -e "${MAGENTA}║${NC}  When prompted:                                                              ${MAGENTA}║${NC}"
+        echo -e "${MAGENTA}║${NC}    - Account: ${CYAN}GitHub.com${NC}                                                     ${MAGENTA}║${NC}"
+        echo -e "${MAGENTA}║${NC}    - Protocol: ${CYAN}SSH${NC}                                                           ${MAGENTA}║${NC}"
+        echo -e "${MAGENTA}║${NC}    - Upload SSH key: ${CYAN}Yes${NC}                                                     ${MAGENTA}║${NC}"
+        echo -e "${MAGENTA}║${NC}    - Auth method: ${CYAN}Login with a web browser${NC}                                   ${MAGENTA}║${NC}"
+        echo -e "${MAGENTA}╚══════════════════════════════════════════════════════════════════════════════╝${NC}"
+        echo ""
+
+        gh auth login
+        log_success "GitHub authentication complete"
     fi
     echo ""
 
-    # Step 6: Wait for user to add key, then test
-    read -p "Press Enter after you've added the key to GitHub..."
-    echo ""
+    # Step 6: Ensure SSH key is on GitHub
+    log_step "6. Checking SSH key on GitHub..."
 
-    log_step "6. Testing GitHub SSH authentication..."
-    echo ""
-    if ssh -T git@github.com 2>&1 | grep -q "successfully authenticated"; then
-        log_success "GitHub SSH authentication successful!"
+    KEY_TITLE="$(hostname)-$(date +%Y%m%d)"
+    KEY_FINGERPRINT=$(ssh-keygen -lf "$SSH_KEY_PUB" | awk '{print $2}')
+
+    # Check if key already exists on GitHub
+    if gh ssh-key list 2>/dev/null | grep -q "$KEY_FINGERPRINT"; then
+        log_info "SSH key already on GitHub"
     else
-        # GitHub returns exit code 1 even on success, check the message
-        result=$(ssh -T git@github.com 2>&1 || true)
-        if echo "$result" | grep -q "Hi.*You've successfully authenticated"; then
-            log_success "GitHub SSH authentication successful!"
-            echo -e "${GREEN}$result${NC}"
-        else
-            log_warn "Authentication test result:"
-            echo "$result"
-            log_info "If you see 'Permission denied', make sure you added the key to GitHub"
-        fi
+        gh ssh-key add "$SSH_KEY_PUB" --title "$KEY_TITLE" --type authentication
+        log_success "SSH key uploaded to GitHub as: $KEY_TITLE"
     fi
     echo ""
 
-    # Step 7: Initialize git repo in menu-installer if not already
-    log_step "7. Initializing git repository..."
+    # Step 7: Test SSH connection
+    log_step "7. Testing GitHub SSH connection..."
+
+    result=$(ssh -T git@github.com 2>&1 || true)
+    if echo "$result" | grep -qi "successfully authenticated"; then
+        log_success "GitHub SSH authentication working!"
+        echo -e "${GREEN}$result${NC}"
+    else
+        log_warn "SSH test output: $result"
+    fi
+    echo ""
+
+    mark_installed true
+
+    # Final summary
+    echo -e "${GREEN}╔══════════════════════════════════════════════════════════════════════════════╗${NC}"
+    echo -e "${GREEN}║${NC}  ${BOLD}Git & GitHub Setup Complete!${NC}                                                ${GREEN}║${NC}"
+    echo -e "${GREEN}╠══════════════════════════════════════════════════════════════════════════════╣${NC}"
+    echo -e "${GREEN}║${NC}  Git User:   $(git config --global user.name) <$(git config --global user.email)>"
+    echo -e "${GREEN}║${NC}  SSH Key:    ~/.ssh/id_ed25519"
+    echo -e "${GREEN}║${NC}  GitHub:     Authenticated as $(gh api user -q .login)"
+    echo -e "${GREEN}╠══════════════════════════════════════════════════════════════════════════════╣${NC}"
+    echo -e "${GREEN}║${NC}  Next steps:                                                                 ${GREEN}║${NC}"
+    echo -e "${GREEN}║${NC}    - ${CYAN}Test GitHub Connection${NC} - Verify SSH works                               ${GREEN}║${NC}"
+    echo -e "${GREEN}║${NC}    - ${CYAN}Push to GitHub Repo${NC} - Push a folder to GitHub                           ${GREEN}║${NC}"
+    echo -e "${GREEN}╚══════════════════════════════════════════════════════════════════════════════╝${NC}"
+    echo ""
+}
+
+uninstall() {
+    log_info "To reset credentials, use 'Reset Git Credentials' from the menu"
+    log_info "This preserves your repository but allows re-authentication"
+    mark_installed false
+}
+
+case "${1:-install}" in
+    install) install ;;
+    uninstall) uninstall ;;
+    *) echo "Usage: $0 {install|uninstall}"; exit 1 ;;
+esac
+    echo ""
+
+    # Get repo name
+    default_name=$(basename "$MENU_ROOT")
+    read -p "Repository name [$default_name]: " repo_name
+    repo_name="${repo_name:-$default_name}"
+
+    # Get visibility
+    echo ""
+    echo "Repository visibility:"
+    echo "  1) Private - Only you can see this repository"
+    echo "  2) Public  - Anyone can see this repository"
+    read -p "Choose [1]: " visibility_choice
+    visibility_choice="${visibility_choice:-1}"
+
+    if [[ "$visibility_choice" == "2" ]]; then
+        visibility="public"
+    else
+        visibility="private"
+    fi
+
+    # Get description
+    echo ""
+    read -p "Repository description: " repo_description
+    repo_description="${repo_description:-NinjaMenu - Kali Linux installer system}"
+
+    echo ""
+
+    # Step 9: Initialize git repo
+    log_step "9. Initializing local git repository..."
 
     cd "$MENU_ROOT"
 
@@ -199,8 +267,92 @@ install() {
     fi
     echo ""
 
-    # Step 8: Create .gitignore
-    log_step "8. Creating .gitignore..."
+    # Step 10: Create README.md
+    log_step "10. Creating README.md..."
+
+    GITHUB_USER=$(gh api user -q .login)
+
+    cat > "$MENU_ROOT/README.md" << EOF
+# $repo_name
+
+$repo_description
+
+## Overview
+
+NinjaMenu is a dynamic menu-driven installer system for Kali Linux. It automatically discovers scripts from the folder structure and provides an interactive TUI for installation.
+
+## Features
+
+- Dynamic menu generation from folder structure
+- YAML header parsing for script metadata
+- Multiple TUI backends (Textual, whiptail, gum)
+- Installation status detection
+- Logging system
+- Pre/post install hooks
+
+## Installation
+
+\`\`\`bash
+# Clone the repository
+git clone git@github.com:$GITHUB_USER/$repo_name.git
+cd $repo_name
+
+# Install menu dependencies
+sudo bash install_menu.sh
+
+# Run the menu
+ninjamenu
+\`\`\`
+
+## Usage
+
+\`\`\`bash
+ninjamenu              # Launch interactive menu
+ninjamenu --list       # List all available scripts
+ninjamenu --help       # Show help
+\`\`\`
+
+## Structure
+
+\`\`\`
+mainmenu/
+  ├── git/             # Git & GitHub tools
+  ├── llm/             # LLM CLI tools
+  │   ├── cli/         # CLI tools (Claude, Gemini, etc.)
+  │   └── ide/         # IDE tools (Cursor, etc.)
+  ├── postsetup-kali/  # Kali post-install setup
+  └── proxmox/         # Proxmox VE tools
+\`\`\`
+
+## Adding Scripts
+
+Create a new \`.sh\` file in any mainmenu subfolder with a YAML header:
+
+\`\`\`bash
+#!/bin/bash
+# ---
+# name: "My Script"
+# description: "What it does"
+# version: "1.0.0"
+# root: false
+# order: 50
+# tags:
+#   - category
+# ---
+
+# Your script here
+\`\`\`
+
+## License
+
+MIT
+EOF
+
+    log_success "Created README.md"
+    echo ""
+
+    # Step 11: Create .gitignore
+    log_step "11. Creating .gitignore..."
 
     cat > "$MENU_ROOT/.gitignore" << 'EOF'
 # Logs
@@ -229,29 +381,78 @@ env/
 .DS_Store
 Thumbs.db
 
-# Secrets
+# Secrets & Credentials
 .env
+.env.*
 *.pem
 *.key
+*.crt
 credentials.json
+secrets.json
+*_secret*
+*_token*
 
 # Temp files
 *.tmp
 *.temp
 .cache/
+
+# Build
+dist/
+build/
+*.egg-info/
 EOF
 
     log_success "Created .gitignore"
     echo ""
 
-    # Step 9: Initial commit
-    log_step "9. Creating initial commit..."
+    # Step 12: Create GitHub repository
+    log_step "12. Creating GitHub repository..."
+
+    # Check if repo already exists
+    if gh repo view "$GITHUB_USER/$repo_name" &>/dev/null; then
+        log_warn "Repository '$repo_name' already exists on GitHub"
+        read -p "Use existing repo? (Y/n): " use_existing
+        if [[ "$use_existing" == "n" || "$use_existing" == "N" ]]; then
+            read -p "Enter new repository name: " repo_name
+        fi
+    fi
+
+    # Create or connect to repo
+    if gh repo view "$GITHUB_USER/$repo_name" &>/dev/null; then
+        log_info "Connecting to existing repository..."
+        # Remove old origin if exists
+        git remote remove origin 2>/dev/null || true
+        git remote add origin "git@github.com:$GITHUB_USER/$repo_name.git"
+    else
+        log_info "Creating new $visibility repository: $repo_name"
+        gh repo create "$repo_name" --"$visibility" --description "$repo_description" --source . --remote origin --push
+        log_success "Repository created and pushed!"
+
+        mark_installed true
+
+        # Show summary and exit early since gh repo create already pushed
+        echo ""
+        echo -e "${GREEN}╔══════════════════════════════════════════════════════════════════════════════╗${NC}"
+        echo -e "${GREEN}║${NC}  ${BOLD}Git & GitHub Setup Complete!${NC}                                                ${GREEN}║${NC}"
+        echo -e "${GREEN}╠══════════════════════════════════════════════════════════════════════════════╣${NC}"
+        echo -e "${GREEN}║${NC}  Repository: ${CYAN}https://github.com/$GITHUB_USER/$repo_name${NC}"
+        echo -e "${GREEN}║${NC}  Visibility: ${YELLOW}$visibility${NC}"
+        echo -e "${GREEN}║${NC}  SSH Key:    $SSH_KEY_PUB"
+        echo -e "${GREEN}║${NC}  Git User:   $(git config --global user.name) <$(git config --global user.email)>"
+        echo -e "${GREEN}╚══════════════════════════════════════════════════════════════════════════════╝${NC}"
+        echo ""
+        return 0
+    fi
+    echo ""
+
+    # Step 13: Stage, commit, and push
+    log_step "13. Creating initial commit and pushing..."
 
     git add -A
 
-    # Check if there are changes to commit
     if git diff --cached --quiet; then
-        log_info "No changes to commit"
+        log_info "No new changes to commit"
     else
         git commit -m "Initial commit - NinjaMenu installer system
 
@@ -259,97 +460,38 @@ EOF
 - Dynamic script discovery from folder structure
 - YAML header parsing for script metadata
 - Installation status detection
-- Logging system
+- Logging and documentation system
 
 Co-Authored-By: Claude <noreply@anthropic.com>"
-        log_success "Initial commit created"
-    fi
-    echo ""
-
-    # Step 10: Setup remote and push
-    log_step "10. Setting up GitHub remote..."
-
-    current_remote=$(git remote get-url origin 2>/dev/null || echo "")
-
-    if [[ -n "$current_remote" ]]; then
-        log_info "Remote already set: $current_remote"
-        read -p "Change remote? (y/N): " change_remote
-        if [[ "$change_remote" == "y" || "$change_remote" == "Y" ]]; then
-            read -p "Enter GitHub repo URL (git@github.com:user/repo.git): " repo_url
-            git remote set-url origin "$repo_url"
-        fi
-    else
-        read -p "Enter GitHub repo URL (git@github.com:user/repo.git): " repo_url
-        if [[ -n "$repo_url" ]]; then
-            git remote add origin "$repo_url"
-            log_success "Remote added: $repo_url"
-        else
-            log_warn "No remote URL provided - skipping push"
-            mark_installed true
-            echo ""
-            log_success "Git setup complete! Add remote later with:"
-            echo "  git remote add origin git@github.com:username/repo.git"
-            echo "  git push -u origin main"
-            return
-        fi
-    fi
-    echo ""
-
-    # Push to remote
-    log_step "11. Pushing to GitHub..."
-
-    # Ensure we're on main branch
-    current_branch=$(git branch --show-current)
-    if [[ "$current_branch" != "main" ]]; then
-        git branch -M main
+        log_success "Commit created"
     fi
 
-    if git push -u origin main; then
-        log_success "Pushed to GitHub successfully!"
-    else
-        log_warn "Push failed - you may need to create the repo on GitHub first"
-        log_info "Create repo at: https://github.com/new"
-        log_info "Then run: git push -u origin main"
-    fi
+    # Ensure main branch
+    git branch -M main
+
+    # Push via SSH
+    git push -u origin main
+    log_success "Pushed to GitHub!"
     echo ""
 
     mark_installed true
 
+    # Final summary
     echo -e "${GREEN}╔══════════════════════════════════════════════════════════════════════════════╗${NC}"
     echo -e "${GREEN}║${NC}  ${BOLD}Git & GitHub Setup Complete!${NC}                                                ${GREEN}║${NC}"
     echo -e "${GREEN}╠══════════════════════════════════════════════════════════════════════════════╣${NC}"
-    echo -e "${GREEN}║${NC}  Git user: $(git config --global user.name) <$(git config --global user.email)>"
-    echo -e "${GREEN}║${NC}  SSH key:  $SSH_KEY_PUB"
-    echo -e "${GREEN}║${NC}  Repo:     $MENU_ROOT"
+    echo -e "${GREEN}║${NC}  Repository: ${CYAN}https://github.com/$GITHUB_USER/$repo_name${NC}"
+    echo -e "${GREEN}║${NC}  Visibility: ${YELLOW}$visibility${NC}"
+    echo -e "${GREEN}║${NC}  SSH Key:    $SSH_KEY_PUB"
+    echo -e "${GREEN}║${NC}  Git User:   $(git config --global user.name) <$(git config --global user.email)>"
     echo -e "${GREEN}╚══════════════════════════════════════════════════════════════════════════════╝${NC}"
     echo ""
 }
 
 uninstall() {
-    log_info "This will remove git configuration and SSH keys"
-    log_warn "This is a destructive operation!"
-    echo ""
-    read -p "Are you sure? (type 'yes' to confirm): " confirm
-
-    if [[ "$confirm" != "yes" ]]; then
-        log_info "Uninstall cancelled"
-        return
-    fi
-
-    # Remove SSH key
-    if [[ -f "$HOME/.ssh/id_ed25519" ]]; then
-        rm -f "$HOME/.ssh/id_ed25519"
-        rm -f "$HOME/.ssh/id_ed25519.pub"
-        log_success "Removed SSH key"
-    fi
-
-    # Remove git config
-    git config --global --unset user.name 2>/dev/null || true
-    git config --global --unset user.email 2>/dev/null || true
-    log_success "Removed git global config"
-
+    log_info "To reset credentials, use 'Reset Git Credentials' from the menu"
+    log_info "This preserves your repository but allows re-authentication"
     mark_installed false
-    log_success "Git setup removed"
 }
 
 case "${1:-install}" in

@@ -4,6 +4,7 @@
 # description: "Brief description of what this script does"
 # version: "1.0.0"
 # author: "Your Name"
+# type: install
 # root: false
 # order: 50
 # hidden: false
@@ -17,6 +18,10 @@
 # tags:
 #   - category
 # ---
+#
+# type options:
+#   install - Shows Install/Uninstall actions (default)
+#   config  - Shows Run action only (for utilities/config scripts)
 
 #######################################
 # SCRIPT TEMPLATE
