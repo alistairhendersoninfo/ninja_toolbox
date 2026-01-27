@@ -1,0 +1,331 @@
+#!/bin/bash
+#
+# Kali Linux Setup Script
+# Installs: Proxmox tools, LLM CLI tools, Catppuccin themes
+#
+
+set -e
+
+# Colors for output
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+BLUE='\033[0;34m'
+NC='\033[0m' # No Color
+
+log_info() { echo -e "${BLUE}[INFO]${NC} $1"; }
+log_success() { echo -e "${GREEN}[SUCCESS]${NC} $1"; }
+log_warn() { echo -e "${YELLOW}[WARN]${NC} $1"; }
+log_error() { echo -e "${RED}[ERROR]${NC} $1"; }
+
+# Check if running as root for certain operations
+check_sudo() {
+    if ! sudo -v; then
+        log_error "This script requires sudo privileges"
+        exit 1
+    fi
+}
+
+#######################################
+# FIX ZSH CONFIGURATION
+#######################################
+fix_zsh_config() {
+    log_info "Fixing ZSH configuration..."
+
+    ZSHRC="$HOME/.zshrc"
+
+    if [ -f "$ZSHRC" ]; then
+        # Comment out problematic undercover lines
+        if grep -q ": undercover &&" "$ZSHRC"; then
+            sed -i 's/^: undercover && /# : undercover \&\& /' "$ZSHRC"
+            log_success "Fixed undercover lines in .zshrc"
+        else
+            log_info "No undercover lines to fix"
+        fi
+    else
+        log_warn ".zshrc not found"
+    fi
+}
+
+#######################################
+# INSTALL PROXMOX GUEST AGENT
+#######################################
+install_proxmox_tools() {
+    log_info "Installing Proxmox guest agent..."
+
+    sudo apt-get update -qq
+    sudo apt-get install -y qemu-guest-agent
+
+    # Try to enable the service (may fail if not running on Proxmox)
+    sudo systemctl enable qemu-guest-agent 2>/dev/null || true
+    sudo systemctl start qemu-guest-agent 2>/dev/null || log_warn "Guest agent service couldn't start - enable it in Proxmox VM settings first"
+
+    log_success "Proxmox guest agent installed"
+}
+
+#######################################
+# INSTALL NODE.JS AND NPM
+#######################################
+install_nodejs() {
+    log_info "Installing Node.js 20.x and npm..."
+
+    # Check if Node.js 20 is already installed
+    if command -v node &>/dev/null && node -v | grep -q "v20"; then
+        log_info "Node.js 20 already installed: $(node -v)"
+    else
+        curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
+        sudo apt-get install -y nodejs
+    fi
+
+    # Install npm if not present
+    if ! command -v npm &>/dev/null; then
+        sudo apt-get install -y npm
+    fi
+
+    log_success "Node.js $(node -v) and npm $(npm -v) installed"
+}
+
+#######################################
+# INSTALL GOOGLE ANTIGRAVITY IDE
+#######################################
+install_antigravity() {
+    log_info "Installing Google Antigravity IDE..."
+
+    # Check if already installed
+    if command -v antigravity &>/dev/null; then
+        log_info "Antigravity already installed: $(dpkg-query -W -f='${Version}' antigravity 2>/dev/null || echo 'unknown version')"
+        return 0
+    fi
+
+    # Import GPG key
+    log_info "Adding Google Antigravity repository..."
+    curl -fsSL https://us-central1-apt.pkg.dev/doc/repo-signing-key.gpg | sudo gpg --dearmor -o /usr/share/keyrings/google-antigravity.gpg
+
+    # Add repository (DEB822 format)
+    echo "Types: deb
+URIs: https://us-central1-apt.pkg.dev/projects/antigravity-auto-updater-dev/
+Suites: antigravity-debian
+Components: main
+Signed-By: /usr/share/keyrings/google-antigravity.gpg" | sudo tee /etc/apt/sources.list.d/google-antigravity.sources > /dev/null
+
+    # Install
+    sudo apt-get update -qq
+    sudo apt-get install -y antigravity
+
+    log_success "Google Antigravity installed"
+}
+
+#######################################
+# INSTALL CURSOR IDE
+#######################################
+install_cursor_ide() {
+    log_info "Installing Cursor IDE..."
+
+    # Check if already installed
+    if command -v cursor &>/dev/null || [ -f /usr/bin/cursor ] || [ -f /opt/Cursor/cursor ]; then
+        log_info "Cursor already installed"
+        return 0
+    fi
+
+    TEMP_DIR=$(mktemp -d)
+    cd "$TEMP_DIR"
+
+    # Detect architecture
+    ARCH=$(uname -m)
+    if [ "$ARCH" = "x86_64" ]; then
+        DEB_URL="https://api2.cursor.sh/updates/download/golden/linux-x64-deb/cursor/2.4"
+    elif [ "$ARCH" = "aarch64" ]; then
+        DEB_URL="https://api2.cursor.sh/updates/download/golden/linux-arm64-deb/cursor/2.4"
+    else
+        log_warn "Unsupported architecture: $ARCH"
+        return 1
+    fi
+
+    log_info "Downloading Cursor .deb package..."
+    curl -fsSL -o cursor.deb "$DEB_URL"
+
+    log_info "Installing Cursor..."
+    sudo dpkg -i cursor.deb || sudo apt-get install -f -y
+
+    cd ~
+    rm -rf "$TEMP_DIR"
+
+    log_success "Cursor IDE installed"
+}
+
+#######################################
+# INSTALL LLM CLI TOOLS
+#######################################
+install_llm_tools() {
+    log_info "Installing LLM CLI tools..."
+
+    # Claude CLI
+    log_info "Installing Claude CLI..."
+    curl -fsSL https://claude.ai/install.sh | bash || log_warn "Claude CLI install may need manual intervention"
+
+    # Gemini CLI
+    log_info "Installing Gemini CLI..."
+    sudo npm install -g @google/gemini-cli || log_warn "Gemini CLI install failed"
+
+    # OpenAI Codex
+    log_info "Installing OpenAI Codex..."
+    sudo npm install -g @openai/codex || log_warn "Codex install failed"
+
+    log_success "LLM CLI tools installation attempted"
+}
+
+#######################################
+# UPDATE PATH
+#######################################
+update_path() {
+    log_info "Updating PATH in shell configs..."
+
+    PATH_LINE='export PATH="$HOME/.local/bin:$PATH"'
+
+    # Add to .bashrc if not present
+    if [ -f "$HOME/.bashrc" ] && ! grep -qF '.local/bin' "$HOME/.bashrc"; then
+        echo "" >> "$HOME/.bashrc"
+        echo "# Local bin path" >> "$HOME/.bashrc"
+        echo "$PATH_LINE" >> "$HOME/.bashrc"
+        log_success "Added PATH to .bashrc"
+    fi
+
+    # Add to .zshrc if not present
+    if [ -f "$HOME/.zshrc" ] && ! grep -qF '.local/bin' "$HOME/.zshrc"; then
+        echo "" >> "$HOME/.zshrc"
+        echo "# Local bin path" >> "$HOME/.zshrc"
+        echo "$PATH_LINE" >> "$HOME/.zshrc"
+        log_success "Added PATH to .zshrc"
+    fi
+
+    # Export for current session
+    export PATH="$HOME/.local/bin:$PATH"
+}
+
+#######################################
+# INSTALL CATPPUCCIN THEMES
+#######################################
+install_themes() {
+    log_info "Installing Catppuccin themes..."
+
+    # Create directories
+    mkdir -p ~/.themes
+    mkdir -p ~/.local/share/xfce4/terminal/colorschemes
+    mkdir -p ~/.zsh
+
+    TEMP_DIR=$(mktemp -d)
+    cd "$TEMP_DIR"
+
+    # XFCE4 Terminal themes
+    log_info "Installing XFCE4 Terminal themes..."
+    curl -sLO https://raw.githubusercontent.com/catppuccin/xfce4-terminal/main/themes/catppuccin-mocha.theme
+    curl -sLO https://raw.githubusercontent.com/catppuccin/xfce4-terminal/main/themes/catppuccin-macchiato.theme
+    curl -sLO https://raw.githubusercontent.com/catppuccin/xfce4-terminal/main/themes/catppuccin-frappe.theme
+    curl -sLO https://raw.githubusercontent.com/catppuccin/xfce4-terminal/main/themes/catppuccin-latte.theme
+    mv catppuccin-*.theme ~/.local/share/xfce4/terminal/colorschemes/
+    log_success "XFCE4 Terminal themes installed"
+
+    # GTK themes
+    log_info "Installing GTK themes..."
+    curl -sLO "https://github.com/catppuccin/gtk/releases/download/v1.0.3/catppuccin-mocha-blue-standard+default.zip"
+    curl -sLO "https://github.com/catppuccin/gtk/releases/download/v1.0.3/catppuccin-macchiato-blue-standard+default.zip"
+    unzip -qo "catppuccin-mocha-blue-standard+default.zip" -d ~/.themes/
+    unzip -qo "catppuccin-macchiato-blue-standard+default.zip" -d ~/.themes/
+    log_success "GTK themes installed"
+
+    # ZSH syntax highlighting themes
+    log_info "Installing ZSH syntax highlighting themes..."
+    git clone --depth=1 https://github.com/catppuccin/zsh-syntax-highlighting.git catppuccin-zsh 2>/dev/null || true
+    if [ -d catppuccin-zsh/themes ]; then
+        cp catppuccin-zsh/themes/*.zsh ~/.zsh/
+        log_success "ZSH syntax highlighting themes installed"
+    fi
+
+    # Add Catppuccin to zshrc if not present
+    if [ -f "$HOME/.zshrc" ] && ! grep -q "catppuccin_mocha-zsh-syntax-highlighting" "$HOME/.zshrc"; then
+        cat >> "$HOME/.zshrc" << 'EOF'
+
+# Catppuccin Mocha theme for zsh-syntax-highlighting
+if [ -f ~/.zsh/catppuccin_mocha-zsh-syntax-highlighting.zsh ]; then
+    source ~/.zsh/catppuccin_mocha-zsh-syntax-highlighting.zsh
+fi
+EOF
+        log_success "Added Catppuccin theme to .zshrc"
+    fi
+
+    # VS Code theme (install if code is available)
+    if command -v code &>/dev/null; then
+        log_info "Installing VS Code Catppuccin theme..."
+        code --install-extension Catppuccin.catppuccin-vsc 2>/dev/null || log_warn "VS Code theme install may need to be done manually"
+        code --install-extension Catppuccin.catppuccin-vsc-icons 2>/dev/null || true
+    fi
+
+    # Cleanup
+    cd ~
+    rm -rf "$TEMP_DIR"
+
+    log_success "All themes installed"
+}
+
+#######################################
+# PRINT ACTIVATION INSTRUCTIONS
+#######################################
+print_instructions() {
+    echo ""
+    echo "=============================================="
+    echo -e "${GREEN}SETUP COMPLETE${NC}"
+    echo "=============================================="
+    echo ""
+    echo "INSTALLED APPLICATIONS:"
+    echo "  - Google Antigravity IDE (run: antigravity)"
+    echo "  - Cursor IDE (run: cursor)"
+    echo "  - Claude CLI (run: claude)"
+    echo "  - Gemini CLI (run: gemini)"
+    echo "  - OpenAI Codex (run: codex)"
+    echo ""
+    echo "To activate themes:"
+    echo ""
+    echo "1. XFCE4 Terminal:"
+    echo "   Edit > Preferences > Colors > Load Presets > Catppuccin Mocha"
+    echo ""
+    echo "2. GTK/Desktop Theme:"
+    echo "   Settings > Appearance > Style > catppuccin-mocha-blue-standard+default"
+    echo ""
+    echo "3. ZSH Theme:"
+    echo "   Run: source ~/.zshrc"
+    echo ""
+    echo "4. VS Code / Cursor / Antigravity:"
+    echo "   Ctrl+Shift+P > 'Color Theme' > Catppuccin Mocha"
+    echo ""
+    echo "5. Proxmox Guest Agent:"
+    echo "   Enable in Proxmox: VM > Options > QEMU Guest Agent"
+    echo "   Then restart the VM"
+    echo ""
+    echo "=============================================="
+}
+
+#######################################
+# MAIN
+#######################################
+main() {
+    echo ""
+    echo "=============================================="
+    echo "       KALI LINUX SETUP SCRIPT"
+    echo "=============================================="
+    echo ""
+
+    check_sudo
+
+    fix_zsh_config
+    install_proxmox_tools
+    install_nodejs
+    install_antigravity
+    install_cursor_ide
+    install_llm_tools
+    update_path
+    install_themes
+    print_instructions
+}
+
+# Run main function
+main "$@"

@@ -1,0 +1,107 @@
+#!/bin/bash
+# ---
+# name: "OpenAI Codex CLI"
+# description: "OpenAI's Codex command-line interface for code generation"
+# version: "1.0.0"
+# author: "OpenAI"
+# root: true
+# order: 30
+# hidden: false
+# installed: false
+# check_command: "codex --version"
+# check_path: ""
+# dependencies:
+#   - npm
+#   - nodejs
+# tags:
+#   - llm
+#   - cli
+#   - openai
+#   - ai
+#   - code
+# ---
+
+set -euo pipefail
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+SCRIPT_NAME="$(basename "${BASH_SOURCE[0]}" .sh)"
+MENU_ROOT="${MENU_ROOT:-$(cd "$SCRIPT_DIR" && while [[ ! -f "menu.py" ]] && [[ "$PWD" != "/" ]]; do cd ..; done; pwd)}"
+
+LOG_DIR="$MENU_ROOT/.docs/logs"
+mkdir -p "$LOG_DIR"
+LOG_FILE="$LOG_DIR/${SCRIPT_NAME}_$(date +%Y%m%d_%H%M%S).log"
+exec > >(tee -a "$LOG_FILE") 2>&1
+
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+BLUE='\033[0;34m'
+CYAN='\033[0;36m'
+NC='\033[0m'
+
+log_info()    { echo -e "${BLUE}[INFO]${NC} $1"; }
+log_success() { echo -e "${GREEN}[SUCCESS]${NC} $1"; }
+log_warn()    { echo -e "${YELLOW}[WARN]${NC} $1"; }
+log_error()   { echo -e "${RED}[ERROR]${NC} $1"; }
+log_step()    { echo -e "${CYAN}[STEP]${NC} $1"; }
+
+mark_installed() {
+    local status="${1:-true}"
+    sed -i "s/^# installed: .*/# installed: $status/" "${BASH_SOURCE[0]}"
+}
+
+check_nodejs() {
+    if ! command -v node &>/dev/null; then
+        log_error "Node.js is not installed. Please install Node.js first."
+        exit 1
+    fi
+    if ! command -v npm &>/dev/null; then
+        log_error "npm is not installed. Please install npm first."
+        exit 1
+    fi
+}
+
+install() {
+    log_info "Installing OpenAI Codex CLI..."
+    log_info "Log file: $LOG_FILE"
+
+    check_nodejs
+
+    # Check if already installed
+    if command -v codex &>/dev/null; then
+        log_info "Codex CLI already installed"
+        mark_installed true
+        return 0
+    fi
+
+    log_step "Installing @openai/codex via npm..."
+    npm install -g @openai/codex
+
+    if command -v codex &>/dev/null; then
+        log_success "Codex CLI installed successfully!"
+        echo ""
+        echo "Run 'codex' to start using it"
+        echo "You'll need to set your OPENAI_API_KEY environment variable"
+        echo ""
+        mark_installed true
+    else
+        log_error "Codex CLI installation failed"
+        exit 1
+    fi
+}
+
+uninstall() {
+    log_info "Removing OpenAI Codex CLI..."
+
+    npm uninstall -g @openai/codex || true
+
+    log_success "Codex CLI removed"
+
+    mark_installed false
+}
+
+case "${1:-install}" in
+    install) install ;;
+    uninstall) uninstall ;;
+    *) echo "Usage: $0 {install|uninstall}"; exit 1 ;;
+esac
