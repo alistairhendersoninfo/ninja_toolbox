@@ -16,7 +16,7 @@ CYAN='\033[0;36m'
 NC='\033[0m'
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-SKILLS_SOURCE="$SCRIPT_DIR/skills"
+SKILLS_SOURCE="$SCRIPT_DIR/.skills"
 
 echo -e "${BLUE}============================================${NC}"
 echo -e "${BLUE}   Claude Skills Installer${NC}"
@@ -78,7 +78,7 @@ if [ ! -d "$CLAUDE_DIR" ]; then
     fi
 fi
 
-# Create skills directory in .claude if it doesn't exist
+# Create skills directory in .claude if it doesn't exist (without dot)
 SKILLS_DEST="$CLAUDE_DIR/skills"
 if [ ! -d "$SKILLS_DEST" ]; then
     mkdir -p "$SKILLS_DEST"
@@ -89,7 +89,7 @@ echo ""
 echo -e "${BLUE}Installing skills...${NC}"
 echo ""
 
-# Copy each skill
+# Copy each skill (from .skills source to skills destination)
 installed=0
 for skill_dir in "$SKILLS_SOURCE"/*/; do
     if [ -d "$skill_dir" ]; then

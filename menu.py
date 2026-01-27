@@ -44,11 +44,23 @@ def check_if_installed(info: 'ScriptInfo') -> bool:
     # Check by command
     if info.check_command:
         try:
-            cmd = info.check_command.split()
+            # Include common user paths that might not be in subprocess PATH
+            env = os.environ.copy()
+            home = os.path.expanduser("~")
+            extra_paths = [
+                f"{home}/.local/bin",
+                f"{home}/.cargo/bin",
+                f"{home}/.npm-global/bin",
+                "/usr/local/bin",
+            ]
+            env["PATH"] = ":".join(extra_paths) + ":" + env.get("PATH", "")
+
             result = subprocess.run(
-                cmd,
+                info.check_command,
+                shell=True,
                 capture_output=True,
-                timeout=5
+                timeout=5,
+                env=env
             )
             if result.returncode == 0:
                 return True
