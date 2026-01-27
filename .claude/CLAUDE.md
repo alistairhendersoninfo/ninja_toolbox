@@ -50,10 +50,13 @@ All executable scripts must have a YAML header:
 # description: "What this script does"
 # version: "1.0.0"
 # author: "Author Name"
+# type: install
 # root: true|false
 # order: 10
 # hidden: false
 # installed: false
+# check_command: "myapp --version"
+# check_path: "/usr/bin/myapp"
 # uninstall: "path/to/uninstall_script.sh"  # Optional
 # dependencies:
 #   - package1
@@ -72,13 +75,21 @@ All executable scripts must have a YAML header:
 | description | string | Yes | Brief description shown in menu |
 | version | string | No | Script version |
 | author | string | No | Script author |
+| type | string | No | `install` (Install/Uninstall) or `config` (Run only) |
 | root | boolean | Yes | Requires sudo/root privileges |
 | order | integer | Yes | Sort order in menu (lower = higher) |
 | hidden | boolean | No | If true, hide from menu |
 | installed | boolean | No | Tracks installation state |
+| check_command | string | No | Command to verify installation (e.g., `node --version`) |
+| check_path | string | No | Path to check if exists (e.g., `/usr/bin/node`) |
 | uninstall | string | No | Path to uninstall script |
 | dependencies | array | No | Required packages |
 | tags | array | No | Categorization tags |
+
+### Script Types
+
+- **`type: install`** (default) - Shows Install/Uninstall actions, tracks installation state
+- **`type: config`** - Shows "Run" action only, for utilities/config scripts
 
 ## Menu System
 
@@ -99,21 +110,68 @@ All executable scripts must have a YAML header:
 - Progress indicators
 - Color-coded status
 
+## Documentation Requirements
+
+### When Creating a New Menu Folder
+
+Every menu folder MUST have:
+
+1. **README.md** - Folder-level documentation (shown on GitHub)
+   - Template: `.docs/templates/folder_readme_template.md`
+   - Lists all scripts in the folder
+   - Links to user and technical docs
+
+2. **User Manual** - End-user documentation
+   - Location: `.docs/user_manuals/{folder}.md`
+   - Template: `.docs/templates/user_doc_template.md`
+   - How to use each tool, common tasks, troubleshooting
+
+3. **Technical Manual** - Developer documentation
+   - Location: `.docs/technical_manuals/{folder}.md`
+   - Template: `.docs/templates/technical_doc_template.md`
+   - Architecture, script details, integration points
+
+### Documentation Checklist
+
+When adding a new script or folder:
+- [ ] Script has complete YAML header
+- [ ] Folder has README.md
+- [ ] User manual exists in `.docs/user_manuals/`
+- [ ] Technical manual exists in `.docs/technical_manuals/`
+- [ ] README.md links to both manuals
+
+### Templates Location
+
+```
+.docs/templates/
+├── script_template.sh        # Install script template
+├── config_template.sh        # Config/utility script template
+├── folder_readme_template.md # Folder README template
+├── user_doc_template.md      # User manual template
+└── technical_doc_template.md # Technical manual template
+```
+
 ## Development Guidelines
 
 ### Adding New Scripts
 
 1. Create script in appropriate folder under `mainmenu/`
-2. Add YAML header with all required fields
-3. Use logging functions to write to `.docs/logs/`
-4. Test with `--dry-run` flag if supported
-5. Update `installed: true` after successful installation
+2. Copy from `.docs/templates/script_template.sh` or `config_template.sh`
+3. Add YAML header with all required fields
+4. Set `check_command` and/or `check_path` for installation detection
+5. Use logging functions to write to `.docs/logs/`
+6. Test with `bash script.sh install`
+7. Update folder README.md with new script
+8. Update user and technical manuals
 
 ### Creating Submenus
 
 1. Create a new folder under the parent menu
-2. Add scripts to the folder
-3. Menu system auto-discovers on next run
+2. Create README.md from template
+3. Create user manual in `.docs/user_manuals/{folder}.md`
+4. Create technical manual in `.docs/technical_manuals/{folder}.md`
+5. Add scripts to the folder
+6. Menu system auto-discovers on next run
 
 ### Logging
 
