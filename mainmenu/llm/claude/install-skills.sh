@@ -18,38 +18,19 @@ NC='\033[0m'
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 SKILLS_SOURCE="$SCRIPT_DIR/.skills"
 
-echo -e "${BLUE}============================================${NC}"
-echo -e "${BLUE}   Claude Skills Installer${NC}"
-echo -e "${BLUE}============================================${NC}"
-echo ""
-
 # Check if we have skills to install
 if [ ! -d "$SKILLS_SOURCE" ]; then
     echo -e "${RED}No skills folder found at: $SKILLS_SOURCE${NC}"
     exit 1
 fi
 
-# Count available skills
-SKILL_COUNT=$(find "$SKILLS_SOURCE" -name "SKILL.md" | wc -l)
-echo -e "${CYAN}Available skills to install: ${SKILL_COUNT}${NC}"
-echo ""
-
-# List available skills
-echo -e "${YELLOW}Skills:${NC}"
-for skill_file in "$SKILLS_SOURCE"/*/SKILL.md; do
-    if [ -f "$skill_file" ]; then
-        skill_dir=$(dirname "$skill_file")
-        skill_name=$(basename "$skill_dir")
-        # Extract description from SKILL.md
-        desc=$(grep "^description:" "$skill_file" | head -1 | sed 's/description: *//' | cut -c1-60)
-        echo -e "  ${GREEN}•${NC} $skill_name"
-        echo -e "    $desc..."
-    fi
-done
-echo ""
-
 # Default .claude location
 DEFAULT_CLAUDE_DIR="$HOME/.claude"
+
+echo -e "${BLUE}============================================${NC}"
+echo -e "${BLUE}   Claude Skills Installer${NC}"
+echo -e "${BLUE}============================================${NC}"
+echo ""
 
 # Prompt for .claude location
 echo -e "${YELLOW}Where is your .claude folder located?${NC}"
@@ -65,37 +46,84 @@ fi
 # Expand ~ if used
 CLAUDE_DIR="${CLAUDE_DIR/#\~/$HOME}"
 
-# Verify the directory exists or create it
+# Create directory if needed
 if [ ! -d "$CLAUDE_DIR" ]; then
-    echo -e "${YELLOW}Directory does not exist: $CLAUDE_DIR${NC}"
-    read -p "Create it? (y/n): " create_dir
-    if [ "$create_dir" = "y" ] || [ "$create_dir" = "Y" ]; then
-        mkdir -p "$CLAUDE_DIR"
-        echo -e "${GREEN}Created: $CLAUDE_DIR${NC}"
-    else
-        echo -e "${RED}Aborted.${NC}"
-        exit 1
-    fi
+    mkdir -p "$CLAUDE_DIR"
+    echo -e "${GREEN}Created: $CLAUDE_DIR${NC}"
 fi
 
-# Create skills directory in .claude if it doesn't exist (without dot)
 SKILLS_DEST="$CLAUDE_DIR/skills"
-if [ ! -d "$SKILLS_DEST" ]; then
-    mkdir -p "$SKILLS_DEST"
-    echo -e "${GREEN}Created skills folder: $SKILLS_DEST${NC}"
+mkdir -p "$SKILLS_DEST"
+
+# Build checkbox list
+# Format: "skill_name" "description" ON/OFF
+CHECKLIST_ITEMS=()
+
+for skill_file in "$SKILLS_SOURCE"/*/SKILL.md; do
+    if [ -f "$skill_file" ]; then
+        skill_dir=$(dirname "$skill_file")
+        skill_name=$(basename "$skill_dir")
+        
+        # Extract description (first 50 chars)
+        desc=$(grep "^description:" "$skill_file" | head -1 | sed 's/description: *//' | sed 's/"//g' | cut -c1-50)
+        if [ -z "$desc" ]; then
+            desc="No description"
+        fi
+        
+        # Check if already installed
+        if [ -d "$SKILLS_DEST/$skill_name" ]; then
+            status="ON"
+            desc="[INSTALLED] $desc"
+        else
+            status="OFF"
+        fi
+        
+        CHECKLIST_ITEMS+=("$skill_name" "$desc" "$status")
+    fi
+done
+
+# Check if we have any skills
+if [ ${#CHECKLIST_ITEMS[@]} -eq 0 ]; then
+    echo -e "${RED}No skills found in $SKILLS_SOURCE${NC}"
+    exit 1
+fi
+
+# Calculate dimensions
+SKILL_COUNT=$((${#CHECKLIST_ITEMS[@]} / 3))
+HEIGHT=$((SKILL_COUNT + 10))
+if [ $HEIGHT -gt 20 ]; then HEIGHT=20; fi
+
+# Show checklist using whiptail
+SELECTED=$(whiptail --title "Claude Skills Installer" \
+    --checklist "Select skills to install:\n(Already installed skills are pre-selected)" \
+    $HEIGHT 78 $SKILL_COUNT \
+    "${CHECKLIST_ITEMS[@]}" \
+    3>&1 1>&2 2>&3)
+
+# Check if user cancelled
+if [ $? -ne 0 ]; then
+    echo -e "${YELLOW}Cancelled.${NC}"
+    exit 0
+fi
+
+# Parse selected items (whiptail returns "item1" "item2" format)
+SELECTED=$(echo "$SELECTED" | tr -d '"')
+
+if [ -z "$SELECTED" ]; then
+    echo -e "${YELLOW}No skills selected.${NC}"
+    exit 0
 fi
 
 echo ""
-echo -e "${BLUE}Installing skills...${NC}"
+echo -e "${BLUE}Installing selected skills...${NC}"
 echo ""
 
-# Copy each skill (from .skills source to skills destination)
 installed=0
-for skill_dir in "$SKILLS_SOURCE"/*/; do
-    if [ -d "$skill_dir" ]; then
-        skill_name=$(basename "$skill_dir")
-        dest_dir="$SKILLS_DEST/$skill_name"
-        
+for skill_name in $SELECTED; do
+    src_dir="$SKILLS_SOURCE/$skill_name"
+    dest_dir="$SKILLS_DEST/$skill_name"
+    
+    if [ -d "$src_dir" ]; then
         if [ -d "$dest_dir" ]; then
             echo -e "${YELLOW}Updating:${NC} $skill_name"
             rm -rf "$dest_dir"
@@ -103,7 +131,7 @@ for skill_dir in "$SKILLS_SOURCE"/*/; do
             echo -e "${GREEN}Installing:${NC} $skill_name"
         fi
         
-        cp -r "$skill_dir" "$dest_dir"
+        cp -r "$src_dir" "$dest_dir"
         ((installed++))
     fi
 done
