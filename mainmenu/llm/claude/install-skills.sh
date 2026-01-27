@@ -55,30 +55,40 @@ fi
 SKILLS_DEST="$CLAUDE_DIR/skills"
 mkdir -p "$SKILLS_DEST"
 
-# Build checkbox list
-# Format: "skill_name" "description" ON/OFF
+# Build skill info text for preview
+SKILL_INFO=""
 CHECKLIST_ITEMS=()
 
 for skill_file in "$SKILLS_SOURCE"/*/SKILL.md; do
     if [ -f "$skill_file" ]; then
         skill_dir=$(dirname "$skill_file")
         skill_name=$(basename "$skill_dir")
-        
-        # Extract short description (30 chars max)
-        desc=$(grep "^description:" "$skill_file" | head -1 | sed 's/description: *//' | sed 's/"//g' | cut -c1-30)
-        if [ -z "$desc" ]; then
-            desc="No description"
-        fi
+
+        # Get full description for info display
+        full_desc=$(grep "^description:" "$skill_file" | head -1 | sed 's/description: *//' | sed 's/"//g')
 
         # Check if already installed
         if [ -d "$SKILLS_DEST/$skill_name" ]; then
             status="ON"
-            desc="[*] $desc"
+            installed_tag="[INSTALLED]"
         else
             status="OFF"
+            installed_tag=""
         fi
-        
-        CHECKLIST_ITEMS+=("$skill_name" "$desc" "$status")
+
+        # Build info text
+        SKILL_INFO+="━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
+        SKILL_INFO+="  $skill_name $installed_tag\n"
+        SKILL_INFO+="━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
+        SKILL_INFO+="$full_desc\n\n"
+
+        # Short desc for checklist
+        short_desc=$(echo "$full_desc" | cut -c1-25)
+        if [ -n "$installed_tag" ]; then
+            short_desc="[*] $short_desc"
+        fi
+
+        CHECKLIST_ITEMS+=("$skill_name" "$short_desc" "$status")
     fi
 done
 
@@ -88,15 +98,19 @@ if [ ${#CHECKLIST_ITEMS[@]} -eq 0 ]; then
     exit 1
 fi
 
-# Calculate dimensions
+# Show skill info first (scrollable)
+echo -e "$SKILL_INFO" | whiptail --title "Available Skills" \
+    --scrolltext --msgbox "$(echo -e "$SKILL_INFO")" 20 70
+
+# Calculate dimensions for checklist
 SKILL_COUNT=$((${#CHECKLIST_ITEMS[@]} / 3))
-HEIGHT=$((SKILL_COUNT + 10))
-if [ $HEIGHT -gt 20 ]; then HEIGHT=20; fi
+HEIGHT=$((SKILL_COUNT + 8))
+if [ $HEIGHT -gt 18 ]; then HEIGHT=18; fi
 
 # Show checklist using whiptail
-SELECTED=$(whiptail --title "Skills" \
-    --checklist "Select skills ([*] = installed):" \
-    $HEIGHT 60 $SKILL_COUNT \
+SELECTED=$(whiptail --title "Install Skills" \
+    --checklist "[*] = installed. Space to toggle:" \
+    $HEIGHT 55 $SKILL_COUNT \
     "${CHECKLIST_ITEMS[@]}" \
     3>&1 1>&2 2>&3)
 
