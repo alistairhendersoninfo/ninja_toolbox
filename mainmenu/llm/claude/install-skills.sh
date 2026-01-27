@@ -64,16 +64,16 @@ for skill_file in "$SKILLS_SOURCE"/*/SKILL.md; do
         skill_dir=$(dirname "$skill_file")
         skill_name=$(basename "$skill_dir")
         
-        # Extract description (first 50 chars)
-        desc=$(grep "^description:" "$skill_file" | head -1 | sed 's/description: *//' | sed 's/"//g' | cut -c1-50)
+        # Extract short description (30 chars max)
+        desc=$(grep "^description:" "$skill_file" | head -1 | sed 's/description: *//' | sed 's/"//g' | cut -c1-30)
         if [ -z "$desc" ]; then
             desc="No description"
         fi
-        
+
         # Check if already installed
         if [ -d "$SKILLS_DEST/$skill_name" ]; then
             status="ON"
-            desc="[INSTALLED] $desc"
+            desc="[*] $desc"
         else
             status="OFF"
         fi
@@ -94,9 +94,9 @@ HEIGHT=$((SKILL_COUNT + 10))
 if [ $HEIGHT -gt 20 ]; then HEIGHT=20; fi
 
 # Show checklist using whiptail
-SELECTED=$(whiptail --title "Claude Skills Installer" \
-    --checklist "Select skills to install:\n(Already installed skills are pre-selected)" \
-    $HEIGHT 78 $SKILL_COUNT \
+SELECTED=$(whiptail --title "Skills" \
+    --checklist "Select skills ([*] = installed):" \
+    $HEIGHT 60 $SKILL_COUNT \
     "${CHECKLIST_ITEMS[@]}" \
     3>&1 1>&2 2>&3)
 
