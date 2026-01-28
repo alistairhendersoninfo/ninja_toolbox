@@ -351,17 +351,26 @@ def gum_menu(directory: Path, breadcrumb: List[str] = None) -> None:
         choices = []
         item_map = {}  # Map prefix to item
 
+        # Calculate padding width for alignment (01, 02... or 001, 002...)
+        num_items = len(items)
+        pad_width = len(str(num_items))
+        if pad_width < 2:
+            pad_width = 2  # Minimum 2 digits (01, 02...)
+
         num = 1
         for item in items:
-            prefix = str(num)
+            # Zero-padded prefix for display, but also map non-padded for easy typing
+            padded = str(num).zfill(pad_width)
             if item.is_submenu:
-                label = f"{prefix}. 📁 {item.name}"
+                label = f"{padded}. 📁 {item.name}"
             else:
                 status = "✅" if item.script_info.installed else "⬜"
                 root = "🔐" if item.script_info.root else "  "
-                label = f"{prefix}. {status}{root} {item.name}"
+                label = f"{padded}. {status}{root} {item.name}"
             choices.append(label)
-            item_map[prefix] = item
+            # Map both padded and non-padded versions
+            item_map[padded] = item
+            item_map[str(num)] = item
             num += 1
 
         # Add navigation with letter shortcuts
