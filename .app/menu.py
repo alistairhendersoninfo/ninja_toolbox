@@ -64,18 +64,13 @@ def get_config_backend() -> str:
 
 
 def get_gum_style_args() -> List[str]:
-    """Build gum style arguments from config."""
+    """Build gum filter style arguments from config.
+    Note: gum filter doesn't support --border, only gum style does.
+    """
     settings = get_config_settings()
     args = []
 
-    # Border
-    border = settings.get('gum.border', 'double')
-    if border and border != 'none':
-        args.extend(['--border', border])
-
-    # Colors
-    if settings.get('gum.border_foreground'):
-        args.extend(['--border-foreground', settings['gum.border_foreground']])
+    # Colors (gum filter supports these)
     if settings.get('gum.header_foreground'):
         args.extend(['--header.foreground', settings['gum.header_foreground']])
     if settings.get('gum.match_foreground'):
