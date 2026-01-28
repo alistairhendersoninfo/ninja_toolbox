@@ -394,16 +394,17 @@ def gum_script_action(script_info: ScriptInfo) -> None:
         print("\n" + "\n".join(info_lines) + "\n")
 
         try:
+            # Use stdout=PIPE only, let stderr and TTY work normally (same as gum_menu)
             result = subprocess.run(
                 ["gum", "choose", "--header", f"Action for: {script_info.name}"] + choices,
-                capture_output=True,
+                stdout=subprocess.PIPE,
                 text=True
             )
 
             if result.returncode != 0:
                 return
 
-            selection = result.stdout.strip()
+            selection = result.stdout.strip() if result.stdout else ""
 
             if selection.startswith("⬅️") or not selection:
                 return
