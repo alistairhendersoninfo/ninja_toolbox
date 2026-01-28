@@ -330,9 +330,15 @@ def gum_available() -> bool:
 
 
 def gum_menu(directory: Path, breadcrumb: List[str] = None) -> None:
-    """Display menu using gum."""
+    """Display menu using gum with modal dialog style."""
     if breadcrumb is None:
         breadcrumb = ["Main Menu"]
+
+    settings = get_config_settings()
+    border = settings.get('gum.border', 'rounded')
+    border_fg = settings.get('gum.border_foreground', '99')
+    header_fg = settings.get('gum.header_foreground', '99')
+    height = settings.get('gum.height', '15')
 
     while True:
         items = scan_menu_directory(directory)
@@ -355,33 +361,44 @@ def gum_menu(directory: Path, breadcrumb: List[str] = None) -> None:
 
         choices.append("─" * 30)
         if len(breadcrumb) > 1:
-            choices.append("b) ⬅️  Back")
-        choices.append("x) ❌ Exit")
+            choices.append("⬅️  Back")
+        choices.append("❌ Exit")
 
-        # Show breadcrumb
+        # Show breadcrumb path
         path_display = " > ".join(breadcrumb)
 
         try:
-            # Use gum filter for keyboard shortcuts (type 'b' for back, 'x' for exit)
-            style_args = get_gum_style_args()
+            # Clear screen and show styled header
+            os.system('clear')
+
+            # Display bordered title using gum style
+            subprocess.run([
+                "gum", "style",
+                "--border", border,
+                "--border-foreground", border_fg,
+                "--foreground", header_fg,
+                "--padding", "1 2",
+                "--margin", "1",
+                f"📍 {path_display}",
+                "Use ↑↓ to navigate, Enter to select"
+            ])
+
+            # Show menu with gum choose
             result = subprocess.run(
-                ["gum", "filter", "--limit", "1",
-                 "--header", f"📍 {path_display}  (b=back, x=exit)",
-                 "--placeholder", "Type to filter..."] + style_args + choices,
+                ["gum", "choose", "--height", height] + choices,
                 stdout=subprocess.PIPE,
                 text=True
             )
 
             if result.returncode != 0:
-                # User cancelled (Ctrl+C or Esc) or error
                 return
 
             selection = result.stdout.strip() if result.stdout else ""
 
-            if selection.startswith("x)") or selection.startswith("❌") or not selection:
+            if selection.startswith("❌") or not selection:
                 return
 
-            if selection.startswith("b)") or selection.startswith("⬅️"):
+            if selection.startswith("⬅️"):
                 return  # Go back one level
 
             if selection.startswith("─"):
@@ -401,49 +418,62 @@ def gum_menu(directory: Path, breadcrumb: List[str] = None) -> None:
 
 
 def gum_script_action(script_info: ScriptInfo) -> None:
-    """Show script actions using gum."""
+    """Show script actions using gum with modal dialog style."""
+    settings = get_config_settings()
+    border = settings.get('gum.border', 'rounded')
+    border_fg = settings.get('gum.border_foreground', '99')
+
     while True:
         # Build info display based on script type
         if script_info.script_type == "config":
             info_lines = [
-                f"Name: {script_info.name}",
+                f"📦 {script_info.name}",
+                f"",
                 f"Description: {script_info.description}",
                 f"Version: {script_info.version}",
                 f"Type: Configuration",
                 f"Requires Root: {'Yes' if script_info.root else 'No'}",
             ]
             choices = [
-                "r) ▶️  Run",
-                "l) 📋 View Log",
-                "v) 📄 View Script",
-                "b) ⬅️  Back"
+                "▶️  Run",
+                "📋 View Log",
+                "📄 View Script",
+                "⬅️  Back"
             ]
         else:
             info_lines = [
-                f"Name: {script_info.name}",
+                f"📦 {script_info.name}",
+                f"",
                 f"Description: {script_info.description}",
                 f"Version: {script_info.version}",
                 f"Requires Root: {'Yes' if script_info.root else 'No'}",
-                f"Installed: {'Yes' if script_info.installed else 'No'}",
+                f"Installed: {'✅ Yes' if script_info.installed else '⬜ No'}",
             ]
-            choices = ["i) ▶️  Install"]
+            choices = ["▶️  Install"]
             if script_info.installed:
-                choices.append("u) 🗑️  Uninstall")
+                choices.append("🗑️  Uninstall")
             choices.extend([
-                "l) 📋 View Log",
-                "v) 📄 View Script",
-                "b) ⬅️  Back"
+                "📋 View Log",
+                "📄 View Script",
+                "⬅️  Back"
             ])
 
-        print("\n" + "\n".join(info_lines) + "\n")
-
         try:
-            # Use gum filter for keyboard shortcuts (type 'b' for back)
-            style_args = get_gum_style_args()
+            # Clear screen and show styled info box
+            os.system('clear')
+
+            # Display script info in bordered box
+            subprocess.run([
+                "gum", "style",
+                "--border", border,
+                "--border-foreground", border_fg,
+                "--padding", "1 2",
+                "--margin", "1",
+            ] + info_lines)
+
+            # Show action menu with gum choose
             result = subprocess.run(
-                ["gum", "filter", "--limit", "1",
-                 "--header", f"Action: {script_info.name}  (b=back)",
-                 "--placeholder", "Type to filter..."] + style_args + choices,
+                ["gum", "choose", "--header", "Select action:"] + choices,
                 stdout=subprocess.PIPE,
                 text=True
             )
@@ -453,10 +483,10 @@ def gum_script_action(script_info: ScriptInfo) -> None:
 
             selection = result.stdout.strip() if result.stdout else ""
 
-            if selection.startswith("b)") or selection.startswith("⬅️") or not selection:
+            if selection.startswith("⬅️") or not selection:
                 return
 
-            if selection.startswith("i)") or selection.startswith("r)") or selection.startswith("▶️"):
+            if selection.startswith("▶️"):
                 run_script(script_info, "install")
                 if script_info.script_type != "config":
                     updated = parse_yaml_header(script_info.path)
@@ -464,17 +494,17 @@ def gum_script_action(script_info: ScriptInfo) -> None:
                         script_info.installed = updated.installed
                 input("\nPress Enter to continue...")
 
-            elif selection.startswith("u)") or selection.startswith("🗑️"):
+            elif selection.startswith("🗑️"):
                 run_script(script_info, "uninstall")
                 updated = parse_yaml_header(script_info.path)
                 if updated:
                     script_info.installed = updated.installed
                 input("\nPress Enter to continue...")
 
-            elif selection.startswith("l)") or selection.startswith("📋"):
+            elif selection.startswith("📋"):
                 view_log(script_info.path.stem)
 
-            elif selection.startswith("v)") or selection.startswith("📄"):
+            elif selection.startswith("📄"):
                 subprocess.run(["less", str(script_info.path)])
 
         except KeyboardInterrupt:
