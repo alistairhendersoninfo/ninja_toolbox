@@ -136,15 +136,18 @@ deactivate
 #######################################
 log_step "Creating launcher script..."
 
-cat > "$MENU_ROOT/menu" << 'LAUNCHER'
+mkdir -p "$MENU_ROOT/.app"
+
+cat > "$MENU_ROOT/.app/menu" << 'LAUNCHER'
 #!/bin/bash
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-source "$SCRIPT_DIR/.venv/bin/activate"
+MENU_ROOT="$(dirname "$SCRIPT_DIR")"
+source "$MENU_ROOT/.venv/bin/activate"
 python3 "$SCRIPT_DIR/menu.py" "$@"
 deactivate
 LAUNCHER
 
-chmod +x "$MENU_ROOT/menu"
+chmod +x "$MENU_ROOT/.app/menu"
 
 log_success "Launcher script created"
 
@@ -159,8 +162,8 @@ ACTUAL_HOME=$(getent passwd "$ACTUAL_USER" | cut -d: -f6)
 
 # Make all scripts executable
 find "$MENU_ROOT" -name "*.sh" -exec chmod +x {} \;
-chmod +x "$MENU_ROOT/menu.py" 2>/dev/null || true
-chmod +x "$MENU_ROOT/menu"
+chmod +x "$MENU_ROOT/.app/menu.py" 2>/dev/null || true
+chmod +x "$MENU_ROOT/.app/menu"
 
 # Set ownership to actual user
 chown -R "$ACTUAL_USER:$ACTUAL_USER" "$MENU_ROOT"
@@ -182,7 +185,7 @@ cat > /usr/bin/ninjamenu << NINJAMENU
 MENU_ROOT="$MENU_ROOT"
 
 # Check if menu exists
-if [[ ! -f "\$MENU_ROOT/menu.py" ]]; then
+if [[ ! -f "\$MENU_ROOT/.app/menu.py" ]]; then
     echo "Error: Menu system not found at \$MENU_ROOT"
     echo "Please reinstall with: sudo \$MENU_ROOT/install_menu.sh"
     exit 1
@@ -190,7 +193,7 @@ fi
 
 # Activate venv and run menu
 source "\$MENU_ROOT/.venv/bin/activate"
-python3 "\$MENU_ROOT/menu.py" "\$@"
+python3 "\$MENU_ROOT/.app/menu.py" "\$@"
 deactivate
 NINJAMENU
 

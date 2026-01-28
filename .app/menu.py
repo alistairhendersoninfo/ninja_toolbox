@@ -33,10 +33,26 @@ except ImportError:
     HAS_TEXTUAL = False
 
 # Constants
-MENU_ROOT = Path(__file__).parent.resolve()
+APP_DIR = Path(__file__).parent.resolve()
+MENU_ROOT = APP_DIR.parent  # Parent of .app directory
 MAIN_MENU_DIR = MENU_ROOT / "mainmenu"
 LOG_DIR = MENU_ROOT / ".docs" / "logs"
 CONFIG_DIR = MENU_ROOT / ".configs"
+SETTINGS_FILE = CONFIG_DIR / "menusystem" / "settings.conf"
+
+
+def get_config_backend() -> str:
+    """Read backend preference from config file."""
+    if SETTINGS_FILE.exists():
+        try:
+            with open(SETTINGS_FILE, 'r') as f:
+                for line in f:
+                    line = line.strip()
+                    if line.startswith('backend='):
+                        return line.split('=', 1)[1].strip()
+        except:
+            pass
+    return "gum"  # Default to gum
 
 
 def check_if_installed(info: 'ScriptInfo') -> bool:
@@ -940,11 +956,23 @@ def main():
     tui = args.tui
 
     if tui == "auto":
-        # Textual provides best UX with dynamic info panel
-        if HAS_TEXTUAL:
+        # Read from config file
+        config_backend = get_config_backend()
+
+        if config_backend == "textual" and HAS_TEXTUAL:
             tui = "textual"
-        else:
+        elif config_backend == "gum" and gum_available():
+            tui = "gum"
+        elif config_backend == "whiptail":
             tui = "whiptail"
+        else:
+            # Fallback: gum -> whiptail -> textual
+            if gum_available():
+                tui = "gum"
+            elif HAS_TEXTUAL:
+                tui = "textual"
+            else:
+                tui = "whiptail"
 
     if tui == "gum":
         gum_menu(start_dir)
