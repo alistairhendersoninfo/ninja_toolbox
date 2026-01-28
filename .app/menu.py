@@ -41,18 +41,65 @@ CONFIG_DIR = MENU_ROOT / ".configs"
 SETTINGS_FILE = CONFIG_DIR / "menusystem" / "settings.conf"
 
 
-def get_config_backend() -> str:
-    """Read backend preference from config file."""
+def get_config_settings() -> Dict[str, str]:
+    """Read all settings from config file."""
+    settings = {}
     if SETTINGS_FILE.exists():
         try:
             with open(SETTINGS_FILE, 'r') as f:
                 for line in f:
                     line = line.strip()
-                    if line.startswith('backend='):
-                        return line.split('=', 1)[1].strip()
+                    if line and not line.startswith('#') and '=' in line:
+                        key, value = line.split('=', 1)
+                        settings[key.strip()] = value.strip()
         except:
             pass
-    return "gum"  # Default to gum
+    return settings
+
+
+def get_config_backend() -> str:
+    """Read backend preference from config file."""
+    settings = get_config_settings()
+    return settings.get('backend', 'gum')
+
+
+def get_gum_style_args() -> List[str]:
+    """Build gum style arguments from config."""
+    settings = get_config_settings()
+    args = []
+
+    # Border
+    border = settings.get('gum.border', 'double')
+    if border and border != 'none':
+        args.extend(['--border', border])
+
+    # Colors
+    if settings.get('gum.border_foreground'):
+        args.extend(['--border-foreground', settings['gum.border_foreground']])
+    if settings.get('gum.header_foreground'):
+        args.extend(['--header.foreground', settings['gum.header_foreground']])
+    if settings.get('gum.match_foreground'):
+        args.extend(['--match.foreground', settings['gum.match_foreground']])
+    if settings.get('gum.cursor_foreground'):
+        args.extend(['--cursor-text.foreground', settings['gum.cursor_foreground']])
+    if settings.get('gum.prompt_foreground'):
+        args.extend(['--prompt.foreground', settings['gum.prompt_foreground']])
+
+    # Dimensions
+    if settings.get('gum.height'):
+        args.extend(['--height', settings['gum.height']])
+    if settings.get('gum.width'):
+        args.extend(['--width', settings['gum.width']])
+
+    # Indicators
+    if settings.get('gum.cursor'):
+        args.extend(['--indicator', settings['gum.cursor']])
+    if settings.get('gum.selected_prefix'):
+        args.extend(['--selected-prefix', f" {settings['gum.selected_prefix']} "])
+    if settings.get('gum.unselected_prefix'):
+        args.extend(['--unselected-prefix', f" {settings['gum.unselected_prefix']} "])
+
+    return args
 
 
 def check_if_installed(info: 'ScriptInfo') -> bool:
@@ -321,10 +368,11 @@ def gum_menu(directory: Path, breadcrumb: List[str] = None) -> None:
 
         try:
             # Use gum filter for keyboard shortcuts (type 'b' for back, 'x' for exit)
+            style_args = get_gum_style_args()
             result = subprocess.run(
-                ["gum", "filter", "--limit", "1", "--height", "15",
-                 "--header", f"📍 {path_display}  (type 'b'=back, 'x'=exit)",
-                 "--placeholder", "Type to filter..."] + choices,
+                ["gum", "filter", "--limit", "1",
+                 "--header", f"📍 {path_display}  (b=back, x=exit)",
+                 "--placeholder", "Type to filter..."] + style_args + choices,
                 stdout=subprocess.PIPE,
                 text=True
             )
@@ -396,10 +444,11 @@ def gum_script_action(script_info: ScriptInfo) -> None:
 
         try:
             # Use gum filter for keyboard shortcuts (type 'b' for back)
+            style_args = get_gum_style_args()
             result = subprocess.run(
-                ["gum", "filter", "--limit", "1", "--height", "10",
-                 "--header", f"Action: {script_info.name}  (type 'b'=back)",
-                 "--placeholder", "Type to filter..."] + choices,
+                ["gum", "filter", "--limit", "1",
+                 "--header", f"Action: {script_info.name}  (b=back)",
+                 "--placeholder", "Type to filter..."] + style_args + choices,
                 stdout=subprocess.PIPE,
                 text=True
             )
