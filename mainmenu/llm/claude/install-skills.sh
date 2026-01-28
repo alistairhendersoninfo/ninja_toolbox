@@ -16,7 +16,24 @@ CYAN='\033[0;36m'
 NC='\033[0m'
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+MENU_ROOT="${MENU_ROOT:-$(cd "$SCRIPT_DIR" && while [[ ! -f "menu.py" ]] && [[ "$PWD" != "/" ]]; do cd ..; done; pwd)}"
 SKILLS_SOURCE="$SCRIPT_DIR/.skills"
+CONFIG_FILE="$MENU_ROOT/.configs/menusystem/settings.conf"
+
+# Read backend preference from config
+get_backend() {
+    if [ -f "$CONFIG_FILE" ]; then
+        backend=$(grep "^backend=" "$CONFIG_FILE" | cut -d'=' -f2)
+        if [ "$backend" = "gum" ] && command -v gum &>/dev/null; then
+            echo "gum"
+            return
+        fi
+    fi
+    # Fallback to whiptail
+    echo "whiptail"
+}
+
+BACKEND=$(get_backend)
 
 # Check if we have skills to install
 if [ ! -d "$SKILLS_SOURCE" ]; then
@@ -38,15 +55,11 @@ echo -e "  Default: ${CYAN}$DEFAULT_CLAUDE_DIR${NC}"
 echo ""
 read -p "Path to .claude folder (press Enter for default): " CLAUDE_DIR
 
-# Use default if empty
 if [ -z "$CLAUDE_DIR" ]; then
     CLAUDE_DIR="$DEFAULT_CLAUDE_DIR"
 fi
-
-# Expand ~ if used
 CLAUDE_DIR="${CLAUDE_DIR/#\~/$HOME}"
 
-# Create directory if needed
 if [ ! -d "$CLAUDE_DIR" ]; then
     mkdir -p "$CLAUDE_DIR"
     echo -e "${GREEN}Created: $CLAUDE_DIR${NC}"
@@ -55,85 +68,130 @@ fi
 SKILLS_DEST="$CLAUDE_DIR/skills"
 mkdir -p "$SKILLS_DEST"
 
-# Build skill info text for preview
-SKILL_INFO=""
-CHECKLIST_ITEMS=()
+# Build skill data
+declare -A SKILL_DESC
+declare -A SKILL_INSTALLED
+SKILL_NAMES=()
 
 for skill_file in "$SKILLS_SOURCE"/*/SKILL.md; do
     if [ -f "$skill_file" ]; then
         skill_dir=$(dirname "$skill_file")
         skill_name=$(basename "$skill_dir")
-
-        # Get full description for info display
+        SKILL_NAMES+=("$skill_name")
+        
+        # Get full description
         full_desc=$(grep "^description:" "$skill_file" | head -1 | sed 's/description: *//' | sed 's/"//g')
-
-        # Check if already installed
+        SKILL_DESC[$skill_name]="$full_desc"
+        
+        # Check if installed
         if [ -d "$SKILLS_DEST/$skill_name" ]; then
-            status="ON"
-            installed_tag="[INSTALLED]"
+            SKILL_INSTALLED[$skill_name]="yes"
         else
-            status="OFF"
-            installed_tag=""
+            SKILL_INSTALLED[$skill_name]="no"
         fi
-
-        # Build info text
-        SKILL_INFO+="━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
-        SKILL_INFO+="  $skill_name $installed_tag\n"
-        SKILL_INFO+="━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
-        SKILL_INFO+="$full_desc\n\n"
-
-        # Short desc for checklist
-        short_desc=$(echo "$full_desc" | cut -c1-25)
-        if [ -n "$installed_tag" ]; then
-            short_desc="[*] $short_desc"
-        fi
-
-        CHECKLIST_ITEMS+=("$skill_name" "$short_desc" "$status")
     fi
 done
 
-# Check if we have any skills
-if [ ${#CHECKLIST_ITEMS[@]} -eq 0 ]; then
-    echo -e "${RED}No skills found in $SKILLS_SOURCE${NC}"
+if [ ${#SKILL_NAMES[@]} -eq 0 ]; then
+    echo -e "${RED}No skills found${NC}"
     exit 1
 fi
 
-# Show skill info first (scrollable)
-echo -e "$SKILL_INFO" | whiptail --title "Available Skills" \
-    --scrolltext --msgbox "$(echo -e "$SKILL_INFO")" 20 70
+# ============= GUM BACKEND =============
+if [ "$BACKEND" = "gum" ]; then
+    
+    # Show info header
+    gum style --border double --border-foreground 39 --padding "1 2" --margin "1" \
+        "Available Skills" "Use arrow keys, space to select, enter to confirm"
+    
+    # Build info display
+    echo ""
+    for skill_name in "${SKILL_NAMES[@]}"; do
+        if [ "${SKILL_INSTALLED[$skill_name]}" = "yes" ]; then
+            gum style --foreground 40 "✓ $skill_name (installed)"
+        else
+            gum style --foreground 250 "○ $skill_name"
+        fi
+        gum style --foreground 245 --italic "  ${SKILL_DESC[$skill_name]:0:60}..."
+        echo ""
+    done
+    
+    # Build choice list
+    CHOICES=()
+    for skill_name in "${SKILL_NAMES[@]}"; do
+        if [ "${SKILL_INSTALLED[$skill_name]}" = "yes" ]; then
+            CHOICES+=("$skill_name [installed]")
+        else
+            CHOICES+=("$skill_name")
+        fi
+    done
+    
+    # Select skills
+    SELECTED=$(gum choose --no-limit --header "Select skills to install:" "${CHOICES[@]}")
+    
+    if [ -z "$SELECTED" ]; then
+        echo -e "${YELLOW}No skills selected.${NC}"
+        exit 0
+    fi
 
-# Calculate dimensions for checklist
-SKILL_COUNT=$((${#CHECKLIST_ITEMS[@]} / 3))
-HEIGHT=$((SKILL_COUNT + 8))
-if [ $HEIGHT -gt 18 ]; then HEIGHT=18; fi
-
-# Show checklist using whiptail
-SELECTED=$(whiptail --title "Install Skills" \
-    --checklist "[*] = installed. Space to toggle:" \
-    $HEIGHT 55 $SKILL_COUNT \
-    "${CHECKLIST_ITEMS[@]}" \
-    3>&1 1>&2 2>&3)
-
-# Check if user cancelled
-if [ $? -ne 0 ]; then
-    echo -e "${YELLOW}Cancelled.${NC}"
-    exit 0
+# ============= WHIPTAIL BACKEND =============
+else
+    # Build info text for preview
+    SKILL_INFO=""
+    CHECKLIST_ITEMS=()
+    
+    for skill_name in "${SKILL_NAMES[@]}"; do
+        if [ "${SKILL_INSTALLED[$skill_name]}" = "yes" ]; then
+            status="ON"
+            tag="[*]"
+        else
+            status="OFF"
+            tag=""
+        fi
+        
+        SKILL_INFO+="━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
+        SKILL_INFO+="  $skill_name $tag\n"
+        SKILL_INFO+="━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
+        SKILL_INFO+="${SKILL_DESC[$skill_name]}\n\n"
+        
+        short_desc="${SKILL_DESC[$skill_name]:0:25}"
+        [ -n "$tag" ] && short_desc="$tag $short_desc"
+        CHECKLIST_ITEMS+=("$skill_name" "$short_desc" "$status")
+    done
+    
+    # Show info preview
+    echo -e "$SKILL_INFO" | whiptail --title "Available Skills" \
+        --scrolltext --msgbox "$(echo -e "$SKILL_INFO")" 18 60
+    
+    # Show checklist
+    SKILL_COUNT=${#SKILL_NAMES[@]}
+    HEIGHT=$((SKILL_COUNT + 8))
+    [ $HEIGHT -gt 18 ] && HEIGHT=18
+    
+    SELECTED=$(whiptail --title "Install Skills" \
+        --checklist "[*] = installed. Space to toggle:" \
+        $HEIGHT 50 $SKILL_COUNT \
+        "${CHECKLIST_ITEMS[@]}" \
+        3>&1 1>&2 2>&3)
+    
+    if [ $? -ne 0 ] || [ -z "$SELECTED" ]; then
+        echo -e "${YELLOW}Cancelled.${NC}"
+        exit 0
+    fi
+    
+    SELECTED=$(echo "$SELECTED" | tr -d '"')
 fi
 
-# Parse selected items (whiptail returns "item1" "item2" format)
-SELECTED=$(echo "$SELECTED" | tr -d '"')
-
-if [ -z "$SELECTED" ]; then
-    echo -e "${YELLOW}No skills selected.${NC}"
-    exit 0
-fi
-
+# ============= INSTALL SELECTED =============
 echo ""
 echo -e "${BLUE}Installing selected skills...${NC}"
 echo ""
 
 installed=0
 for skill_name in $SELECTED; do
+    # Clean up skill name (remove [installed] suffix if present)
+    skill_name=$(echo "$skill_name" | sed 's/ \[installed\]//')
+    
     src_dir="$SKILLS_SOURCE/$skill_name"
     dest_dir="$SKILLS_DEST/$skill_name"
     
@@ -156,6 +214,5 @@ echo -e "${GREEN}   Installation Complete!${NC}"
 echo -e "${GREEN}============================================${NC}"
 echo ""
 echo -e "Installed ${CYAN}$installed${NC} skill(s) to: ${CYAN}$SKILLS_DEST${NC}"
-echo ""
-echo -e "${YELLOW}Skills will be available in your next Claude session.${NC}"
+echo -e "Backend used: ${CYAN}$BACKEND${NC}"
 echo ""
