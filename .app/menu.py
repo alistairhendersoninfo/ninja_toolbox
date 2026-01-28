@@ -339,8 +339,6 @@ def gum_menu(directory: Path, breadcrumb: List[str] = None) -> None:
     border_fg = settings.get('gum.border_foreground', '99')
     header_fg = settings.get('gum.header_foreground', '99')
     height = settings.get('gum.height', '15')
-    preview_pos = settings.get('gum.preview_position', 'right')
-    preview_width = settings.get('gum.preview_width', '50%')
 
     while True:
         items = scan_menu_directory(directory)
@@ -400,17 +398,12 @@ def gum_menu(directory: Path, breadcrumb: List[str] = None) -> None:
                 "Type number to select, b=back, x=exit"
             ])
 
-            # Build preview command - calls this script with --preview flag
-            preview_cmd = f"python3 {APP_DIR / 'menu.py'} --preview {{}} --preview-dir '{directory}'"
-
-            # Show menu with gum filter for keyboard input and preview panel
+            # Show menu with gum filter for keyboard input
             result = subprocess.run(
                 [
                     "gum", "filter",
                     "--height", height,
                     "--placeholder", "Type number to select...",
-                    "--preview", preview_cmd,
-                    "--preview.viewport", f"{preview_pos}:{preview_width}",
                 ] + choices,
                 stdout=subprocess.PIPE,
                 text=True
@@ -999,48 +992,6 @@ def list_all_scripts(directory: Path = None, indent: int = 0) -> None:
 # MAIN ENTRY POINT
 # ============================================
 
-def preview_item(selection: str, directory: Path) -> None:
-    """Output preview info for a menu item (used by gum filter --preview)."""
-    if not selection or selection.startswith("─") or selection.startswith("b.") or selection.startswith("x."):
-        print("Navigation option")
-        return
-
-    # Extract the number prefix
-    prefix = selection.split(".")[0].lstrip("0") or "0"
-
-    items = scan_menu_directory(directory)
-
-    try:
-        idx = int(prefix) - 1
-        if 0 <= idx < len(items):
-            item = items[idx]
-            if item.is_submenu:
-                # Count items in submenu
-                sub_items = scan_menu_directory(item.path)
-                folders = sum(1 for i in sub_items if i.is_submenu)
-                scripts = sum(1 for i in sub_items if not i.is_submenu)
-                print(f"📁 {item.name}")
-                print(f"{'─' * 30}")
-                print(f"Submenu with {folders} folders, {scripts} scripts")
-            else:
-                info = item.script_info
-                print(f"📦 {info.name}")
-                print(f"{'─' * 30}")
-                print(f"{info.description}")
-                print()
-                print(f"Version: {info.version}")
-                print(f"Author:  {info.author}")
-                print(f"Root:    {'Yes 🔐' if info.root else 'No'}")
-                print(f"Status:  {'✅ Installed' if info.installed else '⬜ Not installed'}")
-                if info.tags:
-                    print()
-                    print(f"Tags: {', '.join(info.tags)}")
-                if info.dependencies:
-                    print(f"Deps: {', '.join(info.dependencies)}")
-    except (ValueError, IndexError):
-        print("Select an item to preview")
-
-
 def main():
     parser = argparse.ArgumentParser(
         description="NinjaMenu - Kali Linux Installer Menu System"
@@ -1066,24 +1017,8 @@ def main():
         default="auto",
         help="Force a specific TUI backend"
     )
-    parser.add_argument(
-        "--preview",
-        metavar="SELECTION",
-        help="Output preview for selection (internal use)"
-    )
-    parser.add_argument(
-        "--preview-dir",
-        metavar="DIR",
-        help="Directory context for preview (internal use)"
-    )
 
     args = parser.parse_args()
-
-    # Handle preview mode (called by gum filter --preview)
-    if args.preview:
-        preview_dir = Path(args.preview_dir) if args.preview_dir else MAIN_MENU_DIR
-        preview_item(args.preview, preview_dir)
-        return
 
     # Ensure log directory exists
     LOG_DIR.mkdir(parents=True, exist_ok=True)
