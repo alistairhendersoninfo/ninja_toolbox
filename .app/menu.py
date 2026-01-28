@@ -347,22 +347,28 @@ def gum_menu(directory: Path, breadcrumb: List[str] = None) -> None:
             print("No items in this menu")
             return
 
-        # Build choice list
+        # Build choice list with number/letter prefixes for keyboard selection
         choices = []
-        folder_num = 1
+        item_map = {}  # Map prefix to item
+
+        num = 1
         for item in items:
+            prefix = str(num)
             if item.is_submenu:
-                choices.append(f"{folder_num}. 📁 {item.name}")
-                folder_num += 1
+                label = f"{prefix}. 📁 {item.name}"
             else:
                 status = "✅" if item.script_info.installed else "⬜"
                 root = "🔐" if item.script_info.root else "  "
-                choices.append(f"   {status}{root} {item.name}")
+                label = f"{prefix}. {status}{root} {item.name}"
+            choices.append(label)
+            item_map[prefix] = item
+            num += 1
 
+        # Add navigation with letter shortcuts
         choices.append("─" * 30)
         if len(breadcrumb) > 1:
-            choices.append("⬅️  Back")
-        choices.append("❌ Exit")
+            choices.append("b. ⬅️  Back")
+        choices.append("x. ❌ Exit")
 
         # Show breadcrumb path
         path_display = " > ".join(breadcrumb)
@@ -380,12 +386,12 @@ def gum_menu(directory: Path, breadcrumb: List[str] = None) -> None:
                 "--padding", "1 2",
                 "--margin", "1",
                 f"📍 {path_display}",
-                "Use ↑↓ to navigate, Enter to select"
+                "Type number to select, b=back, x=exit"
             ])
 
-            # Show menu with gum choose
+            # Show menu with gum filter for keyboard input
             result = subprocess.run(
-                ["gum", "choose", "--height", height] + choices,
+                ["gum", "filter", "--height", height, "--placeholder", "Type to filter..."] + choices,
                 stdout=subprocess.PIPE,
                 text=True
             )
@@ -395,23 +401,27 @@ def gum_menu(directory: Path, breadcrumb: List[str] = None) -> None:
 
             selection = result.stdout.strip() if result.stdout else ""
 
-            if selection.startswith("❌") or not selection:
+            if not selection:
                 return
 
-            if selection.startswith("⬅️"):
+            # Parse the prefix from selection
+            if selection.startswith("x."):
+                return
+
+            if selection.startswith("b."):
                 return  # Go back one level
 
             if selection.startswith("─"):
                 continue
 
-            # Find selected item
-            for item in items:
-                if item.name in selection:
-                    if item.is_submenu:
-                        gum_menu(item.path, breadcrumb + [item.name])
-                    else:
-                        gum_script_action(item.script_info)
-                    break
+            # Extract prefix number and find item
+            prefix = selection.split(".")[0] if "." in selection else ""
+            if prefix in item_map:
+                item = item_map[prefix]
+                if item.is_submenu:
+                    gum_menu(item.path, breadcrumb + [item.name])
+                else:
+                    gum_script_action(item.script_info)
 
         except KeyboardInterrupt:
             return
@@ -435,10 +445,10 @@ def gum_script_action(script_info: ScriptInfo) -> None:
                 f"Requires Root: {'Yes' if script_info.root else 'No'}",
             ]
             choices = [
-                "▶️  Run",
-                "📋 View Log",
-                "📄 View Script",
-                "⬅️  Back"
+                "r. ▶️  Run",
+                "l. 📋 View Log",
+                "v. 📄 View Script",
+                "b. ⬅️  Back"
             ]
         else:
             info_lines = [
@@ -449,13 +459,13 @@ def gum_script_action(script_info: ScriptInfo) -> None:
                 f"Requires Root: {'Yes' if script_info.root else 'No'}",
                 f"Installed: {'✅ Yes' if script_info.installed else '⬜ No'}",
             ]
-            choices = ["▶️  Install"]
+            choices = ["i. ▶️  Install"]
             if script_info.installed:
-                choices.append("🗑️  Uninstall")
+                choices.append("u. 🗑️  Uninstall")
             choices.extend([
-                "📋 View Log",
-                "📄 View Script",
-                "⬅️  Back"
+                "l. 📋 View Log",
+                "v. 📄 View Script",
+                "b. ⬅️  Back"
             ])
 
         try:
@@ -471,9 +481,9 @@ def gum_script_action(script_info: ScriptInfo) -> None:
                 "--margin", "1",
             ] + info_lines)
 
-            # Show action menu with gum choose
+            # Show action menu with gum filter for keyboard shortcuts
             result = subprocess.run(
-                ["gum", "choose", "--header", "Select action:"] + choices,
+                ["gum", "filter", "--height", "8", "--placeholder", "Type letter to select..."] + choices,
                 stdout=subprocess.PIPE,
                 text=True
             )
@@ -483,10 +493,10 @@ def gum_script_action(script_info: ScriptInfo) -> None:
 
             selection = result.stdout.strip() if result.stdout else ""
 
-            if selection.startswith("⬅️") or not selection:
+            if not selection or selection.startswith("b."):
                 return
 
-            if selection.startswith("▶️"):
+            if selection.startswith("r.") or selection.startswith("i."):
                 run_script(script_info, "install")
                 if script_info.script_type != "config":
                     updated = parse_yaml_header(script_info.path)
@@ -494,17 +504,17 @@ def gum_script_action(script_info: ScriptInfo) -> None:
                         script_info.installed = updated.installed
                 input("\nPress Enter to continue...")
 
-            elif selection.startswith("🗑️"):
+            elif selection.startswith("u."):
                 run_script(script_info, "uninstall")
                 updated = parse_yaml_header(script_info.path)
                 if updated:
                     script_info.installed = updated.installed
                 input("\nPress Enter to continue...")
 
-            elif selection.startswith("📋"):
+            elif selection.startswith("l."):
                 view_log(script_info.path.stem)
 
-            elif selection.startswith("📄"):
+            elif selection.startswith("v."):
                 subprocess.run(["less", str(script_info.path)])
 
         except KeyboardInterrupt:
