@@ -25,29 +25,13 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 SCRIPT_NAME="$(basename "${BASH_SOURCE[0]}" .sh)"
 MENU_ROOT="${MENU_ROOT:-$(cd "$SCRIPT_DIR" && while [[ ! -f "menu.py" ]] && [[ "$PWD" != "/" ]]; do cd ..; done; pwd)}"
+source "$MENU_ROOT/.lib/platform.sh"
+require_linux "XRDP requires Linux (Kali/Debian)"
 
 LOG_DIR="$MENU_ROOT/.docs/logs"
 mkdir -p "$LOG_DIR"
 LOG_FILE="$LOG_DIR/${SCRIPT_NAME}_$(date +%Y%m%d_%H%M%S).log"
 exec > >(tee -a "$LOG_FILE") 2>&1
-
-RED='\033[0;31m'
-GREEN='\033[0;32m'
-YELLOW='\033[1;33m'
-BLUE='\033[0;34m'
-CYAN='\033[0;36m'
-NC='\033[0m'
-
-log_info()    { echo -e "${BLUE}[INFO]${NC} $1"; }
-log_success() { echo -e "${GREEN}[SUCCESS]${NC} $1"; }
-log_warn()    { echo -e "${YELLOW}[WARN]${NC} $1"; }
-log_error()   { echo -e "${RED}[ERROR]${NC} $1"; }
-log_step()    { echo -e "${CYAN}[STEP]${NC} $1"; }
-
-mark_installed() {
-    local status="${1:-true}"
-    sed -i "s/^# installed: .*/# installed: $status/" "${BASH_SOURCE[0]}"
-}
 
 install() {
     log_info "Installing XRDP with XFCE Desktop..."
@@ -88,7 +72,7 @@ STARTWM
     log_step "Configuring X11 wrapper..."
     # Allow Xwrapper non-console access
     if [[ -f /etc/X11/Xwrapper.config ]]; then
-        sed -i 's/^allowed_users=console/allowed_users=anybody/' /etc/X11/Xwrapper.config
+        nt_sed_i 's/^allowed_users=console/allowed_users=anybody/' /etc/X11/Xwrapper.config
     else
         echo "allowed_users=anybody" > /etc/X11/Xwrapper.config
     fi
@@ -102,8 +86,8 @@ STARTWM
     log_step "Applying Proxmox DRI fixes..."
     # Patch XRDP xorg.conf to disable DRI (Proxmox fix)
     if [[ -f /etc/X11/xrdp/xorg.conf ]]; then
-        sed -i 's|Option "DRMDevice" "/dev/dri/renderD128"|Option "DRMDevice" ""|' /etc/X11/xrdp/xorg.conf 2>/dev/null || true
-        sed -i 's|Option "DRI3" "1"|Option "DRI3" "0"|' /etc/X11/xrdp/xorg.conf 2>/dev/null || true
+        nt_sed_i 's|Option "DRMDevice" "/dev/dri/renderD128"|Option "DRMDevice" ""|' /etc/X11/xrdp/xorg.conf 2>/dev/null || true
+        nt_sed_i 's|Option "DRI3" "1"|Option "DRI3" "0"|' /etc/X11/xrdp/xorg.conf 2>/dev/null || true
     fi
 
     log_step "Restarting XRDP services..."
