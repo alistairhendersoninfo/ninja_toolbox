@@ -209,6 +209,16 @@ exec > >(tee -a "$LOG_FILE") 2>&1
 | MENU_LOG_DIR | Log output directory |
 | MENU_DRY_RUN | If set, scripts run in dry-run mode |
 
+## Git Workflow Rules
+
+- **NEVER push directly to main** — all changes must go through a Pull Request
+- Use `/create-pr` to scaffold a new feature branch and open a draft PR
+- Use `/review-tasks` to read code review comments and create todo tasks
+- Use `/approve-pr` to verify review issues are resolved and merge (admin only)
+- Use `/merge-pr` for standard merge workflow (non-admin or when review is already approved)
+- Commit messages should be clear and describe the "why" not just the "what"
+- One feature/fix per branch, one branch per PR
+
 ## Code Style
 
 - Bash scripts: Use shellcheck compliance
