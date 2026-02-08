@@ -8,10 +8,17 @@
 # check_command: "nc -h"
 # tags: "network, connection, swiss-army"
 # ---
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+MENU_ROOT="${MENU_ROOT:-$(cd "$SCRIPT_DIR" && while [[ ! -f "menu.py" ]] && [[ "$PWD" != "/" ]]; do cd ..; done; pwd)}"
+source "$MENU_ROOT/.lib/platform.sh"
+
 ACTION="${1:-install}"
 if [ "$ACTION" = "install" ]; then
-    apt-get update && apt-get install -y netcat-openbsd
-    echo "netcat installed! Run with: nc <host> <port>"
+    require_root
+    pkg_update
+    pkg_install netcat-openbsd
+    log_success "netcat-openbsd installed!"
 else
-    apt-get remove -y netcat-openbsd && apt-get autoremove -y
+    require_root
+    pkg_remove netcat-openbsd
 fi

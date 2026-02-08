@@ -8,10 +8,17 @@
 # check_command: "tcpdump --version"
 # tags: "network, packet, capture"
 # ---
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+MENU_ROOT="${MENU_ROOT:-$(cd "$SCRIPT_DIR" && while [[ ! -f "menu.py" ]] && [[ "$PWD" != "/" ]]; do cd ..; done; pwd)}"
+source "$MENU_ROOT/.lib/platform.sh"
+
 ACTION="${1:-install}"
 if [ "$ACTION" = "install" ]; then
-    apt-get update && apt-get install -y tcpdump
-    echo "tcpdump installed! Run with: sudo tcpdump -i <interface>"
+    require_root
+    pkg_update
+    pkg_install tcpdump
+    log_success "tcpdump installed!"
 else
-    apt-get remove -y tcpdump && apt-get autoremove -y
+    require_root
+    pkg_remove tcpdump
 fi

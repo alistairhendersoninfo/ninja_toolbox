@@ -8,10 +8,17 @@
 # check_command: "arp-scan --version"
 # tags: "network, discovery, arp"
 # ---
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+MENU_ROOT="${MENU_ROOT:-$(cd "$SCRIPT_DIR" && while [[ ! -f "menu.py" ]] && [[ "$PWD" != "/" ]]; do cd ..; done; pwd)}"
+source "$MENU_ROOT/.lib/platform.sh"
+
 ACTION="${1:-install}"
 if [ "$ACTION" = "install" ]; then
-    apt-get update && apt-get install -y arp-scan
-    echo "arp-scan installed! Run with: sudo arp-scan -l"
+    require_root
+    pkg_update
+    pkg_install arp-scan
+    log_success "arp-scan installed!"
 else
-    apt-get remove -y arp-scan && apt-get autoremove -y
+    require_root
+    pkg_remove arp-scan
 fi

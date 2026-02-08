@@ -8,10 +8,17 @@
 # check_command: "mtr --version"
 # tags: "network, diagnostic, traceroute"
 # ---
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+MENU_ROOT="${MENU_ROOT:-$(cd "$SCRIPT_DIR" && while [[ ! -f "menu.py" ]] && [[ "$PWD" != "/" ]]; do cd ..; done; pwd)}"
+source "$MENU_ROOT/.lib/platform.sh"
+
 ACTION="${1:-install}"
 if [ "$ACTION" = "install" ]; then
-    apt-get update && apt-get install -y mtr
-    echo "mtr installed! Run with: mtr <host>"
+    require_root
+    pkg_update
+    pkg_install mtr
+    log_success "mtr installed!"
 else
-    apt-get remove -y mtr && apt-get autoremove -y
+    require_root
+    pkg_remove mtr
 fi

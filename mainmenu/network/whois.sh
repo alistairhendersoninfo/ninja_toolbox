@@ -8,10 +8,17 @@
 # check_command: "whois --version"
 # tags: "network, dns, lookup"
 # ---
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+MENU_ROOT="${MENU_ROOT:-$(cd "$SCRIPT_DIR" && while [[ ! -f "menu.py" ]] && [[ "$PWD" != "/" ]]; do cd ..; done; pwd)}"
+source "$MENU_ROOT/.lib/platform.sh"
+
 ACTION="${1:-install}"
 if [ "$ACTION" = "install" ]; then
-    apt-get update && apt-get install -y whois
-    echo "whois installed! Run with: whois <domain>"
+    require_root
+    pkg_update
+    pkg_install whois
+    log_success "whois installed!"
 else
-    apt-get remove -y whois && apt-get autoremove -y
+    require_root
+    pkg_remove whois
 fi

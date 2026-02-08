@@ -8,10 +8,17 @@
 # check_command: "glances --version"
 # tags: "monitoring, all-in-one, web"
 # ---
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+MENU_ROOT="${MENU_ROOT:-$(cd "$SCRIPT_DIR" && while [[ ! -f "menu.py" ]] && [[ "$PWD" != "/" ]]; do cd ..; done; pwd)}"
+source "$MENU_ROOT/.lib/platform.sh"
+
 ACTION="${1:-install}"
 if [ "$ACTION" = "install" ]; then
-    apt-get update && apt-get install -y glances
-    echo "glances installed! Run with: glances (or glances -w for web)"
+    require_root
+    pkg_update
+    pkg_install glances
+    log_success "glances installed!"
 else
-    apt-get remove -y glances && apt-get autoremove -y
+    require_root
+    pkg_remove glances
 fi
