@@ -17,6 +17,13 @@ NinjaMenu is a terminal-based menu system that transforms the chaos of setting u
 05. ✅   ncdu
 ```
 
+Tool scripts show whether their required binary is available:
+
+```
+01. ▶️    Quick Network Scan    (nmap found)
+02. ⛔   Packet Capture        (wireshark not found)
+```
+
 ## The Problem
 
 Every time you set up a new system, it's the same story:
@@ -46,7 +53,8 @@ mainmenu/
 ├── llm/            # Claude Code, LLM CLI tools, IDE extensions
 ├── git/            # Git setup, SSH keys, credential management
 ├── postsetup-kali/ # Themes, shell fixes, desktop environment
-└── proxmox/        # VM management scripts
+├── proxmox/        # VM management scripts
+└── education/      # Tool usage scripts (scanning, analysis, etc.)
 ```
 
 **50+ scripts** ready to go, with more being added regularly.
@@ -112,7 +120,8 @@ That's it. Your script now appears in the menu with install status detection. `p
 | `root` | `true` if needs sudo |
 | `check_command` | How to verify it's installed |
 | `check_path` | Alternative: check if path exists |
-| `type` | `install` or `config` (run-only) |
+| `type` | `install`, `config` (run-only), or `tool` (requires binary) |
+| `binary` | Required command for `tool` scripts (e.g., `"nmap"`) |
 | `order` | Sort position (lower = higher) |
 | `hidden` | `true` to hide from menu |
 

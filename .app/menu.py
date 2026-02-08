@@ -7,6 +7,7 @@ NinjaMenu - Generates menus from folder structure with YAML header parsing.
 import os
 import sys
 import re
+import shutil
 import subprocess
 import argparse
 import platform
@@ -142,6 +143,20 @@ def check_if_installed(info: 'ScriptInfo') -> bool:
     return False
 
 
+def _check_binary_available(binary: str) -> bool:
+    """Check if a required binary is available on PATH."""
+    home = os.path.expanduser("~")
+    extra_paths = [
+        f"{home}/.local/bin",
+        f"{home}/.cargo/bin",
+        f"{home}/.npm-global/bin",
+        "/usr/local/bin",
+        "/opt/homebrew/bin",
+    ]
+    extended_path = ":".join(extra_paths) + ":" + os.environ.get("PATH", "")
+    return shutil.which(binary, path=extended_path) is not None
+
+
 @dataclass
 class ScriptInfo:
     """Parsed script information from YAML header."""
@@ -159,7 +174,9 @@ class ScriptInfo:
     tags: List[str] = field(default_factory=list)
     check_command: str = ""  # Command to check if installed (e.g., "claude --version")
     check_path: str = ""     # Path to check if exists (e.g., "/usr/bin/claude")
-    script_type: str = "install"  # "install" = Install/Uninstall, "config" = Run only
+    script_type: str = "install"  # "install" = Install/Uninstall, "config" = Run only, "tool" = Run with binary check
+    binary: str = ""         # Required binary command for tool scripts (e.g., "nmap")
+    binary_available: bool = True  # Set at runtime after checking binary exists
 
 
 @dataclass
@@ -212,10 +229,14 @@ def parse_yaml_header(script_path: Path) -> Optional[ScriptInfo]:
             tags=data.get('tags', []),
             check_command=data.get('check_command', ''),
             check_path=data.get('check_path', ''),
-            script_type=data.get('type', 'install'),  # "install" or "config"
+            script_type=data.get('type', 'install'),  # "install", "config", or "tool"
+            binary=data.get('binary', ''),
         )
         # Dynamically check if installed
         info.installed = check_if_installed(info)
+        # Check if required binary is available (for tool scripts)
+        if info.binary:
+            info.binary_available = _check_binary_available(info.binary)
         return info
     except Exception as e:
         print(f"Error parsing {script_path}: {e}", file=sys.stderr)
@@ -368,7 +389,13 @@ def gum_menu(directory: Path, breadcrumb: List[str] = None) -> None:
             if item.is_submenu:
                 label = f"{padded}. 📁 {item.name}"
             else:
-                status = "✅" if item.script_info.installed else "⬜"
+                if item.script_info.script_type == "tool":
+                    if item.script_info.binary and not item.script_info.binary_available:
+                        status = "⛔"
+                    else:
+                        status = "▶️ "
+                else:
+                    status = "✅" if item.script_info.installed else "⬜"
                 root = "🔐" if item.script_info.root else "  "
                 label = f"{padded}. {status}{root} {item.name}"
             choices.append(label)
@@ -452,7 +479,33 @@ def gum_script_action(script_info: ScriptInfo) -> None:
 
     while True:
         # Build info display based on script type
-        if script_info.script_type == "config":
+        if script_info.script_type == "tool":
+            binary_status = "✅ found" if script_info.binary_available else "⛔ not found"
+            info_lines = [
+                f"📦 {script_info.name}",
+                f"",
+                f"Description: {script_info.description}",
+                f"Version: {script_info.version}",
+                f"Type: Tool Script",
+                f"Requires: {script_info.binary} ({binary_status})",
+            ]
+            if script_info.binary_available:
+                choices = [
+                    "r. ▶️  Run",
+                    "l. 📋 View Log",
+                    "v. 📄 View Script",
+                    "b. ⬅️  Back"
+                ]
+            else:
+                info_lines.extend([
+                    f"",
+                    f"Install {script_info.binary} first to use this script.",
+                ])
+                choices = [
+                    "v. 📄 View Script",
+                    "b. ⬅️  Back"
+                ]
+        elif script_info.script_type == "config":
             info_lines = [
                 f"📦 {script_info.name}",
                 f"",
@@ -515,7 +568,7 @@ def gum_script_action(script_info: ScriptInfo) -> None:
 
             if selection.startswith("r.") or selection.startswith("i."):
                 run_script(script_info, "install")
-                if script_info.script_type != "config":
+                if script_info.script_type not in ("config", "tool"):
                     updated = parse_yaml_header(script_info.path)
                     if updated:
                         script_info.installed = updated.installed
