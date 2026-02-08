@@ -99,6 +99,89 @@ bash mainmenu/category/your-script.sh
 tool-name --version
 ```
 
+## Adding a Tool Script (Education)
+
+Tool scripts are educational/demonstration scripts that **use** an installed tool. They live under `mainmenu/education/` and require a binary to be present before they can run.
+
+### 1. Pick the right folder
+
+Follow the **category > tool > technique** convention:
+
+```
+mainmenu/education/{category}/{tool}/{technique}/your-script.sh
+```
+
+| Level | Rule | Example |
+|-------|------|---------|
+| Category | Match an existing toolbox category | `network`, `monitoring`, `llm` |
+| Tool | Named after the binary | `nmap`, `wireshark`, `htop` |
+| Technique | Group by purpose | `scanning`, `capture`, `analysis` |
+
+Example: `mainmenu/education/network/nmap/scanning/quick-scan.sh`
+
+### 2. Use the YAML header
+
+Tool scripts use `type: tool` and a `binary:` field:
+
+```bash
+#!/bin/bash
+# ---
+# name: "Quick Network Scan"
+# description: "Fast host discovery scan on local subnet"
+# type: tool
+# root: false
+# binary: "nmap"
+# order: 10
+# tags: "network, scanning, nmap"
+# ---
+```
+
+| Field | Required | Description |
+|-------|----------|-------------|
+| `type` | Yes | Must be `tool` |
+| `binary` | Yes | Command that must be on PATH (e.g., `"nmap"`) |
+| `name` | Yes | Display name in the menu |
+| `description` | Yes | Short description |
+| `root` | Yes | `true` if needs sudo |
+| `tags` | No | Keywords for search |
+
+The menu checks if `binary` exists. If not, the script shows `⛔` and cannot be run.
+
+### 3. Source platform.sh and check the binary
+
+```bash
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+SCRIPT_NAME="$(basename "${BASH_SOURCE[0]}" .sh)"
+MENU_ROOT="${MENU_ROOT:-$(cd "$SCRIPT_DIR" && while [[ ! -f "menu.py" ]] && [[ "$PWD" != "/" ]]; do cd ..; done; pwd)}"
+source "$MENU_ROOT/.lib/platform.sh"
+
+# Defence in depth — verify binary is available
+REQUIRED_BINARY="nmap"
+if ! command -v "$REQUIRED_BINARY" &>/dev/null; then
+    log_error "$REQUIRED_BINARY is not installed. Install it first from the menu."
+    exit 1
+fi
+```
+
+### 4. Write a run() function
+
+Tool scripts only run — no install/uninstall:
+
+```bash
+run() {
+    log_info "Running: $SCRIPT_NAME"
+    # Your tool logic here
+    nmap -sn 192.168.1.0/24
+    log_success "Scan complete!"
+}
+
+run
+```
+
+### 5. Template
+
+Copy `.docs/templates/tool_template.sh` as a starting point.
+
 ## Reporting Bugs
 
 Open a GitHub issue with:
