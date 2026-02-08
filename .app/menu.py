@@ -110,6 +110,7 @@ def check_if_installed(info: 'ScriptInfo') -> bool:
                 f"{home}/.cargo/bin",
                 f"{home}/.npm-global/bin",
                 "/usr/local/bin",
+                "/opt/homebrew/bin",
             ]
             env["PATH"] = ":".join(extra_paths) + ":" + env.get("PATH", "")
 
