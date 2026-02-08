@@ -7,6 +7,7 @@ Comprehensive suite of network analysis and security tools.
 | Script | Description | Type |
 |--------|-------------|------|
 | Install All | Install all network tools at once | install |
+| nmap-tools-bundle | Nmap, Zenmap GUI, and nmapUnleashed scanning suite | install |
 | nmap | Network scanner | install |
 | masscan | Fast port scanner | install |
 | tcpdump | Packet capture | install |
@@ -38,6 +39,7 @@ ninjamenu
 - **mtr** - Network diagnostic tool
 
 ### Scanning & Discovery
+- **nmap-tools-bundle** - Nmap + Zenmap GUI + nmapUnleashed (bundle install)
 - **nmap** - Network scanner
 - **masscan** - Fast port scanner
 - **arp-scan** - ARP scanner
