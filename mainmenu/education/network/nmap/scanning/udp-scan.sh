@@ -24,6 +24,9 @@ if ! command -v "$REQUIRED_BINARY" &>/dev/null; then
     exit 1
 fi
 
+# Require root privileges for raw socket access
+require_tool_root
+
 LOG_DIR="$MENU_ROOT/.docs/logs"
 mkdir -p "$LOG_DIR"
 LOG_FILE="$LOG_DIR/${SCRIPT_NAME}_$(date +%Y%m%d_%H%M%S).log"
