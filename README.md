@@ -54,8 +54,11 @@ mainmenu/
 ## Quick Start
 
 ```bash
-# One-time setup (installs dependencies, creates ninjamenu command)
+# Linux (Kali/Debian/Ubuntu) — requires sudo
 sudo ./install_menu.sh
+
+# macOS (Intel or Apple Silicon) — do NOT use sudo
+./install_menu.sh
 
 # Launch anytime
 ninjamenu
@@ -136,12 +139,13 @@ Because good tools should be:
 
 ## Requirements
 
-- Linux (tested on Kali, Debian, Ubuntu)
+- Linux (tested on Kali, Debian, Ubuntu) **or** macOS (Intel and Apple Silicon)
 - Python 3.8+
 - Bash
+- macOS: [Homebrew](https://brew.sh) (the installer will prompt to install it if missing)
 
 Dependencies installed automatically by `install_menu.sh`:
-- gum, whiptail, dialog
+- gum, dialog (+ whiptail on Linux)
 - python3-pip, python3-venv
 - textual, pyyaml, rich
 

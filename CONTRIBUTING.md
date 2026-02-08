@@ -112,6 +112,16 @@ Open a GitHub issue with:
 - Use `apt-get` not `apt` in scripts (more reliable for non-interactive use)
 - Keep scripts focused — one tool per file
 
+### Cross-Platform Considerations
+
+NinjaMenu supports both Linux and macOS. When writing scripts that touch system paths or package managers:
+
+- **Package installation**: Use `apt-get` for Linux, `brew` for macOS — branch on `uname -s`
+- **`sed -i`**: GNU sed (Linux) uses `sed -i`, BSD sed (macOS) needs `sed -i ''`
+- **Paths**: `/usr/bin` is SIP-protected on macOS — use `/usr/local/bin` or `/opt/homebrew/bin`
+- **Root/sudo**: Linux scripts may need root; macOS Homebrew scripts must NOT run as root
+- **Groups**: Linux default group is `$USER`, macOS default group is `staff`
+
 ## Claude Code Skills
 
 This project includes [Claude Code](https://claude.com/claude-code) skills that automate the PR workflow. If you use Claude Code as your development tool, these slash commands are available:
