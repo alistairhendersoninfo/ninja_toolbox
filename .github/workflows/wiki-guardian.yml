@@ -1,0 +1,51 @@
+name: Wiki Guardian
+
+on:
+  gollum:
+
+permissions:
+  contents: write
+  issues: write
+
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout main repo
+        uses: actions/checkout@v4
+
+      - name: Clone wiki
+        run: |
+          git clone https://github.com/${{ github.repository }}.wiki.git /tmp/wiki
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Run spam scan
+        id: scan
+        run: bash .github/scripts/wiki-guardian.sh /tmp/wiki
+        env:
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Revert if spam detected
+        if: steps.scan.outputs.spam == 'true'
+        run: |
+          cd /tmp/wiki
+          git config user.name "Wiki Guardian"
+          git config user.email "wiki-guardian[bot]@users.noreply.github.com"
+          git revert HEAD --no-edit
+          git push
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Create issue if spam detected
+        if: steps.scan.outputs.spam == 'true'
+        run: |
+          gh issue create \
+            --repo "$GITHUB_REPOSITORY" \
+            --title "Wiki spam detected and reverted" \
+            --label "wiki-spam" \
+            --body "$(cat /tmp/wiki-guardian-report.md)"
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
