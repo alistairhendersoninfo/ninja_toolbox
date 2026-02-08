@@ -1,20 +1,24 @@
 ---
 name: approve-pr
-description: Approve a pull request using admin credentials (only approves the specific PR being worked on)
+description: Admin self-review gate — verifies all review issues are resolved then clears PR for merge
 argument-hint: [pr-number]
 disable-model-invocation: true
-allowed-tools: Bash, AskUserQuestion
+allowed-tools: Bash, Read, AskUserQuestion
 ---
 
-# Approve PR Workflow
+# Approve PR Workflow (Admin Self-Review)
 
-You are approving a specific pull request for the ninja_toolbox project. This skill only approves the single PR specified — it does NOT bulk-approve or approve other PRs.
+GitHub does not allow you to approve your own PRs. Instead, this skill acts as a
+self-review gate: it verifies you are admin, checks that all code review issues
+have been addressed, and then confirms the PR is clear for you to merge using
+your admin bypass.
 
-## Safety rules
-- ONLY approve the PR number explicitly provided or detected from the current branch
-- NEVER approve multiple PRs in one run
-- ALWAYS show the user exactly what they are approving before doing it
-- Verify the authenticated user has admin/write access before attempting
+**How it works:**
+- Regular contributors: still need 1 approval from someone else to merge
+- Admin (you): go through the same review process, but can merge via admin bypass
+  once this skill confirms all issues are resolved
+
+This skill only processes the single PR specified — it does NOT affect other PRs.
 
 ## Step 1: Identify the PR
 
@@ -29,63 +33,124 @@ If no PR found, list open PRs and ask which one:
 gh pr list --state open
 ```
 
-## Step 2: Verify identity and permissions
+## Step 2: Verify admin access
 
-Check who is authenticated:
 ```bash
 gh auth status
-```
-
-Check if the user has admin access:
-```bash
 gh api repos/{owner}/{repo} --jq '.permissions.admin'
 ```
 
-If not admin, stop and inform the user they cannot self-approve.
+If not admin, STOP. Tell the user:
+> "You are not an admin on this repo. You need another contributor to approve your PR.
+> Ask a collaborator to review, or use `/merge-pr` if the PR already has approval."
 
-## Step 3: Show PR summary for confirmation
+## Step 3: Check for outstanding review comments
 
-Display:
-- PR number and title
-- Branch name
-- Number of commits
+Fetch all review comments:
+```bash
+gh api repos/{owner}/{repo}/pulls/<number>/comments
+```
+
+Fetch the review summary:
+```bash
+gh api repos/{owner}/{repo}/pulls/<number>/reviews
+```
+
+Parse the comments and check:
+- Are there **unresolved review comments** (suggestions not applied, issues not fixed)?
+- Have new commits been pushed **after** the review was submitted?
+
+For each review comment, check if the issue was addressed by looking at:
+1. Whether the suggested code change was applied in a later commit
+2. Whether a reply acknowledges and addresses the feedback
+
+## Step 4: Display the review status
+
+Print a clear summary:
+
+```
+PR #<number>: <title>
+Branch: <head> -> <base>
+Commits: <count>
+
+Review Issues Status
+─────────────────────────────────────────
+#  Severity  Issue                          Status
+1  critical  <description>                  FIXED / OPEN
+2  high      <description>                  FIXED / OPEN
+3  medium    <description>                  FIXED / OPEN
+```
+
+Also show:
 - Files changed (names only)
-- Any open review comments/issues
+- Whether the PR is still a draft
 
-```bash
-gh pr view <number> --json title,headRefName,commits,files,reviewDecision,comments
-gh pr diff <number> --name-only
+## Step 5: Gate decision
+
+**If ALL issues are FIXED:**
+
+Print:
+```
+All review issues have been addressed.
+As admin, you can merge this PR using your admin bypass.
 ```
 
-Then use AskUserQuestion to confirm:
+Use AskUserQuestion to confirm:
 
-**Question: Approve PR #<number>: "<title>"?**
-- **Yes, approve** — submit an approval review for this PR only
-- **No, don't approve** — cancel without approving
+**Question: All review issues resolved. Proceed to merge PR #<number>?**
+- **Yes, merge now** — run the merge workflow immediately
+- **No, not yet** — stop here, the user can run `/merge-pr` later
 
-## Step 4: Submit the approval
+If "Yes, merge now": proceed directly to Step 6.
 
+**If any issues are still OPEN:**
+
+Print the list of unresolved issues and STOP. Do NOT allow merge. Tell the user:
+> "There are <N> unresolved review issues. Please fix them and push before approving."
+
+List each unresolved issue with file, line, and what needs fixing.
+
+## Step 6: Merge (if approved)
+
+If the user confirmed merge, ask merge strategy:
+
+**Question: How do you want to merge?**
+- **Squash and merge (Recommended)** — combines all commits into one clean commit
+- **Merge commit** — keeps all commits, adds a merge commit
+- **Rebase and merge** — replays commits on top of base
+
+Execute the merge:
 ```bash
-gh pr review <number> --approve --body "Approved by admin via approve-pr skill.
-
-Reviewed: $(gh pr diff <number> --name-only | wc -l | tr -d ' ') files
-Branch: <branch-name>"
+gh pr merge <number> --squash   # or --merge or --rebase
 ```
 
-## Step 5: Confirm result
-
-Check the review status after approval:
+After merging:
 ```bash
-gh pr view <number> --json reviewDecision --jq '.reviewDecision'
+git checkout main
+git pull origin main
 ```
 
-Print confirmation:
-- PR number approved
-- Current review status (should now show APPROVED)
-- Remind the user they can now run `/merge-pr` to merge
+Ask about branch cleanup:
 
-## Error handling
-- If the user is not an admin, explain they need admin access to self-approve
-- If GitHub rejects the approval (e.g. can't approve your own PR on some plans), explain the limitation and suggest adding a collaborator or adjusting branch protection
-- If the PR is already approved, just say so
-- If the PR is closed/merged, inform the user
+**Question: Delete the feature branch?**
+- **Yes, delete both** — remote and local cleanup
+- **No, keep it** — leave the branch
+
+Print final summary:
+- PR merged successfully
+- Merge method used
+- Branch cleanup status
+- Current branch
+
+## Step 7: Leave an admin review comment
+
+After merge, leave a comment on the PR documenting the admin review:
+```bash
+gh pr comment <number> --body "Admin self-review completed.
+
+All code review issues were verified as resolved before merge.
+Merged via admin bypass (approve-pr skill).
+
+Issues addressed:
+- <list each issue and how it was fixed>"
+```
