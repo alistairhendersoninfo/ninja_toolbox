@@ -112,6 +112,21 @@ Open a GitHub issue with:
 - Use `apt-get` not `apt` in scripts (more reliable for non-interactive use)
 - Keep scripts focused — one tool per file
 
+## Claude Code Skills
+
+This project includes [Claude Code](https://claude.com/claude-code) skills that automate the PR workflow. If you use Claude Code as your development tool, these slash commands are available:
+
+| Skill | What it does |
+|-------|-------------|
+| `/create-pr` | Scaffold a new feature branch, create files from templates, and open a draft PR |
+| `/review-tasks` | Parse code review comments from a PR and create todo tasks for each issue |
+| `/approve-pr` | Admin self-approve a specific PR (requires admin credentials) |
+| `/merge-pr` | Run pre-merge checks (reviews, CI, conflicts) and merge with strategy choice |
+
+These are defined in `.claude/skills/` and are automatically available when you open the project in Claude Code.
+
+You don't need Claude Code to contribute — the standard fork-and-PR workflow works fine. The skills just speed things up if you have it.
+
 ## Questions?
 
 Open an issue on GitHub. We're happy to help.

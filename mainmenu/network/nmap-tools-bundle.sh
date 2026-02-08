@@ -68,7 +68,7 @@ check_root() {
 # Update the installed status in this script's YAML header
 mark_installed() {
     local status="${1:-true}"
-    sed -i "s/^# installed: .*/# installed: $status/" "${BASH_SOURCE[0]}"
+    sed -i.bak "s/^# installed: .*/# installed: $status/" "${BASH_SOURCE[0]}" && rm -f "${BASH_SOURCE[0]}.bak"
     log_info "Marked script as installed=$status"
 }
 
@@ -127,6 +127,11 @@ install() {
             pipx install "git+https://github.com/Sharkeonix/nmap-unleashed.git"
             ;;
         macos)
+            if [[ $EUID -eq 0 ]]; then
+                log_error "This script cannot be run as root on macOS because Homebrew does not support it. Please run without 'sudo'."
+                exit 1
+            fi
+
             if ! command -v brew &>/dev/null; then
                 log_error "Homebrew is required. Install from https://brew.sh"
                 exit 1
@@ -181,12 +186,17 @@ uninstall() {
         debian)
             check_root
             pipx uninstall nmap-unleashed 2>/dev/null || true
-            apt-get remove -y zenmap nmap xsltproc && apt-get autoremove -y
+            apt-get remove -y zenmap nmap xsltproc pipx && apt-get autoremove -y
             ;;
         macos)
+            if [[ $EUID -eq 0 ]]; then
+                log_error "This script cannot be run as root on macOS because Homebrew does not support it. Please run without 'sudo'."
+                exit 1
+            fi
+
             pipx uninstall nmap-unleashed 2>/dev/null || true
             brew uninstall --cask zenmap 2>/dev/null || true
-            brew uninstall nmap 2>/dev/null || true
+            brew uninstall nmap pipx libxslt 2>/dev/null || true
             ;;
     esac
 
