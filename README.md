@@ -87,11 +87,21 @@ Drop a `.sh` file in any menu folder. Add a YAML header to control how it appear
 # check_command: "mytool --version"
 # tags: [utilities, custom]
 # ---
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+MENU_ROOT="${MENU_ROOT:-$(cd "$SCRIPT_DIR" && while [[ ! -f "menu.py" ]] && [[ "$PWD" != "/" ]]; do cd ..; done; pwd)}"
+source "$MENU_ROOT/.lib/platform.sh"
 
-apt-get install -y mytool
+ACTION="${1:-install}"
+if [ "$ACTION" = "install" ]; then
+    require_root
+    pkg_install mytool
+else
+    require_root
+    pkg_remove mytool
+fi
 ```
 
-That's it. Your script now appears in the menu with install status detection.
+That's it. Your script now appears in the menu with install status detection. `pkg_install` automatically uses `apt-get` on Linux and `brew` on macOS.
 
 ### Header Options
 

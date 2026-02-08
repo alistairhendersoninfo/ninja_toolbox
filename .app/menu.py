@@ -9,6 +9,7 @@ import sys
 import re
 import subprocess
 import argparse
+import platform
 from pathlib import Path
 from dataclasses import dataclass, field
 from typing import Optional, List, Dict, Any
@@ -265,8 +266,10 @@ def run_script(script_info: ScriptInfo, action: str = "install") -> int:
     script_path = script_info.path
 
     # Build command
+    # On macOS, scripts handle their own privilege checks via require_root
+    # (Homebrew refuses to run under sudo)
     cmd = []
-    if script_info.root:
+    if script_info.root and platform.system() != "Darwin":
         cmd = ["sudo"]
     cmd.extend(["bash", str(script_path), action])
 

@@ -51,28 +51,49 @@ Every script **must** include a YAML header so the menu system can discover it:
 
 *Provide either `check_command` or `check_path`.
 
-### 3. Support install and uninstall
+### 3. Source the platform library
 
-Scripts receive an action argument. Handle both:
+Every script **must** source the shared platform library for cross-platform support:
+
+```bash
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+SCRIPT_NAME="$(basename "${BASH_SOURCE[0]}" .sh)"
+MENU_ROOT="${MENU_ROOT:-$(cd "$SCRIPT_DIR" && while [[ ! -f "menu.py" ]] && [[ "$PWD" != "/" ]]; do cd ..; done; pwd)}"
+source "$MENU_ROOT/.lib/platform.sh"
+```
+
+This gives you: `pkg_install`, `pkg_remove`, `require_root`, `mark_installed`, `nt_sed_i`, and all logging functions.
+
+### 4. Support install and uninstall
+
+Scripts receive an action argument. Use `pkg_install`/`pkg_remove` for cross-platform support:
 
 ```bash
 ACTION="${1:-install}"
 if [ "$ACTION" = "install" ]; then
-    apt-get update && apt-get install -y tool-name
-    echo "tool-name installed! Run with: tool-name"
+    require_root
+    pkg_update
+    pkg_install tool-name
+    log_success "tool-name installed!"
 else
-    apt-get remove -y tool-name && apt-get autoremove -y
+    require_root
+    pkg_remove tool-name
 fi
 ```
 
-### 4. Test it
+`pkg_install` automatically uses `apt-get` on Linux and `brew` on macOS, with package name mapping for tools that differ between platforms.
+
+### 5. Test it
 
 ```bash
 # Check the header parses correctly
 ninjamenu --list
 
-# Run the install
+# Run the install (Linux)
 sudo bash mainmenu/category/your-script.sh
+
+# Run the install (macOS — no sudo)
+bash mainmenu/category/your-script.sh
 
 # Verify the check_command works
 tool-name --version
@@ -112,15 +133,30 @@ Open a GitHub issue with:
 - Use `apt-get` not `apt` in scripts (more reliable for non-interactive use)
 - Keep scripts focused — one tool per file
 
-### Cross-Platform Considerations
+### Cross-Platform Development
 
-NinjaMenu supports both Linux and macOS. When writing scripts that touch system paths or package managers:
+NinjaMenu supports both Linux and macOS. **Always use `.lib/platform.sh`** instead of calling package managers directly:
 
-- **Package installation**: Use `apt-get` for Linux, `brew` for macOS — branch on `uname -s`
-- **`sed -i`**: GNU sed (Linux) uses `sed -i`, BSD sed (macOS) needs `sed -i ''`
-- **Paths**: `/usr/bin` is SIP-protected on macOS — use `/usr/local/bin` or `/opt/homebrew/bin`
-- **Root/sudo**: Linux scripts may need root; macOS Homebrew scripts must NOT run as root
-- **Groups**: Linux default group is `$USER`, macOS default group is `staff`
+| Instead of... | Use... |
+|---------------|--------|
+| `apt-get install -y pkg` | `pkg_install pkg` |
+| `apt-get remove -y pkg` | `pkg_remove pkg` |
+| `apt-get update` | `pkg_update` |
+| `sed -i 's/.../' file` | `nt_sed_i 's/.../' file` |
+| Manual root check | `require_root` |
+| Manual `sed -i` for installed status | `mark_installed true` |
+
+**Available variables** after sourcing platform.sh:
+- `$NT_OS` — `"linux"` or `"macos"`
+- `$NT_DISTRO` — `"debian"`, `"kali"`, `"ubuntu"`, or `"macos"`
+- `$NT_ARCH` — `"x86_64"`, `"arm64"`, `"aarch64"`
+
+**For Linux-only scripts** (Proxmox, XRDP, etc.), add this guard:
+```bash
+require_linux "This tool requires Linux (Kali/Debian)"
+```
+
+**Package name differences** are handled automatically by `pkg_install`. If a package has a different name on macOS (e.g., `zenmap` needs `brew install --cask zenmap`), the mapping is defined in `.lib/platform.sh`.
 
 ## Claude Code Skills
 
