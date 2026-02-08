@@ -224,7 +224,7 @@ if [[ "$OS_TYPE" == "linux" ]]; then
     ACTUAL_HOME=$(getent passwd "$ACTUAL_USER" | cut -d: -f6)
     ACTUAL_GROUP="$ACTUAL_USER"
 elif [[ "$OS_TYPE" == "macos" ]]; then
-    ACTUAL_HOME=$(eval echo "~$ACTUAL_USER")
+    ACTUAL_HOME=$(dscl . -read /Users/"$ACTUAL_USER" NFSHomeDirectory | awk '{print $2}')
     ACTUAL_GROUP="staff"
 fi
 

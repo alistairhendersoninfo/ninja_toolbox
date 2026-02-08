@@ -17,8 +17,8 @@ Cross-platform support for `install_menu.sh` so the menu system works on both ma
 | Root check | Require sudo | Block sudo (Homebrew) |
 | Packages | apt-get | brew install |
 | Gum | Charm APT repo | brew install gum |
-| Home dir | getent passwd | eval echo ~$USER |
-| Group | $USER:$USER | $USER:staff |
+| Home dir | getent passwd | dscl . -read /Users/$ACTUAL_USER NFSHomeDirectory |
+| Group | $ACTUAL_USER:$ACTUAL_USER | $ACTUAL_USER:staff |
 | Bin path | /usr/bin | /opt/homebrew/bin or /usr/local/bin |
 | sed -i | GNU sed | BSD sed (needs -i '') |
 
