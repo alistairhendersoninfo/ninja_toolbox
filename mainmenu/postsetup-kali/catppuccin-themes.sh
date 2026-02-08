@@ -25,29 +25,12 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 SCRIPT_NAME="$(basename "${BASH_SOURCE[0]}" .sh)"
 MENU_ROOT="${MENU_ROOT:-$(cd "$SCRIPT_DIR" && while [[ ! -f "menu.py" ]] && [[ "$PWD" != "/" ]]; do cd ..; done; pwd)}"
+source "$MENU_ROOT/.lib/platform.sh"
 
 LOG_DIR="$MENU_ROOT/.docs/logs"
 mkdir -p "$LOG_DIR"
 LOG_FILE="$LOG_DIR/${SCRIPT_NAME}_$(date +%Y%m%d_%H%M%S).log"
 exec > >(tee -a "$LOG_FILE") 2>&1
-
-RED='\033[0;31m'
-GREEN='\033[0;32m'
-YELLOW='\033[1;33m'
-BLUE='\033[0;34m'
-CYAN='\033[0;36m'
-NC='\033[0m'
-
-log_info()    { echo -e "${BLUE}[INFO]${NC} $1"; }
-log_success() { echo -e "${GREEN}[SUCCESS]${NC} $1"; }
-log_warn()    { echo -e "${YELLOW}[WARN]${NC} $1"; }
-log_error()   { echo -e "${RED}[ERROR]${NC} $1"; }
-log_step()    { echo -e "${CYAN}[STEP]${NC} $1"; }
-
-mark_installed() {
-    local status="${1:-true}"
-    sed -i "s/^# installed: .*/# installed: $status/" "${BASH_SOURCE[0]}"
-}
 
 install() {
     log_info "Installing Catppuccin Themes..."
@@ -55,32 +38,36 @@ install() {
 
     # Create directories
     mkdir -p ~/.themes
-    mkdir -p ~/.local/share/xfce4/terminal/colorschemes
     mkdir -p ~/.zsh
 
     TEMP_DIR=$(mktemp -d)
     cd "$TEMP_DIR"
 
     #######################################
-    # XFCE4 Terminal themes
+    # XFCE4 Terminal themes (Linux only)
     #######################################
-    log_step "Installing XFCE4 Terminal themes..."
-    curl -sLO https://raw.githubusercontent.com/catppuccin/xfce4-terminal/main/themes/catppuccin-mocha.theme
-    curl -sLO https://raw.githubusercontent.com/catppuccin/xfce4-terminal/main/themes/catppuccin-macchiato.theme
-    curl -sLO https://raw.githubusercontent.com/catppuccin/xfce4-terminal/main/themes/catppuccin-frappe.theme
-    curl -sLO https://raw.githubusercontent.com/catppuccin/xfce4-terminal/main/themes/catppuccin-latte.theme
-    mv catppuccin-*.theme ~/.local/share/xfce4/terminal/colorschemes/
-    log_success "XFCE4 Terminal themes installed"
+    if [[ "$NT_OS" == "linux" ]]; then
+        log_step "Installing XFCE4 Terminal themes..."
+        mkdir -p ~/.local/share/xfce4/terminal/colorschemes
+        curl -sLO https://raw.githubusercontent.com/catppuccin/xfce4-terminal/main/themes/catppuccin-mocha.theme
+        curl -sLO https://raw.githubusercontent.com/catppuccin/xfce4-terminal/main/themes/catppuccin-macchiato.theme
+        curl -sLO https://raw.githubusercontent.com/catppuccin/xfce4-terminal/main/themes/catppuccin-frappe.theme
+        curl -sLO https://raw.githubusercontent.com/catppuccin/xfce4-terminal/main/themes/catppuccin-latte.theme
+        mv catppuccin-*.theme ~/.local/share/xfce4/terminal/colorschemes/
+        log_success "XFCE4 Terminal themes installed"
 
-    #######################################
-    # GTK themes
-    #######################################
-    log_step "Installing GTK themes..."
-    curl -sLO "https://github.com/catppuccin/gtk/releases/download/v1.0.3/catppuccin-mocha-blue-standard+default.zip"
-    curl -sLO "https://github.com/catppuccin/gtk/releases/download/v1.0.3/catppuccin-macchiato-blue-standard+default.zip"
-    unzip -qo "catppuccin-mocha-blue-standard+default.zip" -d ~/.themes/
-    unzip -qo "catppuccin-macchiato-blue-standard+default.zip" -d ~/.themes/
-    log_success "GTK themes installed"
+        #######################################
+        # GTK themes (Linux only)
+        #######################################
+        log_step "Installing GTK themes..."
+        curl -sLO "https://github.com/catppuccin/gtk/releases/download/v1.0.3/catppuccin-mocha-blue-standard+default.zip"
+        curl -sLO "https://github.com/catppuccin/gtk/releases/download/v1.0.3/catppuccin-macchiato-blue-standard+default.zip"
+        unzip -qo "catppuccin-mocha-blue-standard+default.zip" -d ~/.themes/
+        unzip -qo "catppuccin-macchiato-blue-standard+default.zip" -d ~/.themes/
+        log_success "GTK themes installed"
+    else
+        log_info "Skipping XFCE4/GTK themes (Linux only)"
+    fi
 
     #######################################
     # ZSH syntax highlighting themes
@@ -152,8 +139,8 @@ uninstall() {
 
     # Remove from zshrc
     if [[ -f "$HOME/.zshrc" ]]; then
-        sed -i '/catppuccin_mocha-zsh-syntax-highlighting/d' "$HOME/.zshrc"
-        sed -i '/Catppuccin Mocha theme for zsh-syntax-highlighting/d' "$HOME/.zshrc"
+        nt_sed_i '/catppuccin_mocha-zsh-syntax-highlighting/d' "$HOME/.zshrc"
+        nt_sed_i '/Catppuccin Mocha theme for zsh-syntax-highlighting/d' "$HOME/.zshrc"
     fi
 
     # VS Code extension

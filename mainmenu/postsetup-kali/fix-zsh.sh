@@ -22,27 +22,12 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 SCRIPT_NAME="$(basename "${BASH_SOURCE[0]}" .sh)"
 MENU_ROOT="${MENU_ROOT:-$(cd "$SCRIPT_DIR" && while [[ ! -f "menu.py" ]] && [[ "$PWD" != "/" ]]; do cd ..; done; pwd)}"
+source "$MENU_ROOT/.lib/platform.sh"
 
 LOG_DIR="$MENU_ROOT/.docs/logs"
 mkdir -p "$LOG_DIR"
 LOG_FILE="$LOG_DIR/${SCRIPT_NAME}_$(date +%Y%m%d_%H%M%S).log"
 exec > >(tee -a "$LOG_FILE") 2>&1
-
-RED='\033[0;31m'
-GREEN='\033[0;32m'
-YELLOW='\033[1;33m'
-BLUE='\033[0;34m'
-NC='\033[0m'
-
-log_info()    { echo -e "${BLUE}[INFO]${NC} $1"; }
-log_success() { echo -e "${GREEN}[SUCCESS]${NC} $1"; }
-log_warn()    { echo -e "${YELLOW}[WARN]${NC} $1"; }
-log_error()   { echo -e "${RED}[ERROR]${NC} $1"; }
-
-mark_installed() {
-    local status="${1:-true}"
-    sed -i "s/^# installed: .*/# installed: $status/" "${BASH_SOURCE[0]}"
-}
 
 install() {
     log_info "Fixing ZSH configuration..."
@@ -61,7 +46,7 @@ install() {
 
     # Comment out problematic undercover lines
     if grep -q ": undercover &&" "$ZSHRC"; then
-        sed -i 's/^: undercover && /# : undercover \&\& /' "$ZSHRC"
+        nt_sed_i 's/^: undercover && /# : undercover \&\& /' "$ZSHRC"
         log_success "Commented out undercover lines in .zshrc"
     else
         log_info "No undercover lines found (may already be fixed)"
@@ -86,7 +71,7 @@ uninstall() {
         log_success "Restored from backup: $BACKUP"
     else
         # Just uncomment the lines
-        sed -i 's/^# : undercover \&\& /: undercover \&\& /' "$ZSHRC"
+        nt_sed_i 's/^# : undercover \&\& /: undercover \&\& /' "$ZSHRC"
         log_success "Uncommented undercover lines"
     fi
 

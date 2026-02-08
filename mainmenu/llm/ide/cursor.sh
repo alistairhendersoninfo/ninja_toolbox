@@ -25,33 +25,17 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 SCRIPT_NAME="$(basename "${BASH_SOURCE[0]}" .sh)"
 MENU_ROOT="${MENU_ROOT:-$(cd "$SCRIPT_DIR" && while [[ ! -f "menu.py" ]] && [[ "$PWD" != "/" ]]; do cd ..; done; pwd)}"
+source "$MENU_ROOT/.lib/platform.sh"
 
 LOG_DIR="$MENU_ROOT/.docs/logs"
 mkdir -p "$LOG_DIR"
 LOG_FILE="$LOG_DIR/${SCRIPT_NAME}_$(date +%Y%m%d_%H%M%S).log"
 exec > >(tee -a "$LOG_FILE") 2>&1
 
-RED='\033[0;31m'
-GREEN='\033[0;32m'
-YELLOW='\033[1;33m'
-BLUE='\033[0;34m'
-CYAN='\033[0;36m'
-NC='\033[0m'
-
-log_info()    { echo -e "${BLUE}[INFO]${NC} $1"; }
-log_success() { echo -e "${GREEN}[SUCCESS]${NC} $1"; }
-log_warn()    { echo -e "${YELLOW}[WARN]${NC} $1"; }
-log_error()   { echo -e "${RED}[ERROR]${NC} $1"; }
-log_step()    { echo -e "${CYAN}[STEP]${NC} $1"; }
-
-mark_installed() {
-    local status="${1:-true}"
-    sed -i "s/^# installed: .*/# installed: $status/" "${BASH_SOURCE[0]}"
-}
-
 install() {
     log_info "Installing Cursor IDE..."
     log_info "Log file: $LOG_FILE"
+    require_root
 
     # Check if already installed
     if command -v cursor &>/dev/null || [[ -f /usr/bin/cursor ]] || [[ -f /opt/Cursor/cursor ]]; then
@@ -60,28 +44,34 @@ install() {
         return 0
     fi
 
-    TEMP_DIR=$(mktemp -d)
-    cd "$TEMP_DIR"
+    case "$NT_OS" in
+        linux)
+            TEMP_DIR=$(mktemp -d)
+            cd "$TEMP_DIR"
 
-    # Detect architecture
-    ARCH=$(uname -m)
-    if [[ "$ARCH" == "x86_64" ]]; then
-        DEB_URL="https://api2.cursor.sh/updates/download/golden/linux-x64-deb/cursor/2.4"
-    elif [[ "$ARCH" == "aarch64" ]]; then
-        DEB_URL="https://api2.cursor.sh/updates/download/golden/linux-arm64-deb/cursor/2.4"
-    else
-        log_error "Unsupported architecture: $ARCH"
-        exit 1
-    fi
+            if [[ "$NT_ARCH" == "x86_64" ]]; then
+                DEB_URL="https://api2.cursor.sh/updates/download/golden/linux-x64-deb/cursor/2.4"
+            elif [[ "$NT_ARCH" == "aarch64" ]]; then
+                DEB_URL="https://api2.cursor.sh/updates/download/golden/linux-arm64-deb/cursor/2.4"
+            else
+                log_error "Unsupported architecture: $NT_ARCH"
+                exit 1
+            fi
 
-    log_step "Downloading Cursor .deb package for $ARCH..."
-    curl -fsSL -o cursor.deb "$DEB_URL"
+            log_step "Downloading Cursor .deb package for $NT_ARCH..."
+            curl -fsSL -o cursor.deb "$DEB_URL"
 
-    log_step "Installing Cursor..."
-    dpkg -i cursor.deb || apt-get install -f -y
+            log_step "Installing Cursor..."
+            dpkg -i cursor.deb || apt-get install -f -y
 
-    cd ~
-    rm -rf "$TEMP_DIR"
+            cd ~
+            rm -rf "$TEMP_DIR"
+            ;;
+        macos)
+            log_step "Installing Cursor via Homebrew..."
+            brew install --cask cursor
+            ;;
+    esac
 
     if command -v cursor &>/dev/null || [[ -f /opt/Cursor/cursor ]]; then
         log_success "Cursor IDE installed successfully!"
@@ -97,13 +87,20 @@ install() {
 
 uninstall() {
     log_info "Removing Cursor IDE..."
+    require_root
 
-    apt-get remove -y cursor 2>/dev/null || dpkg -r cursor 2>/dev/null || true
+    case "$NT_OS" in
+        linux)
+            apt-get remove -y cursor 2>/dev/null || dpkg -r cursor 2>/dev/null || true
+            ;;
+        macos)
+            brew uninstall --cask cursor 2>/dev/null || true
+            ;;
+    esac
     rm -rf ~/.config/Cursor
     rm -rf ~/.cursor
 
     log_success "Cursor IDE removed"
-
     mark_installed false
 }
 

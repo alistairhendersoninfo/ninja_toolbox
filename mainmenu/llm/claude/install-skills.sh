@@ -8,15 +8,9 @@
 # tags: "llm, claude, skills, config"
 # ---
 
-RED='\033[0;31m'
-GREEN='\033[0;32m'
-YELLOW='\033[1;33m'
-BLUE='\033[0;34m'
-CYAN='\033[0;36m'
-NC='\033[0m'
-
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 MENU_ROOT="${MENU_ROOT:-$(cd "$SCRIPT_DIR" && while [[ ! -f "menu.py" ]] && [[ "$PWD" != "/" ]]; do cd ..; done; pwd)}"
+source "$MENU_ROOT/.lib/platform.sh"
 SKILLS_SOURCE="$SCRIPT_DIR/.skills"
 CONFIG_FILE="$MENU_ROOT/.configs/menusystem/settings.conf"
 
