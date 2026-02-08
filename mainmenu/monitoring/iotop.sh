@@ -8,10 +8,17 @@
 # check_command: "iotop --version"
 # tags: "monitoring, io, disk"
 # ---
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+MENU_ROOT="${MENU_ROOT:-$(cd "$SCRIPT_DIR" && while [[ ! -f "menu.py" ]] && [[ "$PWD" != "/" ]]; do cd ..; done; pwd)}"
+source "$MENU_ROOT/.lib/platform.sh"
+
 ACTION="${1:-install}"
 if [ "$ACTION" = "install" ]; then
-    apt-get update && apt-get install -y iotop
-    echo "iotop installed! Run with: sudo iotop"
+    require_root
+    pkg_update
+    pkg_install iotop
+    log_success "iotop installed!"
 else
-    apt-get remove -y iotop && apt-get autoremove -y
+    require_root
+    pkg_remove iotop
 fi

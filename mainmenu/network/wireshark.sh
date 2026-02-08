@@ -8,10 +8,17 @@
 # check_command: "wireshark --version"
 # tags: "network, packet, gui"
 # ---
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+MENU_ROOT="${MENU_ROOT:-$(cd "$SCRIPT_DIR" && while [[ ! -f "menu.py" ]] && [[ "$PWD" != "/" ]]; do cd ..; done; pwd)}"
+source "$MENU_ROOT/.lib/platform.sh"
+
 ACTION="${1:-install}"
 if [ "$ACTION" = "install" ]; then
-    apt-get update && apt-get install -y wireshark tshark
-    echo "wireshark installed! Run with: wireshark (GUI) or tshark (CLI)"
+    require_root
+    pkg_update
+    pkg_install wireshark tshark
+    log_success "wireshark installed!"
 else
-    apt-get remove -y wireshark tshark && apt-get autoremove -y
+    require_root
+    pkg_remove wireshark tshark
 fi

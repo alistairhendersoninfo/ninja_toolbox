@@ -8,10 +8,17 @@
 # check_command: "which iftop"
 # tags: "monitoring, network, bandwidth"
 # ---
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+MENU_ROOT="${MENU_ROOT:-$(cd "$SCRIPT_DIR" && while [[ ! -f "menu.py" ]] && [[ "$PWD" != "/" ]]; do cd ..; done; pwd)}"
+source "$MENU_ROOT/.lib/platform.sh"
+
 ACTION="${1:-install}"
 if [ "$ACTION" = "install" ]; then
-    apt-get update && apt-get install -y iftop
-    echo "iftop installed! Run with: sudo iftop"
+    require_root
+    pkg_update
+    pkg_install iftop
+    log_success "iftop installed!"
 else
-    apt-get remove -y iftop && apt-get autoremove -y
+    require_root
+    pkg_remove iftop
 fi

@@ -8,21 +8,31 @@
 # check_command: "nmap --version && tcpdump --version"
 # tags: "network, all, suite"
 # ---
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+MENU_ROOT="${MENU_ROOT:-$(cd "$SCRIPT_DIR" && while [[ ! -f "menu.py" ]] && [[ "$PWD" != "/" ]]; do cd ..; done; pwd)}"
+source "$MENU_ROOT/.lib/platform.sh"
+
 ACTION="${1:-install}"
-PACKAGES=(net-tools iproute2 mtr traceroute dnsutils whois nmap masscan arp-scan netdiscover tcpdump wireshark tshark ngrep iftop nethogs bmon vnstat netcat-openbsd socat telnet curl wget httpie openssl sslscan)
+PACKAGES=(net-tools mtr whois nmap masscan arp-scan netdiscover tcpdump wireshark nethogs vnstat netcat-openbsd socat curl wget httpie sslscan)
 
 if [ "$ACTION" = "install" ]; then
-    apt-get update
+    require_root
+    pkg_update
     for pkg in "${PACKAGES[@]}"; do
-        echo "Installing $pkg..."
-        apt-get install -y "$pkg" 2>/dev/null || echo "Failed: $pkg"
+        log_info "Installing $pkg..."
+        pkg_install "$pkg" 2>/dev/null || log_warn "Failed: $pkg"
     done
-    echo "All network tools installed!"
+    log_success "All network tools installed!"
 else
-    PRESERVE=(net-tools iproute2 curl wget openssl dnsutils)
+    require_root
+    PRESERVE=(net-tools curl wget)
     for pkg in "${PACKAGES[@]}"; do
-        [[ " ${PRESERVE[*]} " =~ " ${pkg} " ]] && continue
-        apt-get remove -y "$pkg" 2>/dev/null || true
+        skip=false
+        for p in "${PRESERVE[@]}"; do
+            [[ "$pkg" == "$p" ]] && skip=true && break
+        done
+        $skip && continue
+        pkg_remove "$pkg" 2>/dev/null || true
     done
-    apt-get autoremove -y
+    log_success "Network tools removed (core utilities preserved)."
 fi

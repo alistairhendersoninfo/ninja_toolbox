@@ -8,10 +8,17 @@
 # check_command: "http --version"
 # tags: "network, http, client"
 # ---
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+MENU_ROOT="${MENU_ROOT:-$(cd "$SCRIPT_DIR" && while [[ ! -f "menu.py" ]] && [[ "$PWD" != "/" ]]; do cd ..; done; pwd)}"
+source "$MENU_ROOT/.lib/platform.sh"
+
 ACTION="${1:-install}"
 if [ "$ACTION" = "install" ]; then
-    apt-get update && apt-get install -y httpie
-    echo "httpie installed! Run with: http <url>"
+    require_root
+    pkg_update
+    pkg_install httpie
+    log_success "httpie installed!"
 else
-    apt-get remove -y httpie && apt-get autoremove -y
+    require_root
+    pkg_remove httpie
 fi

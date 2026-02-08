@@ -8,10 +8,17 @@
 # check_command: "netstat --version"
 # tags: "network, legacy, utilities"
 # ---
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+MENU_ROOT="${MENU_ROOT:-$(cd "$SCRIPT_DIR" && while [[ ! -f "menu.py" ]] && [[ "$PWD" != "/" ]]; do cd ..; done; pwd)}"
+source "$MENU_ROOT/.lib/platform.sh"
+
 ACTION="${1:-install}"
 if [ "$ACTION" = "install" ]; then
-    apt-get update && apt-get install -y net-tools
-    echo "net-tools installed! Run with: netstat, ifconfig, route"
+    require_root
+    pkg_update
+    pkg_install net-tools
+    log_success "net-tools installed!"
 else
-    apt-get remove -y net-tools && apt-get autoremove -y
+    require_root
+    pkg_remove net-tools
 fi

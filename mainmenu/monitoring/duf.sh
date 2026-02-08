@@ -8,10 +8,17 @@
 # check_command: "duf --version"
 # tags: "monitoring, disk, modern"
 # ---
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+MENU_ROOT="${MENU_ROOT:-$(cd "$SCRIPT_DIR" && while [[ ! -f "menu.py" ]] && [[ "$PWD" != "/" ]]; do cd ..; done; pwd)}"
+source "$MENU_ROOT/.lib/platform.sh"
+
 ACTION="${1:-install}"
 if [ "$ACTION" = "install" ]; then
-    apt-get update && apt-get install -y duf
-    echo "duf installed! Run with: duf"
+    require_root
+    pkg_update
+    pkg_install duf
+    log_success "duf installed!"
 else
-    apt-get remove -y duf && apt-get autoremove -y
+    require_root
+    pkg_remove duf
 fi

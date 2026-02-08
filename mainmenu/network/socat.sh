@@ -8,10 +8,17 @@
 # check_command: "socat -V"
 # tags: "network, relay, multipurpose"
 # ---
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+MENU_ROOT="${MENU_ROOT:-$(cd "$SCRIPT_DIR" && while [[ ! -f "menu.py" ]] && [[ "$PWD" != "/" ]]; do cd ..; done; pwd)}"
+source "$MENU_ROOT/.lib/platform.sh"
+
 ACTION="${1:-install}"
 if [ "$ACTION" = "install" ]; then
-    apt-get update && apt-get install -y socat
-    echo "socat installed! Run with: socat"
+    require_root
+    pkg_update
+    pkg_install socat
+    log_success "socat installed!"
 else
-    apt-get remove -y socat && apt-get autoremove -y
+    require_root
+    pkg_remove socat
 fi
