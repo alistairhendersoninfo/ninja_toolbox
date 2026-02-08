@@ -168,9 +168,13 @@ Dependencies installed automatically by `install_menu.sh`:
 - python3-pip, python3-venv
 - textual, pyyaml, rich
 
+## Documentation
+
+Full documentation is available at [alistairhendersoninfo.github.io/ninja_toolbox](https://alistairhendersoninfo.github.io/ninja_toolbox/).
+
 ## Contributing
 
-Add scripts, fix bugs, suggest features. The menu rebuilds dynamically - just drop files in and go.
+Add scripts, fix bugs, suggest features. The menu rebuilds dynamically - just drop files in and go. See the [Contributing Guide](CONTRIBUTING.md) for details.
 
 ## License
 
