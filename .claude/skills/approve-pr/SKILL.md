@@ -105,10 +105,17 @@ If "Yes, merge now": proceed directly to Step 6.
 
 **If any issues are still OPEN:**
 
-Print the list of unresolved issues and STOP. Do NOT allow merge. Tell the user:
-> "There are <N> unresolved review issues. Please fix them and push before approving."
+Print the list of unresolved issues with file, line, and what needs fixing.
 
-List each unresolved issue with file, line, and what needs fixing.
+Then use AskUserQuestion to let the admin decide:
+
+**Question: There are <N> unresolved review issues. What do you want to do?**
+- **Override and merge anyway** — acknowledge open issues and merge as-is (admin override)
+- **Go back and fix** — stop here, fix the issues, push, and run approve-pr again
+
+If "Override and merge anyway": proceed to Step 6. After merging, the admin review
+comment (Step 7) MUST list the overridden issues so there is a clear record of what
+was knowingly skipped.
 
 ## Step 6: Merge (if approved)
 
