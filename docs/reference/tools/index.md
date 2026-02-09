@@ -6,6 +6,8 @@ nav_order: 2
 has_children: true
 ---
 
+<img src="{{ '/assets/images/little_tracey_ninja_14213d.png' | relative_url }}" alt="Little Tracey Ninja" style="float: right; width: 120px; margin-left: 1rem;" />
+
 # Tool Reference
 
 NinjaMenu organises 50+ installation scripts into categories. Each category is a folder under `mainmenu/` that becomes a submenu.

@@ -287,11 +287,13 @@ def run_script(script_info: ScriptInfo, action: str = "install") -> int:
     script_path = script_info.path
 
     # Build command
-    # On macOS, scripts handle their own privilege checks via require_root
-    # (Homebrew refuses to run under sudo)
+    # On macOS, install scripts handle their own privilege checks via require_root
+    # (Homebrew refuses to run under sudo). But tool scripts need sudo on macOS
+    # too — raw socket operations (nmap -sS, -f, etc.) require root everywhere.
     cmd = []
-    if script_info.root and platform.system() != "Darwin":
-        cmd = ["sudo"]
+    if script_info.root:
+        if script_info.script_type == "tool" or platform.system() != "Darwin":
+            cmd = ["sudo"]
     cmd.extend(["bash", str(script_path), action])
 
     print(f"\n{'='*50}")

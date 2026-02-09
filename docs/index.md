@@ -6,6 +6,8 @@ description: "NinjaMenu - A terminal-based menu system for Linux and macOS that 
 permalink: /
 ---
 
+<img src="{{ '/assets/images/little_tracey_ninja_14213d.png' | relative_url }}" alt="Little Tracey Ninja" style="float: right; width: 150px; margin-left: 1rem;" />
+
 # NinjaMenu
 {: .fs-9 }
 

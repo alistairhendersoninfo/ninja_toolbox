@@ -45,6 +45,12 @@ if ! command -v "$REQUIRED_BINARY" &>/dev/null; then
     exit 1
 fi
 
+# If this script requires root (root: true in YAML header), uncomment:
+# require_tool_root
+# NOTE: Use require_tool_root (not require_root) for tool scripts.
+# require_root is for package management (forbids root on macOS for Homebrew).
+# require_tool_root requires root on BOTH platforms (for raw sockets, etc.).
+
 # Setup logging
 LOG_DIR="$MENU_ROOT/.docs/logs"
 mkdir -p "$LOG_DIR"

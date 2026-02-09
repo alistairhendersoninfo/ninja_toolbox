@@ -161,7 +161,12 @@ if ! command -v "$REQUIRED_BINARY" &>/dev/null; then
     log_error "$REQUIRED_BINARY is not installed. Install it first from the menu."
     exit 1
 fi
+
+# If root: true, require privileges for raw socket access
+require_tool_root
 ```
+
+> **`require_tool_root` vs `require_root`**: Use `require_tool_root` for tool scripts that need raw socket access (nmap `-sS`, `-f`, etc.). It requires root on **both** Linux and macOS. Use `require_root` only for install scripts — it requires root on Linux but **forbids** root on macOS (Homebrew restriction). Only add `require_tool_root` if your script has `root: true`.
 
 ### 4. Write a run() function
 
@@ -226,7 +231,8 @@ NinjaMenu supports both Linux and macOS. **Always use `.lib/platform.sh`** inste
 | `apt-get remove -y pkg` | `pkg_remove pkg` |
 | `apt-get update` | `pkg_update` |
 | `sed -i 's/.../' file` | `nt_sed_i 's/.../' file` |
-| Manual root check | `require_root` |
+| Manual root check (install) | `require_root` |
+| Manual root check (tool) | `require_tool_root` |
 | Manual `sed -i` for installed status | `mark_installed true` |
 
 **Available variables** after sourcing platform.sh:

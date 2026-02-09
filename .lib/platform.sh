@@ -9,7 +9,7 @@
 # Provides:
 #   Variables: NT_OS, NT_DISTRO, NT_ARCH, NT_HOMEBREW
 #   Functions: pkg_install, pkg_remove, pkg_update, require_root,
-#              require_linux, mark_installed, nt_sed_i,
+#              require_tool_root, require_linux, mark_installed, nt_sed_i,
 #              log_info, log_success, log_warn, log_error, log_step
 #######################################
 
@@ -187,6 +187,21 @@ require_root() {
             log_error "Homebrew is required on macOS. Install from https://brew.sh"
             exit 1
         fi
+    fi
+}
+
+# require_tool_root: privilege check for tool execution (not package mgmt)
+# Unlike require_root() which forbids root on macOS (Homebrew restriction),
+# this REQUIRES root on both platforms for operations needing raw socket access.
+# Linux: asserts EUID 0 (menu.py should prepend sudo)
+# macOS: asserts EUID 0 (menu.py should prepend sudo for tool scripts)
+require_tool_root() {
+    if [[ $EUID -ne 0 ]]; then
+        log_error "This operation requires root/sudo privileges."
+        if [[ "$NT_OS" == "macos" ]]; then
+            log_info "Run with: sudo bash \"$0\""
+        fi
+        exit 1
     fi
 }
 

@@ -1,3 +1,5 @@
+<img src="https://raw.githubusercontent.com/alistairhendersoninfo/ninja_toolbox/main/docs/assets/images/little_tracey_ninja_ffffff.png" alt="Little Tracey Ninja" width="140" align="right" />
+
 # Welcome to the NinjaMenu Wiki
 
 This wiki is the **community knowledge base** for NinjaMenu. It's the place for practical tips, troubleshooting, compatibility reports, and ideas -- content that benefits from community input and evolves over time.

@@ -7,7 +7,8 @@ url: "https://alistairhendersoninfo.github.io"
 
 remote_theme: just-the-docs/just-the-docs
 
-color_scheme: dark
+color_scheme: ninjamenu
+logo: "/assets/images/toolbox_ninja_logo_transparent.png"
 
 permalink: pretty
 

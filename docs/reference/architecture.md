@@ -5,6 +5,11 @@ parent: Documentation
 nav_order: 4
 ---
 
+<div style="float: right; margin-left: 1rem; text-align: center;">
+  <img src="{{ '/assets/images/it_nerd_14213d.png' | relative_url }}" alt="IT Nerd" style="width: 110px; border-radius: 8px;" />
+  <img src="{{ '/assets/images/it_super_nerd_14213d.png' | relative_url }}" alt="IT Super Nerd" style="width: 110px; border-radius: 8px; margin-top: 0.5rem;" />
+</div>
+
 # Architecture
 
 ## Overview

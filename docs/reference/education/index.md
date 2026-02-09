@@ -5,6 +5,8 @@ parent: Documentation
 nav_order: 3
 ---
 
+<img src="{{ '/assets/images/it_super_nerd_14213d.png' | relative_url }}" alt="IT Super Nerd" style="float: right; width: 120px; margin-left: 1rem;" />
+
 # Education Scripts
 
 Education scripts are **tool usage demonstrations** that teach you how to use installed tools effectively. Unlike install scripts, they don't install anything -- they require a tool to already be present and then walk you through using it.

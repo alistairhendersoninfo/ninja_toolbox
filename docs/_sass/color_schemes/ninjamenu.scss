@@ -1,0 +1,49 @@
+// NinjaMenu custom color scheme
+// Based on the dark scheme, overridden with Prussian Blue / Orange / White palette.
+
+@import "./color_schemes/dark";
+
+// Palette
+$ninja-black:         #000000;
+$ninja-prussian-blue: #14213d;
+$ninja-orange:        #fca311;
+$ninja-alabaster:     #e5e5e5;
+$ninja-white:         #ffffff;
+
+// Derived shades
+$ninja-blue-light:    #1b2d4f;
+$ninja-blue-dark:     #0e1729;
+$ninja-orange-light:  #fdb94a;
+$ninja-orange-dark:   #e89200;
+
+// Body
+$color-scheme: dark;
+$body-background-color: $ninja-prussian-blue;
+$body-heading-color:    $ninja-white;
+$body-text-color:       $ninja-white;
+
+// Links
+$link-color: $ninja-orange;
+
+// Sidebar / Navigation
+$sidebar-color:        $ninja-prussian-blue;
+$nav-child-link-color: $ninja-alabaster;
+$feedback-color:       $ninja-blue-light;
+
+// Buttons
+$base-button-color: $ninja-blue-light;
+$btn-primary-color: $ninja-orange;
+
+// Code
+$code-background-color: $ninja-blue-dark;
+$code-linenumber-color: $ninja-alabaster;
+
+// Tables
+$table-background-color: $ninja-blue-light;
+
+// Search
+$search-background-color:     $ninja-blue-light;
+$search-result-preview-color: $ninja-alabaster;
+
+// Borders
+$border-color: lighten($ninja-prussian-blue, 15%);
