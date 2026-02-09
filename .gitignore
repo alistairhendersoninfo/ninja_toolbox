@@ -59,6 +59,7 @@ secrets.json
 .cache/
 tmp/
 temp/
+ship-this.sh
 
 # Node (if any npm packages used)
 node_modules/
