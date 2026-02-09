@@ -12,27 +12,6 @@ Behind every great toolbox, there's a team of highly trained ninja technicians. 
 ---
 
 <div style="display: flex; align-items: flex-start; gap: 1.5rem; margin-bottom: 2rem; flex-wrap: wrap;">
-  <img src="{{ '/assets/images/little_tracey_ninja_14213d.png' | relative_url }}" alt="Little Tracey Ninja" style="width: 180px; border-radius: 12px; flex-shrink: 0;" />
-  <div>
-
-## Little Tracey Ninja
-
-**Role:** Ninja Technician, First Class
-
-Little Tracey has been best friends with Big Tracey for over 30 years — a friendship forged in the ancient fires of Windows 95 setup wizards and cemented by decades of shared trauma from "This program has performed an illegal operation."
-
-Trained by masters in the dark art of IT — the sacred discipline of turning it off and on again — Little Tracey is a GUI warrior through and through. From the revolutionary Start button of Windows 95 to the bewildering tiles of Windows 8, from the Aero glass of Vista to the rounded corners of Windows 11, she has survived every reinvention Microsoft has thrown at the desktop.
-
-**Specialist skills:** Control Panel navigation (all views), right-click context menu mastery, Device Manager troubleshooting, "Have you tried restarting?" counselling, desktop shortcut organisation, and detecting which toolbar the user accidentally installed from a dodgy download.
-
-**Catchphrase:** *"Have you tried turning it off and on again?"*
-
-  </div>
-</div>
-
----
-
-<div style="display: flex; align-items: flex-start; gap: 1.5rem; margin-bottom: 2rem; flex-wrap: wrap;">
   <img src="{{ '/assets/images/big_tracey_ninja_14213d.png' | relative_url }}" alt="Big Tracey Ninja" style="width: 180px; border-radius: 12px; flex-shrink: 0;" />
   <div>
 
@@ -49,6 +28,27 @@ Married to IT Super Nerd — proving that love can blossom over a shared hatred 
 **Specialist skills:** User training and patience (legendary reserves), Group Policy wrangling, Active Directory wizardry, printer troubleshooting (the dark art no one else will touch), and translating tech jargon into plain English.
 
 **Catchphrase:** *"No, you cannot use 'password123'. Not even with a capital P."*
+
+  </div>
+</div>
+
+---
+
+<div style="display: flex; align-items: flex-start; gap: 1.5rem; margin-bottom: 2rem; flex-wrap: wrap;">
+  <img src="{{ '/assets/images/little_tracey_ninja_14213d.png' | relative_url }}" alt="Little Tracey Ninja" style="width: 180px; border-radius: 12px; flex-shrink: 0;" />
+  <div>
+
+## Little Tracey Ninja
+
+**Role:** Ninja Technician, First Class
+
+Little Tracey has been best friends with Big Tracey for over 30 years — a friendship forged in the ancient fires of Windows 95 setup wizards and cemented by decades of shared trauma from "This program has performed an illegal operation."
+
+Trained by masters in the dark art of IT — the sacred discipline of turning it off and on again — Little Tracey is a GUI warrior through and through. From the revolutionary Start button of Windows 95 to the bewildering tiles of Windows 8, from the Aero glass of Vista to the rounded corners of Windows 11, she has survived every reinvention Microsoft has thrown at the desktop.
+
+**Specialist skills:** Control Panel navigation (all views), right-click context menu mastery, Device Manager troubleshooting, "Have you tried restarting?" counselling, desktop shortcut organisation, and detecting which toolbar the user accidentally installed from a dodgy download.
+
+**Catchphrase:** *"Have you tried turning it off and on again?"*
 
   </div>
 </div>

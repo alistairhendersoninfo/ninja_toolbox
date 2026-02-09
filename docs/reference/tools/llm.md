@@ -6,6 +6,9 @@ grand_parent: Documentation
 nav_order: 3
 ---
 
+<img src="{{ '/assets/images/it_nerd_14213d.png' | relative_url }}" alt="IT Nerd" style="float: right; width: 120px; margin-left: 1rem;" />
+<img src="{{ '/assets/images/it_super_nerd_14213d.png' | relative_url }}" alt="IT Super Nerd" style="float: right; width: 110px; margin-left: 1rem; margin-top: 0.5rem;" />
+
 # LLM & AI Tools
 
 Tools for installing and using Large Language Model command-line interfaces and AI-powered IDEs.
