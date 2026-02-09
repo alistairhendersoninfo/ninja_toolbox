@@ -65,7 +65,8 @@ Each character has images prepared for every site background colour:
 | `_14213d` | Prussian Blue | **Main docs site pages** (default) |
 | `_fca311` | Orange | Header areas, callouts |
 | `_e5e5e5` | Alabaster Grey | Footer areas |
-| `_ffffff` | White | **Wiki pages**, GitHub README |
+| `_000000` | Black | **Wiki pages** (dark background) |
+| `_ffffff` | White | GitHub README, light-bg contexts |
 
 Both `.png` and `.webp` formats are available. Use `.png` in markdown (broader compatibility).
 
