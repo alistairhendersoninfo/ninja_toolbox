@@ -14,7 +14,6 @@ The site uses four illustrated characters to add personality and guide users thr
 - `docs/about.md` — About page
 - `docs/contribute.md` — Encouraging contributions (with Big Tracey)
 - `docs/reference/getting-started.md` — Guiding new users
-- `docs/reference/tools/network.md` — Network tools
 - `.wiki/Home.md` — Wiki welcome
 - `.wiki/Tips-and-Tricks.md` — Power-user tips
 
@@ -43,6 +42,8 @@ The site uses four illustrated characters to add personality and guide users thr
 - `docs/reference/architecture.md` — System internals
 - `docs/reference/education/index.md` — Education overview
 - `docs/reference/tools/monitoring.md` — Monitoring tools
+- `docs/reference/tools/network.md` — Network tools
+- `docs/reference/tools/llm.md` — LLM & AI tools (with IT Super Nerd)
 - `docs/reference/tools/git.md` — Git tools
 - `docs/reference/tools/postsetup-kali.md` — Post-setup Kali
 - `docs/reference/tools/proxmox.md` — Proxmox tools
@@ -56,6 +57,7 @@ The site uses four illustrated characters to add personality and guide users thr
 
 **Appears on:**
 - `docs/reference/architecture.md` — Deep technical content (alongside IT Nerd)
+- `docs/reference/tools/llm.md` — LLM & AI tools (with IT Nerd)
 - Education scripts and pages (nmap, network analysis, etc.)
 - `.wiki/` technical pages
 - Any page with in-depth technical walkthroughs
@@ -92,10 +94,11 @@ Both `.png` and `.webp` formats are available. Use `.png` in markdown (broader c
 | Architecture (`architecture.md`) | IT Nerd + IT Super Nerd | Deep technical content |
 | Tools Index (`tools/index.md`) | Big Tracey | Tool overview |
 | Monitoring (`tools/monitoring.md`) | IT Nerd | Infrastructure guru |
-| Network (`tools/network.md`) | Little Tracey | Hands-on network guide |
+| Network (`tools/network.md`) | IT Nerd | Network infrastructure veteran |
 | Git (`tools/git.md`) | IT Nerd | Version control veteran |
 | Post-Setup Kali (`tools/postsetup-kali.md`) | IT Nerd | System configuration expert |
 | Proxmox (`tools/proxmox.md`) | IT Nerd | Infrastructure specialist |
+| LLM & AI (`tools/llm.md`) | IT Nerd + IT Super Nerd | AI tools, old + new school |
 | Education Index (`education/index.md`) | IT Super Nerd | Educational content expert |
 | 404 Page (`404.md`) | Little Tracey | Lighthearted lost page |
 | Wiki Home | Little Tracey | Welcome to wiki |
