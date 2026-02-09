@@ -6,6 +6,8 @@ grand_parent: Documentation
 nav_order: 5
 ---
 
+<img src="{{ '/assets/images/it_nerd_14213d.png' | relative_url }}" alt="IT Nerd" style="float: right; width: 120px; margin-left: 1rem;" />
+
 # Post-Setup Kali
 
 Post-installation scripts to configure a fresh Kali Linux system with essential tools and fixes.

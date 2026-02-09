@@ -6,7 +6,7 @@ description: "About the NinjaMenu project and its goals."
 permalink: /about/
 ---
 
-<img src="{{ '/assets/images/big_tracey_ninja_14213d.png' | relative_url }}" alt="Big Tracey Ninja" style="float: right; width: 150px; margin-left: 1rem;" />
+<img src="{{ '/assets/images/little_tracey_ninja_14213d.png' | relative_url }}" alt="Little Tracey Ninja" style="float: right; width: 150px; margin-left: 1rem;" />
 
 # About NinjaMenu
 

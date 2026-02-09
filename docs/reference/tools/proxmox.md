@@ -6,6 +6,8 @@ grand_parent: Documentation
 nav_order: 6
 ---
 
+<img src="{{ '/assets/images/it_nerd_14213d.png' | relative_url }}" alt="IT Nerd" style="float: right; width: 120px; margin-left: 1rem;" />
+
 # Proxmox Tools
 
 Tools for Proxmox VE hypervisor management. These scripts are designed to run on the Proxmox host, not inside guest VMs.

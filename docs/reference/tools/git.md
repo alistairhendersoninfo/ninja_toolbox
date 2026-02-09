@@ -6,6 +6,8 @@ grand_parent: Documentation
 nav_order: 4
 ---
 
+<img src="{{ '/assets/images/it_nerd_14213d.png' | relative_url }}" alt="IT Nerd" style="float: right; width: 120px; margin-left: 1rem;" />
+
 # Git & GitHub Tools
 
 Tools for setting up and managing Git and GitHub integration, including SSH key generation, authentication, and repository management.

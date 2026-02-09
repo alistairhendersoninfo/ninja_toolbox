@@ -11,10 +11,10 @@ The site uses four illustrated characters to add personality and guide users thr
 **Personality:** Enthusiastic, hands-on ninja technician. Best friends with Big Tracey for 30+ years. Trained by masters in the dark art of IT — the ancient discipline of turning it off and on again. Specialises in the GUI world from Windows 95 through to Windows 11. Knows every Control Panel shortcut, every right-click context menu, and every "Have you tried restarting?" incantation.
 
 **Appears on:**
-- `docs/index.md` — Homepage hero
-- `docs/contribute.md` — Encouraging contributions
+- `docs/about.md` — About page
+- `docs/contribute.md` — Encouraging contributions (with Big Tracey)
 - `docs/reference/getting-started.md` — Guiding new users
-- `docs/reference/tools/index.md` — Tool reference overview
+- `docs/reference/tools/network.md` — Network tools
 - `.wiki/Home.md` — Wiki welcome
 - `.wiki/Tips-and-Tricks.md` — Power-user tips
 
@@ -25,9 +25,11 @@ The site uses four illustrated characters to add personality and guide users thr
 **Personality:** The other half of the legendary Tracey duo. 30+ years of friendship forged in the fires of blue screens and "General Protection Fault" dialogs. A ninja technician who cut her teeth on Windows 95's Start menu and never looked back. Specialist in desktop support, user training, and explaining to people why they can't use "password123" as their password.
 
 **Appears on:**
-- `docs/about.md` — Project story
+- `docs/index.md` — Homepage hero
 - `docs/contact.md` — Contact page
+- `docs/contribute.md` — Encouraging contributions (with Little Tracey)
 - `docs/reference/index.md` — Docs hub
+- `docs/reference/tools/index.md` — Tool reference overview
 - `.wiki/FAQ.md` — Community FAQ
 - `.wiki/Troubleshooting.md` — Troubleshooting guide
 
@@ -40,6 +42,10 @@ The site uses four illustrated characters to add personality and guide users thr
 **Appears on:**
 - `docs/reference/architecture.md` — System internals
 - `docs/reference/education/index.md` — Education overview
+- `docs/reference/tools/monitoring.md` — Monitoring tools
+- `docs/reference/tools/git.md` — Git tools
+- `docs/reference/tools/postsetup-kali.md` — Post-setup Kali
+- `docs/reference/tools/proxmox.md` — Proxmox tools
 - `README.md` — Root readme (optional, keep lightweight)
 
 ### IT Super Nerd (`it_super_nerd_`)
@@ -76,15 +82,20 @@ Both `.png` and `.webp` formats are available. Use `.png` in markdown (broader c
 
 | Page | Character(s) | Why |
 |------|-------------|-----|
-| Homepage (`index.md`) | Little Tracey | Welcoming, approachable |
-| About (`about.md`) | Big Tracey | Tells the project story |
+| Homepage (`index.md`) | Big Tracey | Welcoming, project face |
+| About (`about.md`) | Little Tracey | Tells the project story |
 | Contact (`contact.md`) | Big Tracey | Friendly contact point |
-| Contribute (`contribute.md`) | Little Tracey | Encouraging new contributors |
+| Contribute (`contribute.md`) | Big Tracey + Little Tracey | Both encouraging contributions |
 | Meet the Team (`meet-the-team.md`) | All four | Bio page |
 | Docs Hub (`reference/index.md`) | Big Tracey | Guides through documentation |
 | Getting Started (`getting-started.md`) | Little Tracey | Guides new users |
 | Architecture (`architecture.md`) | IT Nerd + IT Super Nerd | Deep technical content |
-| Tools Index (`tools/index.md`) | Little Tracey | Tool overview |
+| Tools Index (`tools/index.md`) | Big Tracey | Tool overview |
+| Monitoring (`tools/monitoring.md`) | IT Nerd | Infrastructure guru |
+| Network (`tools/network.md`) | Little Tracey | Hands-on network guide |
+| Git (`tools/git.md`) | IT Nerd | Version control veteran |
+| Post-Setup Kali (`tools/postsetup-kali.md`) | IT Nerd | System configuration expert |
+| Proxmox (`tools/proxmox.md`) | IT Nerd | Infrastructure specialist |
 | Education Index (`education/index.md`) | IT Super Nerd | Educational content expert |
 | 404 Page (`404.md`) | Little Tracey | Lighthearted lost page |
 | Wiki Home | Little Tracey | Welcome to wiki |

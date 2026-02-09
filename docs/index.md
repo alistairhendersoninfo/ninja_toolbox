@@ -6,13 +6,17 @@ description: "NinjaMenu - A terminal-based menu system for Linux and macOS that 
 permalink: /
 ---
 
-<img src="{{ '/assets/images/little_tracey_ninja_14213d.png' | relative_url }}" alt="Little Tracey Ninja" style="float: right; width: 150px; margin-left: 1rem;" />
+<div style="display: flex; align-items: center; gap: 1.5rem; margin-bottom: 1.5rem; flex-wrap: wrap;">
+  <div style="background-color: #fca311; border-radius: 16px; padding: 1rem; display: inline-block;">
+    <img src="{{ '/assets/images/toolbox_ninja_logo_fca311.png' | relative_url }}" alt="NinjaMenu Logo" style="width: 140px; display: block;" />
+  </div>
+  <div>
+    <h1 style="margin: 0; font-size: 2.5rem;">NinjaMenu</h1>
+    <p style="margin: 0.25rem 0 0; font-size: 1.25rem; font-weight: 300; opacity: 0.85;">Stop hunting for install commands. Start getting things done.</p>
+  </div>
+</div>
 
-# NinjaMenu
-{: .fs-9 }
-
-Stop hunting for install commands. Start getting things done.
-{: .fs-6 .fw-300 }
+<img src="{{ '/assets/images/big_tracey_ninja_14213d.png' | relative_url }}" alt="Big Tracey Ninja" style="float: right; width: 120px; margin-left: 1rem;" />
 
 [Get Started]({{ site.baseurl }}/reference/getting-started){: .btn .btn-primary .fs-5 .mb-4 .mb-md-0 .mr-2 }
 [View on GitHub](https://github.com/alistairhendersoninfo/ninja_toolbox){: .btn .fs-5 .mb-4 .mb-md-0 }

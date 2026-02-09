@@ -212,12 +212,25 @@ exec > >(tee -a "$LOG_FILE") 2>&1
 ## Git Workflow Rules
 
 - **NEVER push directly to main** — all changes must go through a Pull Request
+- Use `/ship-it` to run the full end-to-end workflow: branch, commit, push, PR, merge
 - Use `/create-pr` to scaffold a new feature branch and open a draft PR
 - Use `/review-tasks` to read code review comments and create todo tasks
 - Use `/approve-pr` to verify review issues are resolved and merge (admin only)
 - Use `/merge-pr` for standard merge workflow (non-admin or when review is already approved)
+- Use `/trigger-guardian` to test the Wiki Guardian spam detection workflow
 - Commit messages should be clear and describe the "why" not just the "what"
 - One feature/fix per branch, one branch per PR
+
+### Available Skills
+
+| Skill | Command | Description |
+|-------|---------|-------------|
+| Ship It | `/ship-it [branch] [message]` | Full workflow: branch → commit → push → PR → merge |
+| Create PR | `/create-pr [feature-name]` | Scaffold a new feature branch with draft PR |
+| Merge PR | `/merge-pr [pr-number]` | Check status and merge an existing PR |
+| Approve PR | `/approve-pr [pr-number]` | Admin self-review gate before merge |
+| Review Tasks | `/review-tasks [pr-number]` | Read PR review comments and create todo tasks |
+| Trigger Guardian | `/trigger-guardian [spam]` | Test Wiki Guardian with a clean or spam wiki edit |
 
 ## Site Characters
 

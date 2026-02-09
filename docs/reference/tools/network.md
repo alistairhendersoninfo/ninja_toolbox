@@ -6,6 +6,8 @@ grand_parent: Documentation
 nav_order: 2
 ---
 
+<img src="{{ '/assets/images/little_tracey_ninja_14213d.png' | relative_url }}" alt="Little Tracey Ninja" style="float: right; width: 120px; margin-left: 1rem;" />
+
 # Network Tools
 
 Comprehensive network analysis, scanning, and security tools.
