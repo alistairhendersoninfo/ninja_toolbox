@@ -1,10 +1,12 @@
 ---
 layout: page
 title: Contact
-nav_order: 5
+nav_order: 6
 description: "How to get in touch with the NinjaMenu team."
 permalink: /contact/
 ---
+
+<img src="{{ '/assets/images/big_tracey_ninja_14213d.png' | relative_url }}" alt="Big Tracey Ninja" style="float: right; width: 140px; margin-left: 1rem;" />
 
 # Contact
 

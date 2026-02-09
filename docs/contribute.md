@@ -6,6 +6,8 @@ description: "How and why to contribute to NinjaMenu."
 permalink: /contribute/
 ---
 
+<img src="{{ '/assets/images/little_tracey_ninja_14213d.png' | relative_url }}" alt="Little Tracey Ninja" style="float: right; width: 140px; margin-left: 1rem;" />
+
 # Contribute to NinjaMenu
 
 ## Why Contribute?

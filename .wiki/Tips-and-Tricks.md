@@ -1,3 +1,5 @@
+<img src="https://raw.githubusercontent.com/alistairhendersoninfo/ninja_toolbox/main/docs/assets/images/little_tracey_ninja_ffffff.png" alt="Little Tracey Ninja" width="120" align="right" />
+
 # Tips & Tricks
 
 Power-user tips, shell aliases, workflow ideas, and customisation advice from the community.

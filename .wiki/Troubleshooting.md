@@ -1,3 +1,5 @@
+<img src="https://raw.githubusercontent.com/alistairhendersoninfo/ninja_toolbox/main/docs/assets/images/big_tracey_ninja_ffffff.png" alt="Big Tracey Ninja" width="120" align="right" />
+
 # Troubleshooting
 
 Community-sourced fixes for common problems. For official documentation, see the [Getting Started](https://alistairhendersoninfo.github.io/ninja_toolbox/reference/getting-started) guide.

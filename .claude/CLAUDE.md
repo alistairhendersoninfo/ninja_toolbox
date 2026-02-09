@@ -219,6 +219,19 @@ exec > >(tee -a "$LOG_FILE") 2>&1
 - Commit messages should be clear and describe the "why" not just the "what"
 - One feature/fix per branch, one branch per PR
 
+## Site Characters
+
+The site uses four illustrated characters across docs, pages, and wiki. See [`.claude/characters.md`](.claude/characters.md) for full bios, personality definitions, page assignments, and image variant guide.
+
+| Character | Role | Pages |
+|-----------|------|-------|
+| **Little Tracey Ninja** | Site worker, day-to-day guides | Homepage, Getting Started, Contribute, Tools, Wiki Home, Tips |
+| **Big Tracey Ninja** | Site worker, day-to-day guides | About, Contact, Docs Hub, Wiki FAQ, Wiki Troubleshooting |
+| **IT Nerd** | Old-school infrastructure guru | Architecture, Education overview, README |
+| **IT Super Nerd** | The brains, deep technical content | Architecture, Education scripts, Wiki technical pages |
+
+Image variants exist for each background colour (`_14213d` for docs site, `_ffffff` for wiki/README).
+
 ## Code Style
 
 - Bash scripts: Use shellcheck compliance

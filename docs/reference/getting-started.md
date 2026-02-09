@@ -5,6 +5,8 @@ parent: Documentation
 nav_order: 1
 ---
 
+<img src="{{ '/assets/images/little_tracey_ninja_14213d.png' | relative_url }}" alt="Little Tracey Ninja" style="float: right; width: 120px; margin-left: 1rem;" />
+
 # Getting Started
 
 ## Installation
