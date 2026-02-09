@@ -42,7 +42,7 @@ echo "Changed files: $CHANGED_FILES"
 echo "---"
 
 # --- Spam Signal 1: Excessive URLs ---
-url_count=$(echo "$ADDED_LINES" | grep -oiE 'https?://[^ )]+' | wc -l | tr -d ' ')
+url_count=$(echo "$ADDED_LINES" | { grep -oiE 'https?://[^ )]+' || true; } | wc -l | tr -d ' ')
 if [ "$url_count" -gt 5 ]; then
     spam_score=$((spam_score + 2))
     reasons+=("Excessive URLs: $url_count links added in one edit")
@@ -51,7 +51,7 @@ fi
 
 # --- Spam Signal 2: Known spam domain patterns ---
 spam_domains="(crypto|bitcoin|ethereum|casino|gambling|poker|slot|pharma|viagra|cialis|dating|singles|onlyfans|buy-now|free-money|earn-money|click-here|bit\.ly/[a-z0-9]{4,})"
-spam_domain_hits=$(echo "$ADDED_LINES" | grep -oiE "$spam_domains" | wc -l | tr -d ' ')
+spam_domain_hits=$(echo "$ADDED_LINES" | { grep -oiE "$spam_domains" || true; } | wc -l | tr -d ' ')
 if [ "$spam_domain_hits" -gt 0 ]; then
     spam_score=$((spam_score + 3))
     reasons+=("Spam keywords detected: $spam_domain_hits matches for known spam patterns")
@@ -59,7 +59,7 @@ if [ "$spam_domain_hits" -gt 0 ]; then
 fi
 
 # --- Spam Signal 3: Large content deletion (vandalism) ---
-deleted_lines=$(echo "$DIFF" | grep '^-[^-]' | wc -l | tr -d ' ')
+deleted_lines=$(echo "$DIFF" | { grep '^-[^-]' || true; } | wc -l | tr -d ' ')
 added_lines_count=$(echo "$ADDED_LINES" | wc -l | tr -d ' ')
 if [ "$deleted_lines" -gt 20 ] && [ "$added_lines_count" -lt 5 ]; then
     spam_score=$((spam_score + 3))
