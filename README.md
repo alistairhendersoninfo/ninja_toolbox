@@ -170,7 +170,11 @@ Dependencies installed automatically by `install_menu.sh`:
 
 ## Documentation
 
-Full documentation is available at [alistairhendersoninfo.github.io/ninja_toolbox](https://alistairhendersoninfo.github.io/ninja_toolbox/).
+| Resource | Description |
+|----------|-------------|
+| [Documentation Site](https://alistairhendersoninfo.github.io/ninja_toolbox/) | Getting started, tool reference, architecture |
+| [Wiki](https://github.com/alistairhendersoninfo/ninja_toolbox/wiki) | Community FAQ, troubleshooting, tips & tricks |
+| [Meet the Team](https://alistairhendersoninfo.github.io/ninja_toolbox/meet-the-team/) | The ninja technicians behind NinjaMenu |
 
 ## Contributing
 

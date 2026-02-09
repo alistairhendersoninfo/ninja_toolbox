@@ -1,4 +1,4 @@
-<img src="https://raw.githubusercontent.com/alistairhendersoninfo/ninja_toolbox/main/docs/assets/images/big_tracey_ninja_ffffff.png" alt="Big Tracey Ninja" width="120" align="right" />
+<img src="https://raw.githubusercontent.com/alistairhendersoninfo/ninja_toolbox/main/docs/assets/images/big_tracey_ninja_000000.png" alt="Big Tracey Ninja" width="120" align="right" />
 
 # Frequently Asked Questions
 
