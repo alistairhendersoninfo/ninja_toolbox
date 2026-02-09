@@ -1,0 +1,297 @@
+// NinjaMenu custom CSS overrides
+
+// CSS Custom Properties
+:root {
+  --ninja-black:         #000000;
+  --ninja-prussian-blue: #14213d;
+  --ninja-orange:        #fca311;
+  --ninja-alabaster:     #e5e5e5;
+  --ninja-white:         #ffffff;
+  --ninja-blue-light:    #1b2d4f;
+  --ninja-blue-dark:     #0e1729;
+  --ninja-orange-light:  #fdb94a;
+  --ninja-orange-dark:   #e89200;
+}
+
+// ── Header (Orange) ──────────────────────────────────────────
+.site-header {
+  background-color: var(--ninja-orange);
+  border-bottom: 2px solid var(--ninja-orange-dark);
+
+  .site-title {
+    color: var(--ninja-prussian-blue) !important;
+    font-weight: 700;
+
+    &:hover {
+      color: var(--ninja-black) !important;
+    }
+  }
+}
+
+.site-logo {
+  max-height: 2.5rem;
+  width: auto;
+}
+
+.aux-nav .aux-nav-list-item a {
+  color: var(--ninja-prussian-blue);
+  font-weight: 600;
+
+  &:hover {
+    color: var(--ninja-black);
+  }
+}
+
+// ── Footer (Alabaster Grey) ──────────────────────────────────
+.site-footer {
+  background-color: var(--ninja-alabaster);
+  color: var(--ninja-prussian-blue);
+  border-top: 2px solid darken(#e5e5e5, 10%);
+  padding: 1rem;
+
+  a {
+    color: var(--ninja-prussian-blue);
+    text-decoration: underline;
+
+    &:hover {
+      color: var(--ninja-orange);
+    }
+  }
+
+  .last-edit {
+    color: rgba(20, 33, 61, 0.7);
+  }
+}
+
+// ── Sidebar Navigation ───────────────────────────────────────
+.side-bar {
+  background-color: var(--ninja-prussian-blue);
+  border-right: 1px solid var(--ninja-blue-light);
+}
+
+.nav-list-link {
+  color: var(--ninja-orange) !important;
+
+  &:hover,
+  &:focus {
+    color: var(--ninja-orange-light) !important;
+    background-color: var(--ninja-blue-light);
+  }
+
+  &.active {
+    color: var(--ninja-white) !important;
+    background-color: var(--ninja-blue-light);
+    font-weight: 700;
+    border-left: 3px solid var(--ninja-orange);
+  }
+}
+
+.nav-list-item .nav-list-item .nav-list-link {
+  color: var(--ninja-alabaster) !important;
+
+  &:hover,
+  &:focus {
+    color: var(--ninja-white) !important;
+  }
+
+  &.active {
+    color: var(--ninja-white) !important;
+    border-left: 3px solid var(--ninja-orange);
+  }
+}
+
+.nav-list-expander {
+  color: var(--ninja-orange) !important;
+}
+
+// ── Search ───────────────────────────────────────────────────
+.search-input {
+  background-color: var(--ninja-blue-light);
+  color: var(--ninja-white);
+  border: 1px solid rgba(252, 163, 17, 0.3);
+
+  &::placeholder {
+    color: rgba(255, 255, 255, 0.5);
+  }
+
+  &:focus {
+    border-color: var(--ninja-orange);
+    box-shadow: 0 0 0 2px rgba(252, 163, 17, 0.2);
+  }
+}
+
+.search-label .search-icon {
+  color: var(--ninja-orange);
+}
+
+.search-results {
+  background-color: var(--ninja-prussian-blue);
+  border: 1px solid var(--ninja-blue-light);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+
+  .search-result:hover {
+    background-color: var(--ninja-blue-light);
+  }
+
+  .search-result-title {
+    color: var(--ninja-orange);
+  }
+
+  .search-result-doc-title,
+  .search-result-rel-url {
+    color: var(--ninja-alabaster);
+  }
+
+  .search-result-preview {
+    color: var(--ninja-white);
+  }
+}
+
+// ── Buttons ──────────────────────────────────────────────────
+.btn-primary {
+  background-color: var(--ninja-orange) !important;
+  color: var(--ninja-prussian-blue) !important;
+  font-weight: 700;
+
+  &:hover {
+    background-color: var(--ninja-orange-light) !important;
+  }
+
+  &:active {
+    background-color: var(--ninja-orange-dark) !important;
+  }
+}
+
+.btn {
+  color: var(--ninja-white);
+  border-color: var(--ninja-orange);
+
+  &:hover {
+    background-color: var(--ninja-blue-light);
+    color: var(--ninja-orange);
+  }
+}
+
+// ── Code ─────────────────────────────────────────────────────
+code {
+  background-color: var(--ninja-blue-dark);
+  color: var(--ninja-orange-light);
+  border-radius: 3px;
+  padding: 0.1em 0.3em;
+}
+
+.highlight,
+pre.highlight {
+  background-color: var(--ninja-blue-dark);
+  border: 1px solid var(--ninja-blue-light);
+  border-radius: 4px;
+
+  code {
+    background-color: transparent;
+    color: var(--ninja-white);
+    padding: 0;
+  }
+}
+
+// ── Tables ───────────────────────────────────────────────────
+.table-wrapper {
+  border: 1px solid var(--ninja-blue-light);
+  border-radius: 4px;
+
+  th {
+    background-color: var(--ninja-blue-dark) !important;
+    color: var(--ninja-orange);
+    border-color: var(--ninja-blue-light);
+    font-weight: 700;
+  }
+
+  td {
+    background-color: var(--ninja-blue-light) !important;
+    color: var(--ninja-white);
+    border-color: rgba(27, 45, 79, 0.8);
+  }
+
+  tr:nth-child(even) td {
+    background-color: rgba(27, 45, 79, 0.6) !important;
+  }
+}
+
+// ── Headings ─────────────────────────────────────────────────
+h1 {
+  color: var(--ninja-orange);
+}
+
+h2, h3, h4, h5, h6 {
+  color: var(--ninja-white);
+}
+
+// ── Callouts ─────────────────────────────────────────────────
+.warning,
+.note,
+.tip {
+  background-color: var(--ninja-blue-dark);
+  color: var(--ninja-white);
+}
+
+// ── Blockquotes ──────────────────────────────────────────────
+blockquote {
+  border-left-color: var(--ninja-orange);
+  color: var(--ninja-alabaster);
+}
+
+// ── Horizontal Rules ─────────────────────────────────────────
+hr {
+  border-color: var(--ninja-blue-light);
+}
+
+// ── Selection ────────────────────────────────────────────────
+::selection {
+  background-color: var(--ninja-orange);
+  color: var(--ninja-prussian-blue);
+}
+
+// ── Scrollbar (Webkit) ───────────────────────────────────────
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--ninja-prussian-blue);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--ninja-blue-light);
+  border-radius: 4px;
+
+  &:hover {
+    background: var(--ninja-orange);
+  }
+}
+
+// ── Back to Top ──────────────────────────────────────────────
+.top {
+  background-color: var(--ninja-orange);
+  color: var(--ninja-prussian-blue);
+
+  &:hover {
+    background-color: var(--ninja-orange-light);
+  }
+}
+
+// ── Breadcrumbs ──────────────────────────────────────────────
+.breadcrumb-nav-list-item {
+  color: var(--ninja-alabaster);
+
+  a {
+    color: var(--ninja-orange);
+
+    &:hover {
+      color: var(--ninja-orange-light);
+    }
+  }
+}
+
+// ── Mobile Menu Button ───────────────────────────────────────
+.site-button {
+  color: var(--ninja-prussian-blue);
+}
