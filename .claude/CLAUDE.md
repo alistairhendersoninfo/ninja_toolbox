@@ -238,12 +238,33 @@ The site uses four illustrated characters across docs, pages, and wiki. See [`.c
 
 | Character | Role | Pages |
 |-----------|------|-------|
-| **Little Tracey Ninja** | Site worker, day-to-day guides | Homepage, Getting Started, Contribute, Tools, Wiki Home, Tips |
-| **Big Tracey Ninja** | Site worker, day-to-day guides | About, Contact, Docs Hub, Wiki FAQ, Wiki Troubleshooting |
-| **IT Nerd** | Old-school infrastructure guru | Architecture, Education overview, README |
-| **IT Super Nerd** | The brains, deep technical content | Architecture, Education scripts, Wiki technical pages |
+| **Little Tracey Ninja** | Site worker, day-to-day guides | About, Contribute, Getting Started, Wiki Home, Wiki Tips |
+| **Big Tracey Ninja** | Site worker, day-to-day guides | Homepage, Contact, Contribute, Docs Hub, Tools Index, Wiki FAQ, Wiki Troubleshooting |
+| **IT Nerd** | Old-school infrastructure guru | Architecture, Education, Monitoring, Network, LLM, Git, Postsetup-Kali, Proxmox, README |
+| **IT Super Nerd** | The brains, deep technical content | Architecture, LLM, Education scripts, Wiki technical pages |
 
-Image variants exist for each background colour (`_14213d` for docs site, `_ffffff` for wiki/README).
+Image variants exist for each background colour:
+- `_14213d` (Prussian Blue) — docs site pages
+- `_000000` (Black) — wiki pages
+- `_ffffff` (White) — GitHub README
+
+## Brand Colour Palette
+
+| Name | Hex | Role |
+|------|-----|------|
+| Black | `#000000` | Accents, deep backgrounds, wiki bg |
+| Prussian Blue | `#14213d` | Site background |
+| Orange | `#fca311` | Header, links, buttons, accents |
+| Alabaster Grey | `#e5e5e5` | Footer |
+| White | `#ffffff` | All text |
+
+## GitHub Pages & Wiki
+
+- **Pages site:** `docs/` directory, Jekyll with `just-the-docs` remote theme, custom `ninjamenu` colour scheme
+- **Wiki:** `.wiki/` directory (synced to `*.wiki.git` repo separately)
+- **Wiki Guardian:** `.github/scripts/wiki-guardian.sh` — automated spam detection on gollum events
+- **Favicon:** `docs/assets/images/favicon.ico` wired via `docs/_includes/head_custom.html`
+- **Image assets:** `docs/assets/images/` — 60+ variants (5 subjects x 6 backgrounds x 2 formats)
 
 ## Code Style
 

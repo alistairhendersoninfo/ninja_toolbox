@@ -1,4 +1,12 @@
+<p align="center">
+  <img src="docs/assets/images/toolbox_ninja_logo_000000.png" alt="NinjaMenu Logo" width="180" />
+</p>
+
 # NinjaMenu
+
+[![Pages](https://img.shields.io/badge/Pages_Site-17_pages-fca311?style=for-the-badge&logo=github&logoColor=white)](https://alistairhendersoninfo.github.io/ninja_toolbox/)
+[![Wiki](https://img.shields.io/badge/Wiki-9_pages-14213d?style=for-the-badge&logo=github&logoColor=white)](https://github.com/alistairhendersoninfo/ninja_toolbox/wiki)
+[![Scripts](https://img.shields.io/badge/Scripts-75+-e5e5e5?style=for-the-badge&logo=gnubash&logoColor=000000)](https://alistairhendersoninfo.github.io/ninja_toolbox/reference/tools/)
 
 **Stop hunting for install commands. Start getting things done.**
 
