@@ -6,6 +6,8 @@ grand_parent: Documentation
 nav_order: 1
 ---
 
+<img src="{{ '/assets/images/it_nerd_14213d.png' | relative_url }}" alt="IT Nerd" style="float: right; width: 120px; margin-left: 1rem;" />
+
 # Monitoring Tools
 
 System monitoring tools for tracking performance, processes, I/O, and resource usage.
