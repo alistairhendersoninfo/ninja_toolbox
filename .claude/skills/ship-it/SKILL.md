@@ -18,47 +18,32 @@ If `$ARGUMENTS` is empty or incomplete, use AskUserQuestion to ask ONE question 
 
 ## Execution
 
-Run these commands in sequence. If any step fails, stop and report the error.
+Run the ship-it script. It handles the full lifecycle: sync main, create branch, stage, commit, push, PR, merge, cleanup.
 
-### Step 1: Sync main
 ```bash
-git checkout main
-git pull origin main
+.claude/scripts/ship-it.sh <branch-name> <commit-message>
 ```
 
-### Step 2: Create branch
-```bash
-git checkout -b <branch-name>
-```
-If the branch already exists, delete it first: `git branch -D <branch-name>` then retry.
+The script:
+1. Syncs main (`git checkout main && git pull`)
+2. Creates the branch (deletes existing if needed)
+3. Stages all changes (`git add -A`)
+4. Commits with message and co-author line
+5. Pushes and creates a PR with auto-generated body
+6. Detects admin permissions and merges (squash + delete branch)
+7. Returns to main and pulls
 
-### Step 3: Stage and commit
-```bash
-git add -A
-git reset HEAD -- ship-this.sh 2>/dev/null || true
-git commit -m "<commit-message>
+## Error handling
 
-Co-Authored-By: Claude Opus 4.6 <noreply@anthropic.com>"
-```
-If nothing to commit, STOP: "Nothing to ship — working tree is clean."
+If the script fails:
+1. Read the error output — it explains what went wrong
+2. If it's a fixable issue (e.g. auth, conflicts), fix it and re-run the script
+3. If the script itself has a bug, edit `.claude/scripts/ship-it.sh`, fix it, and re-run
+4. The script is self-contained — no hidden state or side effects between runs
 
-### Step 4: Push and create PR
-```bash
-git push -u origin <branch-name>
-gh pr create --title "<commit-message>" --body "## Summary
-$(git diff main --stat | head -20)
+## Print summary
 
-Generated with [Claude Code](https://claude.com/claude-code)"
-```
-
-### Step 5: Merge
-```bash
-gh pr merge --squash --delete-branch --admin
-git checkout main
-git pull origin main
-```
-
-### Step 6: Print summary
+After the script completes successfully, confirm:
 ```
 Shipped! PR merged to main.
 ```
