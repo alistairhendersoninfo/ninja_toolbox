@@ -231,7 +231,7 @@ exec > >(tee -a "$LOG_FILE") 2>&1
 | Approve PR | `/approve-pr [pr-number]` | Admin self-review gate before merge |
 | Review Tasks | `/review-tasks [pr-number]` | Read PR review comments and create todo tasks |
 | Trigger Guardian | `/trigger-guardian [spam]` | Test Wiki Guardian with a clean or spam wiki edit |
-| PR Status | `/pr-status [pr-number]` | Show open PRs summary or detailed view of a specific PR |
+| PR Status | `/pr-status [number \| issue number]` | Show open PRs and issues, or detail view of a specific PR/issue |
 
 ## Site Characters
 
