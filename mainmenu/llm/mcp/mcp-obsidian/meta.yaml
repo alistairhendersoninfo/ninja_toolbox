@@ -1,0 +1,19 @@
+name: "MCP Obsidian Server"
+description: "MCP server for AI access to Obsidian vaults (read/write/search notes)"
+version: "1.0.0"
+author: "bitbonsai (Mauricio Wolff)"
+type: install
+root: false
+order: 10
+hidden: false
+check_command: "npx @mauricio.wolff/mcp-obsidian@latest --help"
+dependencies:
+  - node
+tags:
+  - llm
+  - mcp
+  - obsidian
+  - ai
+  - notes
+supported_os:
+  - macos
