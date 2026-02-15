@@ -18,3 +18,4 @@ Technical reference for all tools, scripts, and the menu system itself.
 - **[Tool Reference]({{ site.baseurl }}/reference/tools/)** -- All 50+ scripts by category
 - **[Education]({{ site.baseurl }}/reference/education/)** -- Learning to use the tools
 - **[Architecture]({{ site.baseurl }}/reference/architecture)** -- How the system works under the hood
+- **[Script Architecture]({{ site.baseurl }}/reference/script-architecture)** -- OS-modular script structure and contributing guide
