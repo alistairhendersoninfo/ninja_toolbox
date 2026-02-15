@@ -6,9 +6,23 @@ MCP servers extend AI assistants (Claude Desktop, Claude Code, etc.) with access
 
 ## Available Scripts
 
-| Script | Description | OS |
+| Action | Description | OS |
 |--------|-------------|----|
-| [mcp-obsidian.sh](mcp-obsidian.sh) | MCP server for Obsidian vault access (read/write/search notes) | macOS |
+| [mcp-obsidian/](mcp-obsidian/) | MCP server for Obsidian vault access (read/write/search notes) | macOS |
+
+## Folder Structure
+
+Each MCP server follows the modular OS-specific structure:
+
+```
+mcp-obsidian/
+├── meta.yaml        # Metadata (name, description, supported OS)
+├── _common.sh       # Shared logic (node checks, Claude Code config)
+├── macos.sh         # macOS implementation
+└── README.md        # Action-level docs
+```
+
+See [CONTRIBUTING.md](../../CONTRIBUTING.md) for how to add new MCP servers or OS support.
 
 ## Prerequisites
 
