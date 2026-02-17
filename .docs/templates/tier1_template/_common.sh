@@ -3,7 +3,7 @@
 # Do NOT add YAML headers here (metadata lives in meta.yaml).
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-MENU_ROOT="${MENU_ROOT:-$(cd "$SCRIPT_DIR" && while [[ ! -f "menu.py" ]] && [[ "$PWD" != "/" ]]; do cd ..; done; pwd)}"
+MENU_ROOT="${MENU_ROOT:-$(cd "$SCRIPT_DIR" && while [[ ! -f "install_menu.sh" ]] && [[ "$PWD" != "/" ]]; do cd ..; done; pwd)}"
 
 # Source platform detection (provides log_info, log_error, log_success, pkg_install, etc.)
 source "$MENU_ROOT/.lib/platform.sh"

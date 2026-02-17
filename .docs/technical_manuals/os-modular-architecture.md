@@ -142,7 +142,7 @@ Shared logic sourced by every OS script. Sources `platform.sh` for logging and c
 # Do NOT add YAML headers here (use meta.yaml)
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-MENU_ROOT="${MENU_ROOT:-$(cd "$SCRIPT_DIR" && while [[ ! -f "menu.py" ]] && [[ "$PWD" != "/" ]]; do cd ..; done; pwd)}"
+MENU_ROOT="${MENU_ROOT:-$(cd "$SCRIPT_DIR" && while [[ ! -f "install_menu.sh" ]] && [[ "$PWD" != "/" ]]; do cd ..; done; pwd)}"
 
 # Source platform detection (provides log_info, log_error, log_success, etc.)
 source "$MENU_ROOT/.lib/platform.sh"
