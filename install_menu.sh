@@ -133,8 +133,8 @@ elif [[ "$OS_TYPE" == "macos" ]]; then
     brew update --quiet
 
     # python3 includes pip and venv on macOS
-    # whiptail not available via Homebrew; gum is the primary TUI
-    brew install python3 dialog jq curl wget git unzip tree
+    # newt provides whiptail on macOS
+    brew install python3 dialog newt jq curl wget git unzip tree
 fi
 
 log_success "System packages installed"
@@ -309,11 +309,7 @@ echo -e "${GREEN}Installed components:${NC}"
 echo "  - Python 3 with venv"
 echo "  - Textual TUI framework"
 echo "  - Gum (Charm.sh) for beautiful prompts"
-if [[ "$OS_TYPE" == "linux" ]]; then
-    echo "  - whiptail/dialog fallback"
-else
-    echo "  - dialog fallback"
-fi
+echo "  - whiptail/dialog fallback"
 echo "  - PyYAML, Rich, Typer"
 echo "  - SQLite menu cache"
 echo "  - ninjamenu command ($BIN_DIR/ninjamenu)"
