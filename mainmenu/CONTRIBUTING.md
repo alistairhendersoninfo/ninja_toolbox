@@ -158,6 +158,18 @@ supported_os:
 7. **Log everything** using `log_info`, `log_error`, `log_success` from `platform.sh`
 8. **Use `mark_installed true/false`** after install/uninstall
 
+## Cross-Referencing with Aliases
+
+To show a script in multiple menu locations, add `aliases` to its metadata:
+
+```yaml
+# llm/mcp/mcp-obsidian/meta.yaml
+aliases:
+  - "editors/obsidian"
+```
+
+This makes the script appear under both `LLM → MCP` (its real location) and `Editors → Obsidian` (the alias target). The alias path is relative to `mainmenu/`. The script's actual files stay in one place — only display is duplicated.
+
 ## Checklist
 
 - [ ] Metadata file (`meta.yaml` or `.meta.yaml`) with all required fields

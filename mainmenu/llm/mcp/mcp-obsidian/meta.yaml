@@ -15,5 +15,7 @@ tags:
   - obsidian
   - ai
   - notes
+aliases:
+  - "editors/obsidian"
 supported_os:
   - macos

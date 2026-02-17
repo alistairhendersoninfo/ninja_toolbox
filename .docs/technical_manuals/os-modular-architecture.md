@@ -131,6 +131,7 @@ supported_os:
 | dependencies | array | No | Required system packages |
 | tags | array | No | Categorisation tags |
 | supported_os | array | Yes | Which OSes this script supports |
+| aliases | array | No | Additional menu paths where this script appears (relative to `mainmenu/`) |
 
 ## _common.sh Template (Tier 1)
 

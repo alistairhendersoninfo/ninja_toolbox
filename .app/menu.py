@@ -201,6 +201,7 @@ class ScriptInfo:
     binary_available: bool = True  # Set at runtime after checking binary exists
     supported_os: List[str] = field(default_factory=list)  # e.g. ["macos", "kali", "debian", "ubuntu"]
     is_modular_folder: bool = False  # True if script lives in a Tier 1 modular folder
+    aliases: List[str] = field(default_factory=list)  # Cross-reference paths relative to mainmenu/
 
 
 @dataclass
@@ -294,6 +295,7 @@ def parse_meta_yaml(meta_path: Path, script_path: Path) -> Optional[ScriptInfo]:
             script_type=data.get('type', 'install'),
             binary=data.get('binary', ''),
             supported_os=data.get('supported_os', []),
+            aliases=data.get('aliases', []),
         )
         info.installed = check_if_installed(info)
         if info.binary:
@@ -394,9 +396,74 @@ def scan_menu_directory(directory: Path) -> List[MenuItem]:
                     order=script_info.order
                 ))
 
+    # Inject aliased scripts that target this directory
+    try:
+        rel_dir = directory.relative_to(MAIN_MENU_DIR)
+        alias_key = str(rel_dir) if str(rel_dir) != "." else "."
+    except ValueError:
+        alias_key = None
+    if alias_key and alias_key in _ALIAS_REGISTRY:
+        for alias_item in _ALIAS_REGISTRY[alias_key]:
+            items.append(alias_item)
+
     # Sort by order, then by name
     items.sort(key=lambda x: (0 if x.is_submenu else 1, x.order, x.name))
     return items
+
+
+# Global alias registry: maps target path (relative to mainmenu/) to list of MenuItems
+_ALIAS_REGISTRY: Dict[str, List[MenuItem]] = {}
+
+
+def build_alias_registry(directory: Path = MAIN_MENU_DIR) -> None:
+    """Recursively scan the menu tree and register all aliased scripts."""
+    _ALIAS_REGISTRY.clear()
+    _collect_aliases(directory)
+
+
+def _collect_aliases(directory: Path) -> None:
+    """Recursively collect scripts with aliases into the global registry."""
+    if not directory.exists():
+        return
+
+    for entry in directory.iterdir():
+        if entry.name.startswith('.') or entry.name.startswith('_'):
+            continue
+
+        if entry.is_dir():
+            if _is_modular_folder(entry):
+                meta_path = entry / "meta.yaml"
+                script_path = _resolve_modular_script(entry)
+                if script_path is None:
+                    continue
+                script_info = parse_meta_yaml(meta_path, script_path)
+                if script_info and script_info.aliases:
+                    _register_aliases(script_info, entry)
+            else:
+                _collect_aliases(entry)
+        elif entry.suffix == '.sh':
+            sibling_meta = entry.parent / f"{entry.stem}.meta.yaml"
+            if sibling_meta.exists():
+                script_info = parse_meta_yaml(sibling_meta, entry)
+            else:
+                script_info = parse_yaml_header(entry)
+            if script_info and script_info.aliases:
+                _register_aliases(script_info, entry)
+
+
+def _register_aliases(script_info: ScriptInfo, source_path: Path) -> None:
+    """Register a script's aliases in the global registry."""
+    for alias in script_info.aliases:
+        alias_key = alias.strip("/")
+        if alias_key not in _ALIAS_REGISTRY:
+            _ALIAS_REGISTRY[alias_key] = []
+        _ALIAS_REGISTRY[alias_key].append(MenuItem(
+            name=script_info.name,
+            path=source_path,
+            is_submenu=False,
+            script_info=script_info,
+            order=script_info.order,
+        ))
 
 
 def _reparse_script_info(script_info: ScriptInfo) -> Optional[ScriptInfo]:
@@ -1221,6 +1288,9 @@ def main():
 
     # Ensure log directory exists
     LOG_DIR.mkdir(parents=True, exist_ok=True)
+
+    # Build alias registry (cross-references between menu locations)
+    build_alias_registry()
 
     if args.list:
         print("\n📋 NinjaMenu - Available Scripts:\n")
