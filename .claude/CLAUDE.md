@@ -34,62 +34,64 @@ menu-installer/
 
 ### Menu Generation Rules
 
-1. **Folders** = Menu/Submenu names (display name from folder name, titlecased)
-2. **Scripts (.sh)** = Menu items (name from YAML header)
-3. **Dot-prefixed** = Hidden from menu (`.configs`, `.docs`, etc.)
-4. **YAML Headers** = Script metadata for menu display and execution
+1. **Folders with `meta.yaml`** = Tier 1 modular scripts (OS-specific, resolved per platform)
+2. **Scripts (.sh) with sibling `.meta.yaml`** = Tier 2 scripts (OS-agnostic, most common)
+3. **Scripts (.sh) with inline `# ---` header** = Tier 3 legacy (deprecated, still parsed)
+4. **Folders without `meta.yaml`** = Submenus (display name from folder name, titlecased)
+5. **Dot-prefixed** = Hidden from menu (`.configs`, `.docs`, etc.)
+6. **Underscore-prefixed** (`_common.sh`) = Hidden from menu
 
-## Script YAML Header Format
+## Script Metadata System
 
-All executable scripts must have a YAML header:
+Scripts use **externalised YAML metadata** — not inline headers. There are three tiers:
 
-```bash
-#!/bin/bash
-# ---
-# name: "Human Readable Name"
-# description: "What this script does"
-# version: "1.0.0"
-# author: "Author Name"
-# type: install
-# root: true|false
-# order: 10
-# hidden: false
-# installed: false
-# check_command: "myapp --version"
-# check_path: "/usr/bin/myapp"
-# uninstall: "path/to/uninstall_script.sh"  # Optional
-# dependencies:
-#   - package1
-#   - package2
-# tags:
-#   - category1
-#   - category2
-# ---
+| Tier | Structure | When to Use |
+|------|-----------|-------------|
+| **Tier 1** — Modular folder | `<tool>/meta.yaml` + `_common.sh` + `macos.sh`, `linux.sh` | Different code per OS (10 scripts) |
+| **Tier 2** — Sibling `.meta.yaml` | `<tool>.sh` + `<tool>.meta.yaml` | Uses `pkg_install`/`pkg_remove` from platform.sh (71 scripts) |
+| **Tier 3** — Inline YAML header | `# --- ... # ---` inside `.sh` | **Deprecated.** Do not use for new scripts |
+
+### Tier 2 Example (most common)
+
+```yaml
+# htop.meta.yaml
+name: "htop"
+description: "Interactive process viewer with color display"
+type: install
+root: true
+order: 10
+installed: false
+check_command: "htop --version"
+tags:
+  - monitoring
+  - process
+supported_os:
+  - macos
+  - kali
+  - debian
+  - ubuntu
 ```
 
-### Header Fields
+### Required Metadata Fields
 
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
 | name | string | Yes | Display name in menu |
 | description | string | Yes | Brief description shown in menu |
-| version | string | No | Script version |
-| author | string | No | Script author |
-| type | string | No | `install` (Install/Uninstall) or `config` (Run only) |
+| type | string | Yes | `install`, `config`, or `tool` |
 | root | boolean | Yes | Requires sudo/root privileges |
 | order | integer | Yes | Sort order in menu (lower = higher) |
-| hidden | boolean | No | If true, hide from menu |
-| installed | boolean | No | Tracks installation state |
-| check_command | string | No | Command to verify installation (e.g., `node --version`) |
-| check_path | string | No | Path to check if exists (e.g., `/usr/bin/node`) |
-| uninstall | string | No | Path to uninstall script |
-| dependencies | array | No | Required packages |
-| tags | array | No | Categorization tags |
+| supported_os | array | Yes | Which OSes this script supports (`macos`, `kali`, `debian`, `ubuntu`) |
+
+For the full field reference and Tier 1 folder structure, see:
+- **Contributing guide:** `mainmenu/CONTRIBUTING.md`
+- **Full technical spec:** `.docs/technical_manuals/os-modular-architecture.md`
 
 ### Script Types
 
 - **`type: install`** (default) - Shows Install/Uninstall actions, tracks installation state
 - **`type: config`** - Shows "Run" action only, for utilities/config scripts
+- **`type: tool`** - Educational scripts that use an installed binary (requires `binary` field)
 
 ## Menu System
 
@@ -102,7 +104,7 @@ All executable scripts must have a YAML header:
 ### Features
 
 - Dynamic menu generation from folder structure
-- YAML header parsing for script metadata
+- Three-tier metadata parsing (folder `meta.yaml`, sibling `.meta.yaml`, legacy inline)
 - Installation state tracking
 - Log viewing capability
 - Uninstall support
@@ -134,7 +136,8 @@ Every menu folder MUST have:
 ### Documentation Checklist
 
 When adding a new script or folder:
-- [ ] Script has complete YAML header
+- [ ] Metadata file exists (`meta.yaml` for Tier 1 or `.meta.yaml` for Tier 2)
+- [ ] `supported_os` field lists all tested OSes
 - [ ] Folder has README.md
 - [ ] User manual exists in `.docs/user_manuals/`
 - [ ] Technical manual exists in `.docs/technical_manuals/`
@@ -144,25 +147,35 @@ When adding a new script or folder:
 
 ```
 .docs/templates/
-├── script_template.sh        # Install script template
-├── config_template.sh        # Config/utility script template
-├── folder_readme_template.md # Folder README template
-├── user_doc_template.md      # User manual template
-└── technical_doc_template.md # Technical manual template
+├── script_template.sh            # Tier 2 install script template
+├── script_template.meta.yaml     # Tier 2 install metadata template
+├── config_template.sh            # Tier 2 config/utility script template
+├── config_template.meta.yaml     # Tier 2 config metadata template
+├── tool_template.sh              # Tier 2 tool/education script template
+├── tool_template.meta.yaml       # Tier 2 tool metadata template
+├── tier1_template/               # Tier 1 modular folder template
+│   ├── meta.yaml                 # Tier 1 metadata template
+│   ├── _common.sh                # Shared functions template
+│   ├── macos.sh                  # macOS script template
+│   └── linux.sh                  # Linux script template
+├── folder_readme_template.md     # Folder README template
+├── user_doc_template.md          # User manual template
+└── technical_doc_template.md     # Technical manual template
 ```
 
 ## Development Guidelines
 
 ### Adding New Scripts
 
-1. Create script in appropriate folder under `mainmenu/`
-2. Copy from `.docs/templates/script_template.sh` or `config_template.sh`
-3. Add YAML header with all required fields
-4. Set `check_command` and/or `check_path` for installation detection
-5. Use logging functions to write to `.docs/logs/`
-6. Test with `bash script.sh install`
-7. Update folder README.md with new script
-8. Update user and technical manuals
+1. Decide the tier: Tier 2 (OS-agnostic, most common) or Tier 1 (OS-specific)
+2. Create script in appropriate folder under `mainmenu/`
+3. Copy from `.docs/templates/` (use `script_template.sh` + `script_template.meta.yaml` for Tier 2, or `tier1_template/` for Tier 1)
+4. Create the companion `.meta.yaml` (Tier 2) or `meta.yaml` (Tier 1) with all required fields including `supported_os`
+5. Set `check_command` and/or `check_path` for installation detection
+6. Use logging functions to write to `.docs/logs/`
+7. Test with `bash script.sh install`
+8. Update folder README.md with new script
+9. Update user and technical manuals
 
 ### Creating Submenus
 

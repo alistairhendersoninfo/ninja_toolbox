@@ -1,21 +1,7 @@
 #!/bin/bash
-# ---
-# name: "Config Script Name"
-# description: "Brief description of what this config/utility does"
-# version: "1.0.0"
-# author: "Your Name"
-# type: config
-# root: false
-# order: 50
-# hidden: false
-# installed: false
-# check_command: ""
-# check_path: ""
-# dependencies: []
-# tags:
-#   - config
-#   - utility
-# ---
+# Metadata lives in the companion .meta.yaml file (NOT inline).
+# Copy config_template.meta.yaml alongside this script and fill in the fields.
+# See: .docs/technical_manuals/os-modular-architecture.md for full reference.
 
 #######################################
 # CONFIG/UTILITY TEMPLATE

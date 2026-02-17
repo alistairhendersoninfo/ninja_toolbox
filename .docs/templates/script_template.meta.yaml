@@ -1,0 +1,27 @@
+# Tier 2 metadata template for install scripts.
+# Place this file alongside your .sh script:
+#   mainmenu/<category>/<tool-name>.meta.yaml
+#
+# Full reference: .docs/technical_manuals/os-modular-architecture.md
+
+name: "Human Readable Name"       # Display name in the menu
+description: "What this script does"  # Brief description shown in menu
+version: "1.0.0"
+author: "Your Name"
+type: install                      # install (Install/Uninstall) or config (Run only)
+root: false                        # true if needs sudo (Linux); macOS uses Homebrew without sudo
+order: 50                          # Sort order in menu (lower = higher)
+hidden: false                      # true to exclude from menu
+installed: false                   # Managed by mark_installed — leave as false
+check_command: "myapp --version"   # Command to verify installation
+check_path: "/usr/bin/myapp"       # Alternative: path to check existence
+dependencies:
+  - curl
+  - git
+tags:
+  - category
+supported_os:                      # REQUIRED — list only OSes you have tested
+  - macos
+  - kali
+  - debian
+  - ubuntu

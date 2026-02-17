@@ -1,21 +1,10 @@
 #!/bin/bash
-# ---
-# name: "Tool Script Name"
-# description: "Brief description of what this script does"
-# version: "1.0.0"
-# author: "Your Name"
-# type: tool
-# root: false
-# order: 50
-# hidden: false
-# binary: "required-command"
-# tags:
-#   - category
-#   - tool-name
-# ---
+# Metadata lives in the companion .meta.yaml file (NOT inline).
+# Copy tool_template.meta.yaml alongside this script and fill in the fields.
+# See: .docs/technical_manuals/os-modular-architecture.md for full reference.
 #
 # type: tool — requires a binary to be installed before this script can run.
-# The menu checks the 'binary' field and blocks execution if not found.
+# The menu checks the 'binary' field in .meta.yaml and blocks execution if not found.
 #
 # Folder convention:
 #   mainmenu/education/{category}/{tool}/{technique}/this-script.sh
