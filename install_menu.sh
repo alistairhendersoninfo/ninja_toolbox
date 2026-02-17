@@ -285,12 +285,13 @@ fi
 #######################################
 # COMPLETE
 #######################################
+
+# Brand orange for the banner
+ORANGE='\033[38;2;252;163;17m'
+BOLD='\033[1m'
+
 echo ""
-echo "=============================================="
-echo -e "${GREEN}MENU SYSTEM INSTALLATION COMPLETE${NC}"
-echo "=============================================="
-echo ""
-echo "Installed components:"
+echo -e "${GREEN}Installed components:${NC}"
 echo "  - Python 3 with venv"
 echo "  - Textual TUI framework"
 echo "  - Gum (Charm.sh) for beautiful prompts"
@@ -299,16 +300,17 @@ if [[ "$OS_TYPE" == "linux" ]]; then
 else
     echo "  - dialog fallback"
 fi
-echo "  - PyYAML for header parsing"
-echo "  - Rich for terminal formatting"
+echo "  - PyYAML, Rich, Typer"
 echo "  - ninjamenu command ($BIN_DIR/ninjamenu)"
 echo ""
-echo "To launch the menu, run:"
-echo ""
-echo -e "  ${CYAN}ninjamenu${NC}"
-echo ""
-echo "Or with options:"
-echo "  ninjamenu --list          # List all scripts"
-echo "  ninjamenu --submenu llm   # Start at submenu"
-echo "  ninjamenu --tui gum       # Force TUI backend"
+echo -e "${ORANGE}╔══════════════════════════════════════════════════╗${NC}"
+echo -e "${ORANGE}║${NC}  ${GREEN}${BOLD}Installation complete!${NC}                           ${ORANGE}║${NC}"
+echo -e "${ORANGE}║${NC}                                                  ${ORANGE}║${NC}"
+echo -e "${ORANGE}║${NC}  Run the menu with:  ${BOLD}${ORANGE}ninjamenu${NC}                    ${ORANGE}║${NC}"
+echo -e "${ORANGE}║${NC}                                                  ${ORANGE}║${NC}"
+echo -e "${ORANGE}║${NC}  Options:                                        ${ORANGE}║${NC}"
+echo -e "${ORANGE}║${NC}    ninjamenu --list          List all scripts    ${ORANGE}║${NC}"
+echo -e "${ORANGE}║${NC}    ninjamenu --submenu llm   Start at submenu   ${ORANGE}║${NC}"
+echo -e "${ORANGE}║${NC}    ninjamenu --tui gum       Force TUI backend  ${ORANGE}║${NC}"
+echo -e "${ORANGE}╚══════════════════════════════════════════════════╝${NC}"
 echo ""
