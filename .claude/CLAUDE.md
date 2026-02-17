@@ -93,6 +93,42 @@ For the full field reference and Tier 1 folder structure, see:
 - **`type: config`** - Shows "Run" action only, for utilities/config scripts
 - **`type: tool`** - Educational scripts that use an installed binary (requires `binary` field)
 
+## SQLite Menu Cache
+
+The menu uses an SQLite cache (`.cache/menu.db`) to avoid scanning the filesystem on every render. YAML metadata files remain the single source of truth.
+
+### Architecture
+
+```
+YAML (source of truth)          SQLite (.cache/menu.db)          Menu UI
+───────────────────────         ───────────────────────          ────────
+mainmenu/**/*.meta.yaml   ──►   rebuild_cache()            ──►   get_menu_items()
+mainmenu/**/meta.yaml     ──►   (Python, on demand)        ──►   (SQL query, <15ms)
+```
+
+### Key Files
+
+| File | Purpose |
+|------|---------|
+| `.app/cache.py` | Cache builder + query module (standalone, no TUI deps) |
+| `.cache/menu.db` | SQLite database (gitignored, disposable) |
+| `.claude/scripts/ninja-rebuild.sh` | Manual cache rebuild script |
+
+### How It Works
+
+1. **Startup**: `menu.py` checks if `.cache/menu.db` exists and is current
+2. **Auto-rebuild**: If any `.meta.yaml` / `meta.yaml` mtime is newer than cached, rebuilds
+3. **Menu render**: Queries SQLite instead of walking filesystem (~15ms vs 2-10s)
+4. **Aliases**: Resolved via SQL JOIN on `alias_entries` table (no separate scan)
+5. **Installed status**: Cached; updated lazily on script focus/select or after install/uninstall
+6. **Manual rebuild**: `/ninja-rebuild` or `menu.py --rebuild`
+
+### When to Rebuild
+
+- After adding/removing/modifying `.meta.yaml` or `meta.yaml` files (auto-detected)
+- After structural changes to `mainmenu/` directories
+- With `--check-installed` flag to refresh all installation status checks
+
 ## Menu System
 
 ### Technology Stack
@@ -245,6 +281,7 @@ exec > >(tee -a "$LOG_FILE") 2>&1
 | Review Tasks | `/review-tasks [pr-number]` | Read PR review comments and create todo tasks |
 | Trigger Guardian | `/trigger-guardian [spam]` | Test Wiki Guardian with a clean or spam wiki edit |
 | PR Status | `/pr-status [number \| issue number]` | Show open PRs and issues, or detail view of a specific PR/issue |
+| Ninja Rebuild | `/ninja-rebuild [--check-installed]` | Rebuild SQLite menu cache from YAML metadata |
 
 ## Site Characters
 

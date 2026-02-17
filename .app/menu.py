@@ -16,6 +16,11 @@ from dataclasses import dataclass, field
 from typing import Optional, List, Dict, Any
 from datetime import datetime
 
+from cache import (
+    rebuild_cache, get_menu_items, is_cache_stale,
+    update_installed, get_script,
+)
+
 try:
     import yaml
     HAS_YAML = True
@@ -41,6 +46,8 @@ MAIN_MENU_DIR = MENU_ROOT / "mainmenu"
 LOG_DIR = MENU_ROOT / ".docs" / "logs"
 CONFIG_DIR = MENU_ROOT / ".configs"
 SETTINGS_FILE = CONFIG_DIR / "menusystem" / "settings.conf"
+CACHE_DIR = MENU_ROOT / ".cache"
+DB_PATH = CACHE_DIR / "menu.db"
 
 
 def get_config_settings() -> Dict[str, str]:
@@ -338,139 +345,90 @@ def _is_modular_folder(directory: Path) -> bool:
     return (directory / "meta.yaml").exists()
 
 
+def _ensure_cache() -> None:
+    """Ensure the SQLite cache exists and is up to date."""
+    if not DB_PATH.exists() or is_cache_stale(MAIN_MENU_DIR, DB_PATH):
+        rebuild_cache(MAIN_MENU_DIR, DB_PATH)
+
+
+def _dict_to_script_info(d: Dict[str, Any]) -> ScriptInfo:
+    """Convert a cache dict to a ScriptInfo dataclass."""
+    # Resolve the actual filesystem path for the script
+    script_file = d.get('script_file', d.get('path', ''))
+    script_path = MAIN_MENU_DIR / script_file if script_file else MAIN_MENU_DIR / d['path']
+
+    info = ScriptInfo(
+        path=script_path,
+        name=d.get('name', 'Unnamed'),
+        description=d.get('description', 'No description'),
+        version=d.get('version', '1.0.0'),
+        author=d.get('author', 'Unknown'),
+        root=d.get('root', False),
+        order=d.get('order', 50),
+        hidden=d.get('hidden', False),
+        installed=d.get('installed', False),
+        uninstall=d.get('uninstall', ''),
+        dependencies=d.get('dependencies', []),
+        tags=d.get('tags', []),
+        check_command=d.get('check_command', ''),
+        check_path=d.get('check_path', ''),
+        script_type=d.get('script_type', 'install'),
+        binary=d.get('binary', ''),
+        binary_available=d.get('binary_available', True),
+        supported_os=d.get('supported_os', []),
+        is_modular_folder=d.get('is_modular_folder', False),
+        aliases=d.get('aliases', []),
+    )
+    # Check binary availability at runtime for tool scripts
+    if info.binary:
+        info.binary_available = _check_binary_available(info.binary)
+    return info
+
+
 def scan_menu_directory(directory: Path) -> List[MenuItem]:
-    """Scan a directory and return menu items."""
-    items = []
+    """Get menu items from SQLite cache for the given directory.
 
-    if not directory.exists():
-        return items
+    Replaces the old filesystem-scanning version. Now queries the cache
+    which was pre-built from YAML metadata files.
+    """
+    _ensure_cache()
 
-    for entry in directory.iterdir():
-        # Skip hidden files/folders (starting with .)
-        if entry.name.startswith('.'):
-            continue
-
-        if entry.is_dir():
-            if _is_modular_folder(entry):
-                # Tier 1: modular folder with meta.yaml
-                meta_path = entry / "meta.yaml"
-                script_path = _resolve_modular_script(entry)
-                if script_path is None:
-                    # OS not supported — skip this item
-                    continue
-                script_info = parse_meta_yaml(meta_path, script_path)
-                if script_info and not script_info.hidden:
-                    script_info.is_modular_folder = True
-                    items.append(MenuItem(
-                        name=script_info.name,
-                        path=entry,
-                        is_submenu=False,
-                        script_info=script_info,
-                        order=script_info.order
-                    ))
-            else:
-                # It's a submenu - convert to CamelCase
-                name_parts = entry.name.replace('-', ' ').replace('_', ' ').split()
-                camel_name = ''.join(word.capitalize() for word in name_parts)
-                items.append(MenuItem(
-                    name=camel_name,
-                    path=entry,
-                    is_submenu=True,
-                    order=0  # Submenus first
-                ))
-        elif entry.suffix == '.sh':
-            # Check for sibling .meta.yaml (Tier 2/3)
-            sibling_meta = entry.parent / f"{entry.stem}.meta.yaml"
-            if sibling_meta.exists():
-                script_info = parse_meta_yaml(sibling_meta, entry)
-            else:
-                # Legacy: inline YAML header
-                script_info = parse_yaml_header(entry)
-
-            if script_info and not script_info.hidden:
-                items.append(MenuItem(
-                    name=script_info.name,
-                    path=entry,
-                    is_submenu=False,
-                    script_info=script_info,
-                    order=script_info.order
-                ))
-
-    # Inject aliased scripts that target this directory
+    # Compute parent_menu key relative to mainmenu/
     try:
         rel_dir = directory.relative_to(MAIN_MENU_DIR)
-        alias_key = str(rel_dir) if str(rel_dir) != "." else "."
+        parent_menu = str(rel_dir) if str(rel_dir) != "." else ""
     except ValueError:
-        alias_key = None
-    if alias_key and alias_key in _ALIAS_REGISTRY:
-        for alias_item in _ALIAS_REGISTRY[alias_key]:
-            items.append(alias_item)
+        parent_menu = ""
 
-    # Sort by order, then by name
-    items.sort(key=lambda x: (0 if x.is_submenu else 1, x.order, x.name))
+    cached_items = get_menu_items(DB_PATH, parent_menu, CURRENT_OS)
+    items = []
+
+    for d in cached_items:
+        if d.get('is_submenu'):
+            items.append(MenuItem(
+                name=d['name'],
+                path=MAIN_MENU_DIR / d['path'],
+                is_submenu=True,
+                order=0,
+            ))
+        else:
+            script_info = _dict_to_script_info(d)
+            items.append(MenuItem(
+                name=script_info.name,
+                path=script_info.path,
+                is_submenu=False,
+                script_info=script_info,
+                order=script_info.order,
+            ))
+
     return items
-
-
-# Global alias registry: maps target path (relative to mainmenu/) to list of MenuItems
-_ALIAS_REGISTRY: Dict[str, List[MenuItem]] = {}
-
-
-def build_alias_registry(directory: Path = MAIN_MENU_DIR) -> None:
-    """Recursively scan the menu tree and register all aliased scripts."""
-    _ALIAS_REGISTRY.clear()
-    _collect_aliases(directory)
-
-
-def _collect_aliases(directory: Path) -> None:
-    """Recursively collect scripts with aliases into the global registry."""
-    if not directory.exists():
-        return
-
-    for entry in directory.iterdir():
-        if entry.name.startswith('.') or entry.name.startswith('_'):
-            continue
-
-        if entry.is_dir():
-            if _is_modular_folder(entry):
-                meta_path = entry / "meta.yaml"
-                script_path = _resolve_modular_script(entry)
-                if script_path is None:
-                    continue
-                script_info = parse_meta_yaml(meta_path, script_path)
-                if script_info and script_info.aliases:
-                    _register_aliases(script_info, entry)
-            else:
-                _collect_aliases(entry)
-        elif entry.suffix == '.sh':
-            sibling_meta = entry.parent / f"{entry.stem}.meta.yaml"
-            if sibling_meta.exists():
-                script_info = parse_meta_yaml(sibling_meta, entry)
-            else:
-                script_info = parse_yaml_header(entry)
-            if script_info and script_info.aliases:
-                _register_aliases(script_info, entry)
-
-
-def _register_aliases(script_info: ScriptInfo, source_path: Path) -> None:
-    """Register a script's aliases in the global registry."""
-    for alias in script_info.aliases:
-        alias_key = alias.strip("/")
-        if alias_key not in _ALIAS_REGISTRY:
-            _ALIAS_REGISTRY[alias_key] = []
-        _ALIAS_REGISTRY[alias_key].append(MenuItem(
-            name=script_info.name,
-            path=source_path,
-            is_submenu=False,
-            script_info=script_info,
-            order=script_info.order,
-        ))
 
 
 def _reparse_script_info(script_info: ScriptInfo) -> Optional[ScriptInfo]:
     """Re-parse a script's metadata after install/uninstall.
 
     Handles all three tiers: modular folder meta.yaml, sibling .meta.yaml,
-    and legacy inline YAML headers.
+    and legacy inline YAML headers. Also updates the SQLite cache.
     """
     path = script_info.path
 
@@ -478,12 +436,26 @@ def _reparse_script_info(script_info: ScriptInfo) -> Optional[ScriptInfo]:
     if script_info.is_modular_folder:
         meta_path = path.parent / "meta.yaml"
         if meta_path.exists():
-            return parse_meta_yaml(meta_path, path)
+            updated = parse_meta_yaml(meta_path, path)
+            if updated and DB_PATH.exists():
+                try:
+                    rel_path = str(path.parent.relative_to(MAIN_MENU_DIR))
+                    update_installed(DB_PATH, rel_path, updated.installed)
+                except ValueError:
+                    pass
+            return updated
 
     # Tier 2/3: sibling .meta.yaml
     sibling_meta = path.parent / f"{path.stem}.meta.yaml"
     if sibling_meta.exists():
-        return parse_meta_yaml(sibling_meta, path)
+        updated = parse_meta_yaml(sibling_meta, path)
+        if updated and DB_PATH.exists():
+            try:
+                rel_path = str(path.relative_to(MAIN_MENU_DIR))
+                update_installed(DB_PATH, rel_path, updated.installed)
+            except ValueError:
+                pass
+        return updated
 
     # Legacy: inline YAML header
     return parse_yaml_header(path)
@@ -1283,14 +1255,26 @@ def main():
         default="auto",
         help="Force a specific TUI backend"
     )
+    parser.add_argument(
+        "--rebuild",
+        action="store_true",
+        help="Force rebuild the SQLite menu cache from YAML metadata"
+    )
 
     args = parser.parse_args()
 
-    # Ensure log directory exists
+    # Ensure log and cache directories exist
     LOG_DIR.mkdir(parents=True, exist_ok=True)
+    CACHE_DIR.mkdir(parents=True, exist_ok=True)
 
-    # Build alias registry (cross-references between menu locations)
-    build_alias_registry()
+    # Ensure SQLite cache is up to date (replaces alias registry + filesystem scanning)
+    _ensure_cache()
+
+    if args.rebuild:
+        print("Rebuilding menu cache...")
+        rebuild_cache(MAIN_MENU_DIR, DB_PATH)
+        print(f"Cache rebuilt: {DB_PATH}")
+        return
 
     if args.list:
         print("\n📋 NinjaMenu - Available Scripts:\n")

@@ -170,6 +170,20 @@ aliases:
 
 This makes the script appear under both `LLM → MCP` (its real location) and `Editors → Obsidian` (the alias target). The alias path is relative to `mainmenu/`. The script's actual files stay in one place — only display is duplicated.
 
+## Menu Cache
+
+The menu system uses an SQLite cache (`.cache/menu.db`) built from YAML metadata files. The cache auto-rebuilds when metadata file mtimes change, but you can force a rebuild:
+
+```bash
+# Force rebuild cache
+./menu.py --rebuild
+
+# Rebuild and check all installed statuses
+.claude/scripts/ninja-rebuild.sh --check-installed
+```
+
+YAML metadata files are the single source of truth. The cache is a derived, disposable artifact. If the cache is deleted, it auto-rebuilds on next `menu.py` launch.
+
 ## Checklist
 
 - [ ] Metadata file (`meta.yaml` or `.meta.yaml`) with all required fields
@@ -177,3 +191,4 @@ This makes the script appear under both `LLM → MCP` (its real location) and `E
 - [ ] Script sources `platform.sh` (directly or via `_common.sh`)
 - [ ] Tested install and uninstall on available OSes
 - [ ] No inline YAML headers in `.sh` files
+- [ ] Cache rebuilds correctly (`./menu.py --rebuild`)
