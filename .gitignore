@@ -58,6 +58,7 @@ secrets.json
 *.backup
 .cache/*
 !.cache/.gitkeep
+!.cache/menu.db
 tmp/
 temp/
 ship-this.sh
