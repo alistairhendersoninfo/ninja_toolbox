@@ -452,6 +452,7 @@ class MenuItem:
     is_submenu: bool = False
     script_info: Optional[ScriptInfo] = None
     order: int = 50
+    description: str = ""
 
 
 def parse_yaml_header(script_path: Path) -> Optional[ScriptInfo]:
@@ -649,6 +650,7 @@ def scan_menu_directory(directory: Path) -> List[MenuItem]:
                 path=MAIN_MENU_DIR / d['path'],
                 is_submenu=True,
                 order=0,
+                description=d.get('description', ''),
             ))
         else:
             script_info = _dict_to_script_info(d)
@@ -1725,7 +1727,10 @@ def gum_menu(directory: Path, breadcrumb: List[str] = None) -> None:
             # Zero-padded prefix for display, but also map non-padded for easy typing
             padded = str(num).zfill(pad_width)
             if item.is_submenu:
-                label = f"{padded}. 📁 {item.name}"
+                if item.description:
+                    label = f"{padded}. 📁 {item.name} — {item.description}"
+                else:
+                    label = f"{padded}. 📁 {item.name}"
             else:
                 if item.script_info.script_type == "tool":
                     if item.script_info.binary and not item.script_info.binary_available:
@@ -1995,7 +2000,10 @@ def whiptail_menu(directory: Path, breadcrumb: List[str] = None) -> None:
         for i, item in enumerate(items):
             tag = str(i + 1)  # 1-based numbering shown as tag
             if item.is_submenu:
-                desc = f"📁 {item.name}"
+                if item.description:
+                    desc = f"📁 {item.name} — {item.description}"
+                else:
+                    desc = f"📁 {item.name}"
             else:
                 status = "✅" if item.script_info.installed else "⬜"
                 root = "🔐" if item.script_info.root else ""
@@ -2271,7 +2279,10 @@ if HAS_TEXTUAL:
                 opt_id = f"item_{idx}"
                 self._id_to_item[opt_id] = item
                 if item.is_submenu:
-                    option_list.add_option(Option(f"{folder_num}. 📁 {item.name}", id=opt_id))
+                    if item.description:
+                        option_list.add_option(Option(f"{folder_num}. 📁 {item.name} — {item.description}", id=opt_id))
+                    else:
+                        option_list.add_option(Option(f"{folder_num}. 📁 {item.name}", id=opt_id))
                     folder_num += 1
                 else:
                     status = "✅" if item.script_info.installed else "⬜"
@@ -2303,7 +2314,8 @@ if HAS_TEXTUAL:
                     status = "✅ Installed" if info.installed else "⬜ Not installed"
                     info_panel.update(f"{info.description}\n[{status}{root}{tags}]")
             elif item and item.is_submenu:
-                info_panel.update(f"📁 {item.name}\nPress Enter to open submenu")
+                desc = f"\n{item.description}" if item.description else ""
+                info_panel.update(f"📁 {item.name}{desc}\nPress Enter to open submenu")
             else:
                 info_panel.update("Use ↑↓ arrows to navigate, Enter to select, Backspace/Esc to go back, q to quit")
 
@@ -2448,7 +2460,10 @@ def list_all_scripts(directory: Path = None, indent: int = 0) -> None:
 
     for item in items:
         if item.is_submenu:
-            print(f"{prefix}📁 {item.name}/")
+            if item.description:
+                print(f"{prefix}📁 {item.name}/ — {item.description}")
+            else:
+                print(f"{prefix}📁 {item.name}/")
             list_all_scripts(item.path, indent + 1)
         else:
             info = item.script_info

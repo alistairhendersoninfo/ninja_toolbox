@@ -218,11 +218,16 @@ When adding a new script or folder:
 
 1. Create a new folder under the parent menu (this becomes a `📁` category in the menu)
 2. **Every top-level menu section must use category subfolders** — scripts are never placed alongside subfolder siblings. A folder either contains only subfolders (category) or only scripts (leaf), never both.
-3. Create README.md from template
-4. Create user manual in `.docs/user_manuals/{folder}.md`
-5. Create technical manual in `.docs/technical_manuals/{folder}.md`
-6. Add scripts to the folder
-7. Menu system auto-discovers on next run
+3. Add a `category.yaml` file with a display `name` and `description` (both optional — without it, the folder name is titlecased and no description is shown):
+   ```yaml
+   name: "CLI Tools"
+   description: "Command-line LLM interfaces and chatbots"
+   ```
+4. Create README.md from template
+5. Create user manual in `.docs/user_manuals/{folder}.md`
+6. Create technical manual in `.docs/technical_manuals/{folder}.md`
+7. Add scripts to the folder
+8. Menu system auto-discovers on next run
 
 ### Logging
 
