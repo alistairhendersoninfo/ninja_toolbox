@@ -1,0 +1,19 @@
+name: "ComfyUI"
+description: "Node-based Stable Diffusion GUI and backend for image/video generation"
+version: "1.0.0"
+author: "comfyanonymous"
+root: false
+order: 20
+hidden: false
+installed: false
+check_path: "/opt/apps/LLM/ComfyUI/main.py"
+supported_os:
+  - macos
+dependencies:
+  - git
+  - brew
+tags:
+  - llm
+  - stable-diffusion
+  - image-generation
+  - comfyui
