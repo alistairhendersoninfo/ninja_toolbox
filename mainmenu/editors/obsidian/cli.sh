@@ -1,5 +1,5 @@
 #!/bin/bash
-# Metadata in obsidian-cli.meta.yaml
+# Metadata in cli.meta.yaml
 
 set -euo pipefail
 
