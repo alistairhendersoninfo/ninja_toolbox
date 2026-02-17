@@ -1,27 +1,7 @@
 #!/bin/bash
-# ---
-# name: "Script Display Name"
-# description: "Brief description of what this script does"
-# version: "1.0.0"
-# author: "Your Name"
-# type: install
-# root: false
-# order: 50
-# hidden: false
-# installed: false
-# check_command: "myapp --version"
-# check_path: "/usr/bin/myapp:~/.local/bin/myapp"
-# uninstall: ""
-# dependencies:
-#   - curl
-#   - git
-# tags:
-#   - category
-# ---
-#
-# type options:
-#   install - Shows Install/Uninstall actions (default)
-#   config  - Shows Run action only (for utilities/config scripts)
+# Metadata lives in the companion .meta.yaml file (NOT inline).
+# Copy script_template.meta.yaml alongside this script and fill in the fields.
+# See: .docs/technical_manuals/os-modular-architecture.md for full reference.
 
 #######################################
 # SCRIPT TEMPLATE

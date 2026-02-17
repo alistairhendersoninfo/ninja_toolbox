@@ -1,0 +1,26 @@
+# Tier 1 metadata template for OS-specific modular scripts.
+# This file lives inside the tool folder:
+#   mainmenu/<category>/<tool-name>/meta.yaml
+#
+# Full reference: .docs/technical_manuals/os-modular-architecture.md
+
+name: "Human Readable Name"       # Display name in the menu
+description: "What this script does"
+version: "1.0.0"
+author: "Your Name"
+type: install                      # install (Install/Uninstall) or config (Run only)
+root: false                        # true if needs sudo
+order: 10                          # Sort order in menu (lower = higher)
+hidden: false
+installed: false
+check_command: "tool --version"    # Command to verify installation
+check_path: "/usr/bin/tool"        # Alternative: path to check existence
+dependencies:
+  - package1
+tags:
+  - category1
+supported_os:                      # REQUIRED — list only the OS scripts you created below
+  - macos
+  - kali
+  - debian
+  - ubuntu

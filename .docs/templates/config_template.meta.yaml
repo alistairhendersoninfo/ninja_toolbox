@@ -1,0 +1,23 @@
+# Tier 2 metadata template for config/utility scripts.
+# Place this file alongside your .sh script:
+#   mainmenu/<category>/<tool-name>.meta.yaml
+#
+# Full reference: .docs/technical_manuals/os-modular-architecture.md
+
+name: "Config Script Name"        # Display name in the menu
+description: "What this config/utility does"
+version: "1.0.0"
+author: "Your Name"
+type: config                       # config = Run action only (no install/uninstall)
+root: false                        # true if needs sudo
+order: 50                          # Sort order in menu (lower = higher)
+hidden: false
+installed: false
+tags:
+  - config
+  - utility
+supported_os:                      # REQUIRED — list only OSes you have tested
+  - macos
+  - kali
+  - debian
+  - ubuntu

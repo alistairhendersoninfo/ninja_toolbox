@@ -1,0 +1,23 @@
+# Tier 2 metadata template for tool/education scripts.
+# Place this file alongside your .sh script:
+#   mainmenu/education/<category>/<tool>/<technique>/<script-name>.meta.yaml
+#
+# Full reference: .docs/technical_manuals/os-modular-architecture.md
+
+name: "Tool Script Name"          # Display name in the menu
+description: "What this script demonstrates"
+version: "1.0.0"
+author: "Your Name"
+type: tool                         # tool = requires a binary; menu blocks if missing
+root: false                        # true if needs raw socket access (e.g., nmap -sS)
+order: 50                          # Sort order in menu (lower = higher)
+hidden: false
+binary: "required-command"         # Command that must be on PATH (e.g., "nmap")
+tags:
+  - category
+  - tool-name
+supported_os:                      # REQUIRED — list only OSes you have tested
+  - macos
+  - kali
+  - debian
+  - ubuntu

@@ -21,35 +21,48 @@ Drop your script into the matching category under `mainmenu/`:
 
 Need a new category? Create a folder under `mainmenu/` with a `README.md` describing it.
 
-### 2. Use the YAML header
+### 2. Create a `.meta.yaml` file
 
-Every script **must** include a YAML header so the menu system can discover it:
+Every script needs a companion metadata file. Create `<tool-name>.meta.yaml` alongside your script:
 
-```bash
-#!/bin/bash
-# ---
-# name: "tool-name"
-# description: "One-line description of what it does"
-# type: install
-# root: true
-# order: 20
-# check_command: "tool-name --version"
-# tags: "category, keyword"
-# ---
+```yaml
+# tool-name.meta.yaml
+name: "tool-name"
+description: "One-line description of what it does"
+type: install
+root: true
+order: 20
+installed: false
+check_command: "tool-name --version"
+tags:
+  - category
+  - keyword
+supported_os:
+  - macos
+  - kali
+  - debian
+  - ubuntu
 ```
 
 | Field | Required | Description |
 |-------|----------|-------------|
 | `name` | Yes | Display name in the menu |
 | `description` | Yes | Short description shown in detail view |
-| `type` | Yes | `install` (adds software) or `config` (run-only) |
+| `type` | Yes | `install` (adds software), `config` (run-only), or `tool` (education) |
 | `root` | Yes | `true` if the script needs sudo |
 | `order` | No | Sort position (lower = higher in menu) |
 | `check_command` | Yes* | Command to verify installation |
 | `check_path` | Yes* | Alternative: check if a file path exists |
-| `tags` | No | Comma-separated keywords for search |
+| `tags` | No | Categorisation tags |
+| `supported_os` | Yes | Which OSes this script supports |
 
 *Provide either `check_command` or `check_path`.
+
+> **Do NOT put YAML headers inside `.sh` files.** Inline `# ---` headers are a deprecated legacy format. All new scripts use external `.meta.yaml` files.
+
+### OS-specific scripts (Tier 1)
+
+If your script needs genuinely different code per OS (not just different package names), use the **modular folder** structure instead. See `mainmenu/CONTRIBUTING.md` for the full Tier 1 guide.
 
 ### 3. Source the platform library
 
@@ -119,21 +132,27 @@ mainmenu/education/{category}/{tool}/{technique}/your-script.sh
 
 Example: `mainmenu/education/network/nmap/scanning/quick-scan.sh`
 
-### 2. Use the YAML header
+### 2. Create a `.meta.yaml` file
 
-Tool scripts use `type: tool` and a `binary:` field:
+Tool scripts use `type: tool` and a `binary:` field. Create `<script-name>.meta.yaml` alongside your script:
 
-```bash
-#!/bin/bash
-# ---
-# name: "Quick Network Scan"
-# description: "Fast host discovery scan on local subnet"
-# type: tool
-# root: false
-# binary: "nmap"
-# order: 10
-# tags: "network, scanning, nmap"
-# ---
+```yaml
+# quick-scan.meta.yaml
+name: "Quick Network Scan"
+description: "Fast host discovery scan on local subnet"
+type: tool
+root: false
+binary: "nmap"
+order: 10
+tags:
+  - network
+  - scanning
+  - nmap
+supported_os:
+  - macos
+  - kali
+  - debian
+  - ubuntu
 ```
 
 | Field | Required | Description |
@@ -143,9 +162,12 @@ Tool scripts use `type: tool` and a `binary:` field:
 | `name` | Yes | Display name in the menu |
 | `description` | Yes | Short description |
 | `root` | Yes | `true` if needs sudo |
-| `tags` | No | Keywords for search |
+| `tags` | No | Categorisation tags |
+| `supported_os` | Yes | Which OSes this script supports |
 
 The menu checks if `binary` exists. If not, the script shows `⛔` and cannot be run.
+
+> **Do NOT put YAML headers inside `.sh` files.** Use the companion `.meta.yaml` file.
 
 ### 3. Source platform.sh and check the binary
 
@@ -211,7 +233,7 @@ Open a GitHub issue with:
 - One tool per PR (makes review easier)
 - Include the tool name and category in the PR title
 - Briefly describe what the tool does and why it belongs in the menu
-- Make sure the YAML header is complete
+- Make sure the `.meta.yaml` file is complete (including `supported_os`)
 
 ## Code Style
 
