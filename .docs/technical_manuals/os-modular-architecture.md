@@ -192,12 +192,46 @@ case "$ACTION" in
 esac
 ```
 
-## How menu.py Discovers Scripts
+## SQLite Cache Layer
 
-`menu.py` scans `mainmenu/` recursively with three-way detection:
+`menu.py` uses an SQLite cache (`.cache/menu.db`) instead of scanning the filesystem on every render. The cache is built from YAML metadata files, which remain the single source of truth.
+
+### Cache Architecture
 
 ```
-scan_menu_directory()
+YAML metadata files                SQLite cache                Menu UI
+───────────────────                ────────────                ────────
+mainmenu/**/*.meta.yaml   ──►   .cache/menu.db          ──►   SQL queries
+mainmenu/**/meta.yaml     ──►   (rebuild_cache())       ──►   (<15ms per render)
+```
+
+### Cache Tables
+
+- **`scripts`** — All script metadata (path, tier, name, description, order, installed status, etc.)
+- **`submenus`** — Directory entries that are submenus (no `meta.yaml`)
+- **`alias_entries`** — Cross-references linking scripts to additional menu locations
+
+### Cache Lifecycle
+
+1. **First run**: No `.cache/menu.db` exists → full rebuild from YAML
+2. **Subsequent runs**: Compare metadata file mtimes against cached values
+3. **Stale cache**: Any newer mtime triggers automatic full rebuild
+4. **Manual rebuild**: `menu.py --rebuild` or `/ninja-rebuild`
+5. **After install/uninstall**: Single-row update to `installed` column
+
+### Installed Status
+
+- **On rebuild**: `installed = 0` for all scripts (no subprocess calls)
+- **On menu render**: Shows cached value (instant)
+- **On script focus/select**: `check_if_installed()` runs for that script, updates DB
+- **After install/uninstall**: `_reparse_script_info()` updates both YAML and cache
+
+## How menu.py Discovers Scripts
+
+The cache builder (`cache.py`) walks `mainmenu/` recursively with three-way detection:
+
+```
+rebuild_cache() → _walk_and_insert()
     │
     ├── Is this a DIRECTORY with meta.yaml inside?
     │   └── Yes → Tier 1 modular folder

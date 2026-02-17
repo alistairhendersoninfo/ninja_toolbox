@@ -56,7 +56,8 @@ secrets.json
 *.temp
 *.bak
 *.backup
-.cache/
+.cache/*
+!.cache/.gitkeep
 tmp/
 temp/
 ship-this.sh

@@ -213,6 +213,20 @@ chmod +x "$MENU_ROOT/.app/menu"
 log_success "Launcher script created"
 
 #######################################
+# STEP 4b: Build initial menu cache
+#######################################
+log_step "Building initial menu cache..."
+
+mkdir -p "$MENU_ROOT/.cache"
+
+# Activate venv and rebuild cache from YAML metadata
+source "$VENV_DIR/bin/activate"
+python3 "$MENU_ROOT/.app/menu.py" --rebuild
+deactivate
+
+log_success "Menu cache built"
+
+#######################################
 # STEP 5: Set permissions
 #######################################
 log_step "Setting permissions..."
