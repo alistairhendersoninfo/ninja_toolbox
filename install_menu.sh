@@ -247,8 +247,8 @@ find "$MENU_ROOT" -name "*.sh" -exec chmod +x {} \;
 chmod +x "$MENU_ROOT/.app/menu.py" 2>/dev/null || true
 chmod +x "$MENU_ROOT/.app/menu"
 
-# Set ownership to actual user
-chown -R "$ACTUAL_USER:$ACTUAL_GROUP" "$MENU_ROOT"
+# Set ownership to actual user (may fail on macOS for SIP-protected files)
+chown -R "$ACTUAL_USER:$ACTUAL_GROUP" "$MENU_ROOT" 2>/dev/null || true
 
 log_success "Permissions set"
 
@@ -315,6 +315,7 @@ else
     echo "  - dialog fallback"
 fi
 echo "  - PyYAML, Rich, Typer"
+echo "  - SQLite menu cache"
 echo "  - ninjamenu command ($BIN_DIR/ninjamenu)"
 echo ""
 echo -e "${ORANGE}╔══════════════════════════════════════════════════╗${NC}"
@@ -326,5 +327,6 @@ echo -e "${ORANGE}║${NC}  Options:                                        ${OR
 echo -e "${ORANGE}║${NC}    ninjamenu --list          List all scripts    ${ORANGE}║${NC}"
 echo -e "${ORANGE}║${NC}    ninjamenu --submenu llm   Start at submenu   ${ORANGE}║${NC}"
 echo -e "${ORANGE}║${NC}    ninjamenu --tui gum       Force TUI backend  ${ORANGE}║${NC}"
+echo -e "${ORANGE}║${NC}    ninjamenu --rebuild       Rebuild menu cache ${ORANGE}║${NC}"
 echo -e "${ORANGE}╚══════════════════════════════════════════════════╝${NC}"
 echo ""
