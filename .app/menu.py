@@ -7,6 +7,7 @@ NinjaMenu - Generates menus from folder structure with YAML header parsing.
 import os
 import sys
 import re
+import signal
 import shutil
 import subprocess
 import argparse
@@ -31,7 +32,7 @@ try:
     from textual.app import App, ComposeResult
     from textual.containers import Container, Vertical, Horizontal, VerticalScroll
     from textual.widgets import Header, Footer, Static, Button, ListItem, ListView, Label, OptionList
-    from textual.widgets.option_list import Option, Separator
+    from textual.widgets.option_list import Option
     from textual.binding import Binding
     from textual.screen import Screen
     from textual import events
@@ -46,6 +47,10 @@ MAIN_MENU_DIR = MENU_ROOT / "mainmenu"
 LOG_DIR = MENU_ROOT / ".docs" / "logs"
 CONFIG_DIR = MENU_ROOT / ".configs"
 SETTINGS_FILE = CONFIG_DIR / "menusystem" / "settings.conf"
+SETTINGS_DEFAULT_FILE = CONFIG_DIR / "menusystem" / "settings.default.conf"
+GUM_DEFAULT_FILE = CONFIG_DIR / "menusystem" / "gum.default.conf"
+TEXTUAL_DEFAULT_FILE = CONFIG_DIR / "menusystem" / "textual.default.conf"
+WHIPTAIL_DEFAULT_FILE = CONFIG_DIR / "menusystem" / "whiptail.default.conf"
 CACHE_DIR = MENU_ROOT / ".cache"
 DB_PATH = CACHE_DIR / "menu.db"
 
@@ -64,6 +69,173 @@ def get_config_settings() -> Dict[str, str]:
         except:
             pass
     return settings
+
+
+def save_config_settings(updates: Dict[str, str]) -> None:
+    """Write updated settings back to config file, preserving comments."""
+    lines = []
+    seen_keys = set()
+    if SETTINGS_FILE.exists():
+        with open(SETTINGS_FILE, 'r') as f:
+            lines = f.readlines()
+
+    new_lines = []
+    for line in lines:
+        stripped = line.strip()
+        if stripped and not stripped.startswith('#') and '=' in stripped:
+            key = stripped.split('=', 1)[0].strip()
+            if key in updates:
+                new_lines.append(f"{key}={updates[key]}\n")
+                seen_keys.add(key)
+            else:
+                new_lines.append(line)
+        else:
+            new_lines.append(line)
+
+    # Append any new keys not already in file
+    for key, value in updates.items():
+        if key not in seen_keys:
+            new_lines.append(f"{key}={value}\n")
+
+    tmp_path = SETTINGS_FILE.parent / "settings.conf.tmp"
+    with open(tmp_path, 'w') as f:
+        f.writelines(new_lines)
+    os.replace(tmp_path, SETTINGS_FILE)
+
+
+def reset_settings_to_defaults() -> None:
+    """Reset settings.conf to factory defaults."""
+    if SETTINGS_DEFAULT_FILE.exists():
+        shutil.copy2(SETTINGS_DEFAULT_FILE, SETTINGS_FILE)
+
+
+def reset_backend_settings(backend: str) -> None:
+    """Reset only a specific backend's settings to factory defaults.
+
+    Reads the backend-specific default file (e.g. gum.default.conf) and
+    overwrites matching keys in settings.conf while leaving other keys intact.
+    """
+    default_files = {
+        "gum": GUM_DEFAULT_FILE,
+        "textual": TEXTUAL_DEFAULT_FILE,
+        "whiptail": WHIPTAIL_DEFAULT_FILE,
+    }
+    default_path = default_files.get(backend)
+    if not default_path or not default_path.exists():
+        return
+
+    # Parse the backend default file for key=value pairs
+    defaults = {}
+    with open(default_path, 'r') as f:
+        for line in f:
+            line = line.strip()
+            if line and not line.startswith('#') and '=' in line:
+                key, value = line.split('=', 1)
+                defaults[key.strip()] = value.strip()
+
+    if defaults:
+        save_config_settings(defaults)
+
+
+def _check_venv_package(package: str) -> bool:
+    """Check if a Python package is installed in the project venv."""
+    venv_python = MENU_ROOT / ".venv" / "bin" / "python3"
+    if not venv_python.exists():
+        return False
+    try:
+        result = subprocess.run(
+            [str(venv_python), "-c", f"import {package}"],
+            capture_output=True, timeout=5
+        )
+        return result.returncode == 0
+    except Exception:
+        return False
+
+
+def _check_backend_available(backend: str) -> bool:
+    """Check if a TUI backend is currently available."""
+    if backend == "gum":
+        return gum_available()
+    elif backend == "textual":
+        if HAS_TEXTUAL:
+            return True
+        # Textual may be installed in the venv but not importable in
+        # the current process (e.g. running without venv activated)
+        return _check_venv_package("textual")
+    elif backend == "whiptail":
+        return shutil.which("whiptail") is not None
+    return False
+
+
+def install_backend(backend: str) -> bool:
+    """Install a TUI backend on demand. Returns True on success."""
+    global HAS_TEXTUAL
+
+    os_type = CURRENT_OS
+    venv_dir = MENU_ROOT / ".venv"
+
+    if backend == "gum":
+        if os_type == "macos":
+            cmd = ["brew", "install", "gum"]
+        else:
+            # Linux: needs charm repo first
+            print("Adding Charm repository...")
+            setup_cmds = [
+                "sudo mkdir -p /etc/apt/keyrings",
+                "curl -fsSL https://repo.charm.sh/apt/gpg.key | sudo gpg --dearmor -o /etc/apt/keyrings/charm.gpg",
+                'echo "deb [signed-by=/etc/apt/keyrings/charm.gpg] https://repo.charm.sh/apt/ * *" | sudo tee /etc/apt/sources.list.d/charm.list',
+                "sudo apt-get update -qq",
+            ]
+            for c in setup_cmds:
+                if subprocess.run(c, shell=True).returncode != 0:
+                    print(f"Failed: {c}")
+                    return False
+            cmd = ["sudo", "apt-get", "install", "-y", "gum"]
+
+    elif backend == "textual":
+        # Install into the project venv
+        if not venv_dir.exists():
+            print("Creating virtual environment...")
+            subprocess.run([sys.executable, "-m", "venv", str(venv_dir)])
+
+        pip_bin = venv_dir / "bin" / "pip"
+        if not pip_bin.exists():
+            print("Error: venv pip not found")
+            return False
+        cmd = [str(pip_bin), "install", "textual"]
+
+    elif backend == "whiptail":
+        if os_type == "macos":
+            cmd = ["brew", "install", "newt"]
+        else:
+            cmd = ["sudo", "apt-get", "install", "-y", "whiptail"]
+
+    else:
+        return False
+
+    print(f"Installing {backend}...")
+    result = subprocess.run(cmd)
+    if result.returncode != 0:
+        print(f"Installation failed (exit code {result.returncode})")
+        return False
+
+    # Re-check availability
+    if backend == "textual":
+        # Try to import textual now
+        try:
+            import importlib
+            importlib.import_module("textual")
+            HAS_TEXTUAL = True
+        except ImportError:
+            return False
+
+    # Verify the backend is actually available now
+    if _check_backend_available(backend):
+        print(f"{backend} installed successfully!")
+        return True
+
+    print(f"Installation completed but {backend} still not detected")
+    return False
 
 
 def get_config_backend() -> str:
@@ -104,6 +276,65 @@ def get_gum_style_args() -> List[str]:
         args.extend(['--unselected-prefix', f" {settings['gum.unselected_prefix']} "])
 
     return args
+
+
+def get_layout_params(settings: Dict[str, str] = None) -> Dict[str, int]:
+    """Calculate centering layout params based on terminal width.
+
+    Returns dict with content_width, left_margin, and terminal_cols.
+    Re-reads terminal size each call so resize is picked up on redraw.
+    """
+    if settings is None:
+        settings = get_config_settings()
+    max_width = int(settings.get('layout.max_width', '80'))
+    alignment = settings.get('layout.alignment', 'center')
+    terminal_cols = shutil.get_terminal_size().columns
+    content_width = min(max_width, terminal_cols - 4)
+    if alignment == 'left':
+        left_margin = 0
+        content_width = min(max_width, terminal_cols)
+    else:
+        left_margin = max(0, (terminal_cols - content_width) // 2)
+    return {
+        'content_width': content_width,
+        'left_margin': left_margin,
+        'terminal_cols': terminal_cols,
+    }
+
+
+class TerminalResized(Exception):
+    """Raised when the terminal is resized during a gum subprocess."""
+    pass
+
+
+class _sigwinch_guard:
+    """Context manager that kills a subprocess on terminal resize.
+
+    Sets a SIGWINCH handler that terminates the tracked process and raises
+    TerminalResized so the calling loop can clear + redraw.
+    """
+
+    def __init__(self):
+        self.proc: subprocess.Popen = None
+        self._old_handler = None
+
+    def track(self, proc: subprocess.Popen):
+        """Register a running Popen process to kill on resize."""
+        self.proc = proc
+
+    def __enter__(self):
+        def _on_resize(signum, frame):
+            if self.proc and self.proc.poll() is None:
+                self.proc.terminate()
+            raise TerminalResized()
+
+        self._old_handler = signal.getsignal(signal.SIGWINCH)
+        signal.signal(signal.SIGWINCH, _on_resize)
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        signal.signal(signal.SIGWINCH, self._old_handler or signal.SIG_DFL)
+        return False  # Let TerminalResized propagate to the caller
 
 
 def check_if_installed(info: 'ScriptInfo') -> bool:
@@ -543,6 +774,921 @@ def gum_available() -> bool:
         return False
 
 
+# ============================================
+# SETTINGS MENUS
+# ============================================
+
+# Color theme presets: name -> (header_fg, match_fg, cursor_fg)
+_COLOR_PRESETS = {
+    "purple": ("99", "212", "212"),
+    "cyan": ("39", "51", "51"),
+    "green": ("40", "82", "82"),
+    "pink": ("212", "219", "219"),
+}
+
+# Textual built-in themes (from textual 7.x)
+_TEXTUAL_THEMES = [
+    "textual-dark",
+    "textual-light",
+    "textual-ansi",
+    "nord",
+    "gruvbox",
+    "tokyo-night",
+    "monokai",
+    "dracula",
+    "catppuccin-mocha",
+    "catppuccin-latte",
+    "solarized-dark",
+    "solarized-light",
+    "atom-one-dark",
+    "atom-one-light",
+    "flexoki",
+    "rose-pine",
+    "rose-pine-dawn",
+    "rose-pine-moon",
+]
+
+
+def _gum_choose_with_active(options: List[str], active: str,
+                            unavailable: List[str] = None) -> Optional[str]:
+    """Run gum choose with a * marker on the active option.
+
+    Options in the unavailable list are shown greyed out with (not installed).
+    Returns the chosen value (without markers), or None on cancel/unavailable.
+    """
+    if unavailable is None:
+        unavailable = []
+    display = []
+    for opt in options:
+        if opt in unavailable:
+            display.append(f"  {opt}  (not installed)")
+        elif opt == active:
+            display.append(f"* {opt}")
+        else:
+            display.append(f"  {opt}")
+    r = subprocess.Popen(
+        ["gum", "choose"] + display,
+        stdout=subprocess.PIPE, text=True
+    )
+    out, _ = r.communicate()
+    if r.returncode != 0 or not out.strip():
+        return None
+    chosen = out.strip()
+    # Reject unavailable selections
+    if "(not installed)" in chosen:
+        return None
+    # Strip the marker prefix
+    return chosen.lstrip("* ").strip()
+
+
+def _gum_header(title: str, subtitle: str, settings: Dict[str, str] = None) -> None:
+    """Display a styled gum header box."""
+    if settings is None:
+        settings = get_config_settings()
+    layout = get_layout_params(settings)
+    margin_str = f"0 {layout['left_margin']}"
+    border = settings.get('gum.border', 'rounded')
+    border_fg = settings.get('gum.border_foreground', '99')
+    os.system('clear')
+    subprocess.run([
+        "gum", "style",
+        "--border", border,
+        "--border-foreground", border_fg,
+        "--padding", "1 2",
+        "--margin", margin_str,
+        "--width", str(layout['content_width']),
+        title, subtitle
+    ])
+
+
+def _gum_select(choices: List[str], settings: Dict[str, str] = None,
+                placeholder: str = "Select setting to change...") -> Optional[str]:
+    """Run gum filter with padded choices, return stripped selection or None."""
+    if settings is None:
+        settings = get_config_settings()
+    layout = get_layout_params(settings)
+    pad = " " * layout['left_margin']
+    padded = [f"{pad}{c}" for c in choices]
+    proc = subprocess.Popen(
+        ["gum", "filter", "--height", "15", "--placeholder", placeholder]
+        + padded,
+        stdout=subprocess.PIPE, text=True
+    )
+    stdout, _ = proc.communicate()
+    if proc.returncode != 0:
+        return None
+    return stdout.strip().lstrip() if stdout else None
+
+
+def _gum_offer_install(backend: str) -> bool:
+    """Prompt user to install a missing backend via gum confirm."""
+    r = subprocess.run(
+        ["gum", "confirm", f"Install {backend}?"]
+    )
+    if r.returncode != 0:
+        return False
+    success = install_backend(backend)
+    if not success:
+        input("\nPress Enter to continue...")
+    return success
+
+
+# ── Gum backend submenus ──────────────────────────────────
+
+def _gum_configure_gum(settings: Dict[str, str]) -> None:
+    """Gum-specific settings submenu (border, colors, reset)."""
+    while True:
+        settings = get_config_settings()
+        current_border = settings.get('gum.border', 'rounded')
+        current_theme = "custom"
+        for name, (h, m, c) in _COLOR_PRESETS.items():
+            if (settings.get('gum.header_foreground') == h and
+                    settings.get('gum.match_foreground') == m and
+                    settings.get('gum.cursor_foreground') == c):
+                current_theme = name
+                break
+
+        _gum_header("Gum Settings", "Configure the Gum backend", settings)
+
+        choices = [
+            f"1.   Border Style         [{current_border}]",
+            f"2.   Color Theme          [{current_theme}]",
+            "─" * 30,
+            "3. Reset Gum to Defaults",
+            "b. Back",
+        ]
+
+        try:
+            sel = _gum_select(choices, settings)
+            if not sel or sel.startswith("b.") or sel.startswith("─"):
+                return
+
+            if sel.startswith("1."):
+                val = _gum_choose_with_active(
+                    ["none", "normal", "rounded", "double", "thick"],
+                    current_border)
+                if val:
+                    save_config_settings({'gum.border': val})
+
+            elif sel.startswith("2."):
+                preset_choices = list(_COLOR_PRESETS.keys()) + ["custom"]
+                val = _gum_choose_with_active(preset_choices, current_theme)
+                if val:
+                    if val in _COLOR_PRESETS:
+                        h, m, c = _COLOR_PRESETS[val]
+                        save_config_settings({
+                            'gum.header_foreground': h,
+                            'gum.match_foreground': m,
+                            'gum.cursor_foreground': c,
+                        })
+                    elif val == "custom":
+                        r2 = subprocess.Popen(
+                            ["gum", "input", "--placeholder",
+                             "Enter 256-color code for header (e.g. 39)"],
+                            stdout=subprocess.PIPE, text=True
+                        )
+                        out2, _ = r2.communicate()
+                        if r2.returncode == 0 and out2.strip():
+                            code = out2.strip()
+                            save_config_settings({
+                                'gum.header_foreground': code,
+                                'gum.match_foreground': code,
+                                'gum.cursor_foreground': code,
+                            })
+
+            elif sel.startswith("3."):
+                r = subprocess.run(
+                    ["gum", "confirm", "Reset Gum settings to defaults?"]
+                )
+                if r.returncode == 0:
+                    reset_backend_settings("gum")
+
+        except KeyboardInterrupt:
+            return
+
+
+def _gum_configure_whiptail(settings: Dict[str, str]) -> None:
+    """Whiptail-specific settings submenu (theme, reset)."""
+    while True:
+        settings = get_config_settings()
+        current_wt = settings.get('whiptail.theme', 'default')
+
+        _gum_header("Whiptail Settings", "Configure the Whiptail backend", settings)
+
+        choices = [
+            f"1.   Theme                [{current_wt}]",
+            "─" * 30,
+            "2. Reset Whiptail to Defaults",
+            "b. Back",
+        ]
+
+        try:
+            sel = _gum_select(choices, settings)
+            if not sel or sel.startswith("b.") or sel.startswith("─"):
+                return
+
+            if sel.startswith("1."):
+                val = _gum_choose_with_active(
+                    ["default", "green", "blue", "red"], current_wt)
+                if val:
+                    save_config_settings({'whiptail.theme': val})
+
+            elif sel.startswith("2."):
+                r = subprocess.run(
+                    ["gum", "confirm", "Reset Whiptail settings to defaults?"]
+                )
+                if r.returncode == 0:
+                    reset_backend_settings("whiptail")
+
+        except KeyboardInterrupt:
+            return
+
+
+def _gum_configure_textual(settings: Dict[str, str]) -> None:
+    """Textual-specific settings submenu (theme selection, reset)."""
+    while True:
+        settings = get_config_settings()
+        current_theme = settings.get('textual.theme', 'textual-dark')
+
+        _gum_header("Textual Settings", "Configure the Textual backend", settings)
+
+        choices = [
+            f"1.   Theme                [{current_theme}]",
+            "─" * 30,
+            "2. Reset Textual to Defaults",
+            "b. Back",
+        ]
+
+        try:
+            sel = _gum_select(choices, settings)
+            if not sel or sel.startswith("b.") or sel.startswith("─"):
+                return
+
+            if sel.startswith("1."):
+                val = _gum_choose_with_active(_TEXTUAL_THEMES, current_theme)
+                if val:
+                    save_config_settings({'textual.theme': val})
+
+            elif sel.startswith("2."):
+                r = subprocess.run(
+                    ["gum", "confirm", "Reset Textual settings to defaults?"]
+                )
+                if r.returncode == 0:
+                    reset_backend_settings("textual")
+
+        except KeyboardInterrupt:
+            return
+
+
+def gum_settings_menu() -> None:
+    """Interactive settings editor using gum — hierarchical with backend submenus."""
+    settings = get_config_settings()
+
+    while True:
+        settings = get_config_settings()
+
+        current_backend = settings.get('backend', 'gum')
+        current_align = settings.get('layout.alignment', 'center')
+        current_width = settings.get('layout.max_width', '80')
+
+        # Backend availability
+        gum_avail = _check_backend_available("gum")
+        textual_avail = _check_backend_available("textual")
+        whiptail_avail = _check_backend_available("whiptail")
+
+        gum_status = "installed" if gum_avail else "not installed"
+        textual_status = "installed" if textual_avail else "not installed"
+        whiptail_status = "installed" if whiptail_avail else "not installed"
+
+        _gum_header("Settings", "Change menu appearance and behaviour", settings)
+
+        choices = [
+            f"1. * Active Backend       [{current_backend}]",
+            "─── Backends ───",
+            f"2.   Gum                  [{gum_status}]",
+            f"3.   Textual              [{textual_status}]",
+            f"4.   Whiptail             [{whiptail_status}]",
+            "─── Layout ───",
+            f"5.   Alignment            [{current_align}]",
+            f"6.   Max Width            [{current_width}]",
+            "─" * 30,
+            "7. Reset All to Defaults",
+            "b. Back",
+        ]
+
+        try:
+            sel = _gum_select(choices, settings)
+            if not sel or sel.startswith("b.") or sel.startswith("─"):
+                return
+
+            if sel.startswith("1."):
+                # Only show installed backends for active selection
+                installed = [b for b in ("gum", "textual", "whiptail")
+                             if _check_backend_available(b)]
+                if installed:
+                    val = _gum_choose_with_active(installed, current_backend)
+                    if val:
+                        save_config_settings({'backend': val})
+
+            elif sel.startswith("2."):
+                if gum_avail:
+                    _gum_configure_gum(settings)
+                else:
+                    if _gum_offer_install("gum"):
+                        _gum_configure_gum(settings)
+
+            elif sel.startswith("3."):
+                if textual_avail:
+                    _gum_configure_textual(settings)
+                else:
+                    if _gum_offer_install("textual"):
+                        _gum_configure_textual(settings)
+
+            elif sel.startswith("4."):
+                if whiptail_avail:
+                    _gum_configure_whiptail(settings)
+                else:
+                    if _gum_offer_install("whiptail"):
+                        _gum_configure_whiptail(settings)
+
+            elif sel.startswith("5."):
+                val = _gum_choose_with_active(
+                    ["center", "left"], current_align)
+                if val:
+                    save_config_settings({'layout.alignment': val})
+
+            elif sel.startswith("6."):
+                r = subprocess.Popen(
+                    ["gum", "input", "--placeholder", "Enter width (40-200)",
+                     "--value", current_width],
+                    stdout=subprocess.PIPE, text=True
+                )
+                out, _ = r.communicate()
+                if r.returncode == 0 and out.strip():
+                    try:
+                        val = int(out.strip())
+                        if 40 <= val <= 200:
+                            save_config_settings({'layout.max_width': str(val)})
+                    except ValueError:
+                        pass
+
+            elif sel.startswith("7."):
+                r = subprocess.run(
+                    ["gum", "confirm", "Reset all settings to defaults?"]
+                )
+                if r.returncode == 0:
+                    reset_settings_to_defaults()
+                    settings = get_config_settings()
+
+        except KeyboardInterrupt:
+            return
+
+
+def _whiptail_active(value: str, current: str) -> str:
+    """Return a whiptail description with * marker if active."""
+    return f"* {value}" if value == current else f"  {value}"
+
+
+def _whiptail_run(title: str, text: str, menu_items: List[str],
+                  num_items: int) -> Optional[str]:
+    """Run a whiptail --menu dialog, return selected tag or None."""
+    wh_h, wh_w, wh_m = _whiptail_dimensions(num_items)
+    with open("/dev/tty", "r") as tty_in, open("/dev/tty", "w") as tty_out:
+        proc = subprocess.Popen(
+            ["whiptail", "--title", title, "--menu", text,
+             wh_h, wh_w, wh_m] + menu_items,
+            stdin=tty_in, stdout=tty_out,
+            stderr=subprocess.PIPE, text=True
+        )
+        _, stderr = proc.communicate()
+        if proc.returncode == 0 and stderr.strip():
+            return stderr.strip()
+    return None
+
+
+def _whiptail_confirm(text: str) -> bool:
+    """Run a whiptail --yesno dialog, return True if confirmed."""
+    with open("/dev/tty", "r") as ti, open("/dev/tty", "w") as to_:
+        p = subprocess.Popen(
+            ["whiptail", "--title", "Confirm", "--yesno", text, "8", "50"],
+            stdin=ti, stdout=to_, stderr=subprocess.PIPE, text=True
+        )
+        p.communicate()
+        return p.returncode == 0
+
+
+def _whiptail_input(title: str, text: str, default: str = "") -> Optional[str]:
+    """Run a whiptail --inputbox, return entered text or None."""
+    with open("/dev/tty", "r") as ti, open("/dev/tty", "w") as to_:
+        p = subprocess.Popen(
+            ["whiptail", "--title", title, "--inputbox",
+             text, "8", "50", default],
+            stdin=ti, stdout=to_, stderr=subprocess.PIPE, text=True
+        )
+        _, se = p.communicate()
+        if p.returncode == 0 and se.strip():
+            return se.strip()
+    return None
+
+
+def _whiptail_offer_install(backend: str) -> bool:
+    """Prompt user to install a missing backend via whiptail confirm."""
+    if not _whiptail_confirm(f"Install {backend}?"):
+        return False
+    success = install_backend(backend)
+    if not success:
+        input("\nPress Enter to continue...")
+    return success
+
+
+# ── Whiptail backend submenus ─────────────────────────────
+
+def _whiptail_configure_gum() -> None:
+    """Gum-specific settings submenu using whiptail."""
+    while True:
+        settings = get_config_settings()
+        current_border = settings.get('gum.border', 'rounded')
+        current_theme = "custom"
+        for name, (h, m, c) in _COLOR_PRESETS.items():
+            if (settings.get('gum.header_foreground') == h and
+                    settings.get('gum.match_foreground') == m and
+                    settings.get('gum.cursor_foreground') == c):
+                current_theme = name
+                break
+
+        menu_items = [
+            "1", f"  Border Style         [{current_border}]",
+            "2", f"  Color Theme          [{current_theme}]",
+            "-", "──────────────",
+            "3", "  Reset Gum to Defaults",
+        ]
+
+        try:
+            sel = _whiptail_run("Gum Settings", "Configure Gum backend:",
+                                menu_items, 4)
+            if not sel or sel == "-":
+                return
+
+            if sel == "1":
+                items = []
+                for v in ("none", "normal", "rounded", "double", "thick"):
+                    items.extend([v, _whiptail_active(v, current_border)])
+                val = _whiptail_run("Border Style", "Choose border:", items, 5)
+                if val:
+                    save_config_settings({'gum.border': val})
+
+            elif sel == "2":
+                presets = list(_COLOR_PRESETS.keys())
+                items = []
+                for v in presets:
+                    items.extend([v, _whiptail_active(v, current_theme)])
+                val = _whiptail_run("Color Theme", "Choose theme:", items,
+                                    len(presets))
+                if val and val in _COLOR_PRESETS:
+                    h, m, c = _COLOR_PRESETS[val]
+                    save_config_settings({
+                        'gum.header_foreground': h,
+                        'gum.match_foreground': m,
+                        'gum.cursor_foreground': c,
+                    })
+
+            elif sel == "3":
+                if _whiptail_confirm("Reset Gum settings to defaults?"):
+                    reset_backend_settings("gum")
+
+        except KeyboardInterrupt:
+            return
+
+
+def _whiptail_configure_whiptail() -> None:
+    """Whiptail-specific settings submenu using whiptail."""
+    while True:
+        settings = get_config_settings()
+        current_wt = settings.get('whiptail.theme', 'default')
+
+        menu_items = [
+            "1", f"  Theme                [{current_wt}]",
+            "-", "──────────────",
+            "2", "  Reset Whiptail to Defaults",
+        ]
+
+        try:
+            sel = _whiptail_run("Whiptail Settings",
+                                "Configure Whiptail backend:", menu_items, 3)
+            if not sel or sel == "-":
+                return
+
+            if sel == "1":
+                items = []
+                for v in ("default", "green", "blue", "red"):
+                    items.extend([v, _whiptail_active(v, current_wt)])
+                val = _whiptail_run("Whiptail Theme", "Choose theme:",
+                                    items, 4)
+                if val:
+                    save_config_settings({'whiptail.theme': val})
+
+            elif sel == "2":
+                if _whiptail_confirm(
+                        "Reset Whiptail settings to defaults?"):
+                    reset_backend_settings("whiptail")
+
+        except KeyboardInterrupt:
+            return
+
+
+def _whiptail_configure_textual() -> None:
+    """Textual-specific settings submenu using whiptail."""
+    while True:
+        settings = get_config_settings()
+        current_theme = settings.get('textual.theme', 'textual-dark')
+
+        menu_items = [
+            "1", f"  Theme                [{current_theme}]",
+            "-", "──────────────",
+            "2", "  Reset Textual to Defaults",
+        ]
+
+        try:
+            sel = _whiptail_run("Textual Settings",
+                                "Configure Textual backend:", menu_items, 3)
+            if not sel or sel == "-":
+                return
+
+            if sel == "1":
+                items = []
+                for v in _TEXTUAL_THEMES:
+                    items.extend([v, _whiptail_active(v, current_theme)])
+                val = _whiptail_run("Textual Theme", "Choose theme:",
+                                    items, len(_TEXTUAL_THEMES))
+                if val:
+                    save_config_settings({'textual.theme': val})
+
+            elif sel == "2":
+                if _whiptail_confirm(
+                        "Reset Textual settings to defaults?"):
+                    reset_backend_settings("textual")
+
+        except KeyboardInterrupt:
+            return
+
+
+def whiptail_settings_menu() -> None:
+    """Interactive settings editor using whiptail — hierarchical."""
+    while True:
+        settings = get_config_settings()
+        current_backend = settings.get('backend', 'gum')
+        current_align = settings.get('layout.alignment', 'center')
+        current_width = settings.get('layout.max_width', '80')
+
+        gum_avail = _check_backend_available("gum")
+        textual_avail = _check_backend_available("textual")
+        whiptail_avail = _check_backend_available("whiptail")
+
+        gum_status = "installed" if gum_avail else "not installed"
+        textual_status = "installed" if textual_avail else "not installed"
+        whiptail_status = "installed" if whiptail_avail else "not installed"
+
+        menu_items = [
+            "1", f"* Active Backend       [{current_backend}]",
+            "-", "─── Backends ───",
+            "2", f"  Gum                  [{gum_status}]",
+            "3", f"  Textual              [{textual_status}]",
+            "4", f"  Whiptail             [{whiptail_status}]",
+            "-", "─── Layout ───",
+            "5", f"  Alignment            [{current_align}]",
+            "6", f"  Max Width            [{current_width}]",
+            "-", "──────────────",
+            "7", "  Reset All to Defaults",
+        ]
+
+        try:
+            sel = _whiptail_run("Settings",
+                                "Change menu appearance and behaviour:",
+                                menu_items, 10)
+            if not sel or sel == "-":
+                return
+
+            if sel == "1":
+                installed = [b for b in ("gum", "textual", "whiptail")
+                             if _check_backend_available(b)]
+                if installed:
+                    items = []
+                    for b in installed:
+                        items.extend([b, _whiptail_active(b, current_backend)])
+                    val = _whiptail_run("Active Backend", "Choose backend:",
+                                        items, len(installed))
+                    if val:
+                        save_config_settings({'backend': val})
+
+            elif sel == "2":
+                if gum_avail:
+                    _whiptail_configure_gum()
+                else:
+                    if _whiptail_offer_install("gum"):
+                        _whiptail_configure_gum()
+
+            elif sel == "3":
+                if textual_avail:
+                    _whiptail_configure_textual()
+                else:
+                    if _whiptail_offer_install("textual"):
+                        _whiptail_configure_textual()
+
+            elif sel == "4":
+                if whiptail_avail:
+                    _whiptail_configure_whiptail()
+                else:
+                    if _whiptail_offer_install("whiptail"):
+                        _whiptail_configure_whiptail()
+
+            elif sel == "5":
+                val = _whiptail_run("Layout Alignment", "Choose alignment:", [
+                    "center", _whiptail_active("center", current_align),
+                    "left", _whiptail_active("left", current_align),
+                ], 2)
+                if val:
+                    save_config_settings({'layout.alignment': val})
+
+            elif sel == "6":
+                val = _whiptail_input("Max Width",
+                                      "Enter width (40-200):", current_width)
+                if val:
+                    try:
+                        n = int(val)
+                        if 40 <= n <= 200:
+                            save_config_settings({'layout.max_width': str(n)})
+                    except ValueError:
+                        pass
+
+            elif sel == "7":
+                if _whiptail_confirm("Reset all settings to defaults?"):
+                    reset_settings_to_defaults()
+
+        except KeyboardInterrupt:
+            return
+
+
+def _fallback_active(value: str, current: str) -> str:
+    """Return a display string with * marker if active."""
+    return f"* {value}" if value == current else f"  {value}"
+
+
+# ── Fallback backend submenus ─────────────────────────────
+
+def _fallback_configure_gum() -> None:
+    """Gum-specific settings submenu using plain text."""
+    while True:
+        settings = get_config_settings()
+        current_border = settings.get('gum.border', 'rounded')
+        current_theme = "custom"
+        for name, (h, m, c) in _COLOR_PRESETS.items():
+            if (settings.get('gum.header_foreground') == h and
+                    settings.get('gum.match_foreground') == m and
+                    settings.get('gum.cursor_foreground') == c):
+                current_theme = name
+                break
+
+        os.system('cls' if os.name == 'nt' else 'clear')
+        print("=" * 40)
+        print("  Gum Settings")
+        print("=" * 40)
+        print(f"  1.   Border Style       [{current_border}]")
+        print(f"  2.   Color Theme        [{current_theme}]")
+        print(f"  ──────────────")
+        print(f"  3. Reset Gum to Defaults")
+        print(f"  b. Back")
+        print("=" * 40)
+
+        try:
+            choice = input("  Select: ").strip().lower()
+        except (KeyboardInterrupt, EOFError):
+            return
+
+        if choice == 'b' or not choice:
+            return
+
+        if choice == '1':
+            for v in ('none', 'normal', 'rounded', 'double', 'thick'):
+                print(f"    {_fallback_active(v, current_border)}")
+            val = input("  Border: ").strip().lower()
+            if val in ('none', 'normal', 'rounded', 'double', 'thick'):
+                save_config_settings({'gum.border': val})
+
+        elif choice == '2':
+            presets = list(_COLOR_PRESETS.keys())
+            for v in presets:
+                print(f"    {_fallback_active(v, current_theme)}")
+            val = input("  Theme: ").strip().lower()
+            if val in _COLOR_PRESETS:
+                h, m, c = _COLOR_PRESETS[val]
+                save_config_settings({
+                    'gum.header_foreground': h,
+                    'gum.match_foreground': m,
+                    'gum.cursor_foreground': c,
+                })
+
+        elif choice == '3':
+            confirm = input("  Reset Gum to defaults? (y/n): ").strip().lower()
+            if confirm == 'y':
+                reset_backend_settings("gum")
+                print("  Gum settings reset.")
+                input("  Press Enter to continue...")
+
+
+def _fallback_configure_whiptail() -> None:
+    """Whiptail-specific settings submenu using plain text."""
+    while True:
+        settings = get_config_settings()
+        current_wt = settings.get('whiptail.theme', 'default')
+
+        os.system('cls' if os.name == 'nt' else 'clear')
+        print("=" * 40)
+        print("  Whiptail Settings")
+        print("=" * 40)
+        print(f"  1.   Theme              [{current_wt}]")
+        print(f"  ──────────────")
+        print(f"  2. Reset Whiptail to Defaults")
+        print(f"  b. Back")
+        print("=" * 40)
+
+        try:
+            choice = input("  Select: ").strip().lower()
+        except (KeyboardInterrupt, EOFError):
+            return
+
+        if choice == 'b' or not choice:
+            return
+
+        if choice == '1':
+            for v in ('default', 'green', 'blue', 'red'):
+                print(f"    {_fallback_active(v, current_wt)}")
+            val = input("  Theme: ").strip().lower()
+            if val in ('default', 'green', 'blue', 'red'):
+                save_config_settings({'whiptail.theme': val})
+
+        elif choice == '2':
+            confirm = input("  Reset Whiptail to defaults? (y/n): ").strip().lower()
+            if confirm == 'y':
+                reset_backend_settings("whiptail")
+                print("  Whiptail settings reset.")
+                input("  Press Enter to continue...")
+
+
+def _fallback_configure_textual() -> None:
+    """Textual-specific settings submenu using plain text."""
+    while True:
+        settings = get_config_settings()
+        current_theme = settings.get('textual.theme', 'textual-dark')
+
+        os.system('cls' if os.name == 'nt' else 'clear')
+        print("=" * 40)
+        print("  Textual Settings")
+        print("=" * 40)
+        print(f"  1.   Theme              [{current_theme}]")
+        print(f"  ──────────────")
+        print(f"  2. Reset Textual to Defaults")
+        print(f"  b. Back")
+        print("=" * 40)
+
+        try:
+            choice = input("  Select: ").strip().lower()
+        except (KeyboardInterrupt, EOFError):
+            return
+
+        if choice == 'b' or not choice:
+            return
+
+        if choice == '1':
+            for v in _TEXTUAL_THEMES:
+                print(f"    {_fallback_active(v, current_theme)}")
+            val = input("  Theme: ").strip().lower()
+            if val in _TEXTUAL_THEMES:
+                save_config_settings({'textual.theme': val})
+
+        elif choice == '2':
+            confirm = input("  Reset Textual to defaults? (y/n): ").strip().lower()
+            if confirm == 'y':
+                reset_backend_settings("textual")
+                print("  Textual settings reset.")
+                input("  Press Enter to continue...")
+
+
+def _fallback_offer_install(backend: str) -> bool:
+    """Prompt user to install a missing backend via plain text."""
+    confirm = input(f"  Install {backend}? (y/n): ").strip().lower()
+    if confirm != 'y':
+        return False
+    success = install_backend(backend)
+    if not success:
+        input("\nPress Enter to continue...")
+    return success
+
+
+def fallback_settings_menu() -> None:
+    """Plain text settings menu — hierarchical with backend submenus."""
+    while True:
+        settings = get_config_settings()
+        current_backend = settings.get('backend', 'gum')
+        current_align = settings.get('layout.alignment', 'center')
+        current_width = settings.get('layout.max_width', '80')
+
+        gum_avail = _check_backend_available("gum")
+        textual_avail = _check_backend_available("textual")
+        whiptail_avail = _check_backend_available("whiptail")
+
+        gum_status = "installed" if gum_avail else "not installed"
+        textual_status = "installed" if textual_avail else "not installed"
+        whiptail_status = "installed" if whiptail_avail else "not installed"
+
+        os.system('cls' if os.name == 'nt' else 'clear')
+        print("=" * 40)
+        print("  Settings")
+        print("=" * 40)
+        print(f"  1. * Active Backend     [{current_backend}]")
+        print(f"  ─── Backends ───")
+        print(f"  2.   Gum                [{gum_status}]")
+        print(f"  3.   Textual            [{textual_status}]")
+        print(f"  4.   Whiptail           [{whiptail_status}]")
+        print(f"  ─── Layout ───")
+        print(f"  5.   Alignment          [{current_align}]")
+        print(f"  6.   Max Width          [{current_width}]")
+        print(f"  ──────────────")
+        print(f"  7. Reset All to Defaults")
+        print(f"  b. Back")
+        print("=" * 40)
+
+        try:
+            choice = input("  Select: ").strip().lower()
+        except (KeyboardInterrupt, EOFError):
+            return
+
+        if choice == 'b' or not choice:
+            return
+
+        if choice == '1':
+            installed = [b for b in ("gum", "textual", "whiptail")
+                         if _check_backend_available(b)]
+            for v in installed:
+                print(f"    {_fallback_active(v, current_backend)}")
+            val = input("  Backend: ").strip().lower()
+            if val in installed:
+                save_config_settings({'backend': val})
+
+        elif choice == '2':
+            if gum_avail:
+                _fallback_configure_gum()
+            else:
+                if _fallback_offer_install("gum"):
+                    _fallback_configure_gum()
+
+        elif choice == '3':
+            if textual_avail:
+                _fallback_configure_textual()
+            else:
+                if _fallback_offer_install("textual"):
+                    _fallback_configure_textual()
+
+        elif choice == '4':
+            if whiptail_avail:
+                _fallback_configure_whiptail()
+            else:
+                if _fallback_offer_install("whiptail"):
+                    _fallback_configure_whiptail()
+
+        elif choice == '5':
+            for v in ('center', 'left'):
+                print(f"    {_fallback_active(v, current_align)}")
+            val = input("  Alignment: ").strip().lower()
+            if val in ('center', 'left'):
+                save_config_settings({'layout.alignment': val})
+
+        elif choice == '6':
+            val = input("  Width (40-200): ").strip()
+            try:
+                n = int(val)
+                if 40 <= n <= 200:
+                    save_config_settings({'layout.max_width': str(n)})
+            except ValueError:
+                pass
+
+        elif choice == '7':
+            confirm = input("  Reset to defaults? (y/n): ").strip().lower()
+            if confirm == 'y':
+                reset_settings_to_defaults()
+                print("  Settings reset to defaults.")
+                input("  Press Enter to continue...")
+
+
+def textual_settings_menu() -> None:
+    """Settings menu for Textual backend — delegates to gum/whiptail/fallback."""
+    if gum_available():
+        gum_settings_menu()
+    elif shutil.which("whiptail"):
+        whiptail_settings_menu()
+    else:
+        fallback_settings_menu()
+
+
 def gum_menu(directory: Path, breadcrumb: List[str] = None) -> None:
     """Display menu using gum with modal dialog style."""
     if breadcrumb is None:
@@ -555,6 +1701,9 @@ def gum_menu(directory: Path, breadcrumb: List[str] = None) -> None:
     height = settings.get('gum.height', '15')
 
     while True:
+        layout = get_layout_params(settings)
+        margin_str = f"0 {layout['left_margin']}"
+
         items = scan_menu_directory(directory)
 
         if not items:
@@ -595,6 +1744,8 @@ def gum_menu(directory: Path, breadcrumb: List[str] = None) -> None:
 
         # Add navigation with letter shortcuts
         choices.append("─" * 30)
+        if len(breadcrumb) == 1:
+            choices.append("s. ⚙️  Settings")
         if len(breadcrumb) > 1:
             choices.append("b. ⬅️  Back")
         choices.append("x. ❌ Exit")
@@ -603,36 +1754,44 @@ def gum_menu(directory: Path, breadcrumb: List[str] = None) -> None:
         path_display = " > ".join(breadcrumb)
 
         try:
-            # Clear screen and show styled header
-            os.system('clear')
+            with _sigwinch_guard() as guard:
+                # Clear screen and show styled header
+                os.system('clear')
 
-            # Display bordered title using gum style
-            subprocess.run([
-                "gum", "style",
-                "--border", border,
-                "--border-foreground", border_fg,
-                "--foreground", header_fg,
-                "--padding", "1 2",
-                "--margin", "1",
-                f"📍 {path_display}",
-                "Type number to select, b=back, x=exit"
-            ])
+                # Display bordered title using gum style (centered via margin)
+                subprocess.run([
+                    "gum", "style",
+                    "--border", border,
+                    "--border-foreground", border_fg,
+                    "--foreground", header_fg,
+                    "--padding", "1 2",
+                    "--margin", margin_str,
+                    "--width", str(layout['content_width']),
+                    f"📍 {path_display}",
+                    "Type number to select, b=back, x=exit"
+                ])
 
-            # Show menu with gum filter for keyboard input
-            result = subprocess.run(
-                [
-                    "gum", "filter",
-                    "--height", height,
-                    "--placeholder", "Type number to select...",
-                ] + choices,
-                stdout=subprocess.PIPE,
-                text=True
-            )
+                # Pad filter choices for visual centering
+                pad = " " * layout['left_margin']
+                padded_choices = [f"{pad}{c}" for c in choices]
 
-            if result.returncode != 0:
+                # Run gum filter via Popen so guard can kill on resize
+                proc = subprocess.Popen(
+                    [
+                        "gum", "filter",
+                        "--height", height,
+                        "--placeholder", "Type number to select...",
+                    ] + padded_choices,
+                    stdout=subprocess.PIPE,
+                    text=True
+                )
+                guard.track(proc)
+                stdout, _ = proc.communicate()
+
+            if proc.returncode != 0:
                 return
 
-            selection = result.stdout.strip() if result.stdout else ""
+            selection = stdout.strip().lstrip() if stdout else ""
 
             if not selection:
                 return
@@ -643,6 +1802,11 @@ def gum_menu(directory: Path, breadcrumb: List[str] = None) -> None:
 
             if selection.startswith("b."):
                 return  # Go back one level
+
+            if selection.startswith("s."):
+                gum_settings_menu()
+                settings = get_config_settings()  # Re-read after changes
+                continue
 
             if selection.startswith("─"):
                 continue
@@ -656,6 +1820,8 @@ def gum_menu(directory: Path, breadcrumb: List[str] = None) -> None:
                 else:
                     gum_script_action(item.script_info)
 
+        except TerminalResized:
+            continue  # Restart loop with fresh layout params
         except KeyboardInterrupt:
             return
 
@@ -667,6 +1833,8 @@ def gum_script_action(script_info: ScriptInfo) -> None:
     border_fg = settings.get('gum.border_foreground', '99')
 
     while True:
+        layout = get_layout_params(settings)
+        margin_str = f"0 {layout['left_margin']}"
         # Build info display based on script type
         if script_info.script_type == "tool":
             binary_status = "✅ found" if script_info.binary_available else "⛔ not found"
@@ -728,29 +1896,37 @@ def gum_script_action(script_info: ScriptInfo) -> None:
             ])
 
         try:
-            # Clear screen and show styled info box
-            os.system('clear')
+            with _sigwinch_guard() as guard:
+                # Clear screen and show styled info box
+                os.system('clear')
 
-            # Display script info in bordered box
-            subprocess.run([
-                "gum", "style",
-                "--border", border,
-                "--border-foreground", border_fg,
-                "--padding", "1 2",
-                "--margin", "1",
-            ] + info_lines)
+                # Display script info in bordered box (centered via margin)
+                subprocess.run([
+                    "gum", "style",
+                    "--border", border,
+                    "--border-foreground", border_fg,
+                    "--padding", "1 2",
+                    "--margin", margin_str,
+                    "--width", str(layout['content_width']),
+                ] + info_lines)
 
-            # Show action menu with gum filter for keyboard shortcuts
-            result = subprocess.run(
-                ["gum", "filter", "--height", "8", "--placeholder", "Type letter to select..."] + choices,
-                stdout=subprocess.PIPE,
-                text=True
-            )
+                # Pad filter choices for visual centering
+                pad = " " * layout['left_margin']
+                padded_choices = [f"{pad}{c}" for c in choices]
 
-            if result.returncode != 0:
+                # Run gum filter via Popen so guard can kill on resize
+                proc = subprocess.Popen(
+                    ["gum", "filter", "--height", "8", "--placeholder", "Type letter to select..."] + padded_choices,
+                    stdout=subprocess.PIPE,
+                    text=True
+                )
+                guard.track(proc)
+                stdout, _ = proc.communicate()
+
+            if proc.returncode != 0:
                 return
 
-            selection = result.stdout.strip() if result.stdout else ""
+            selection = stdout.strip().lstrip() if stdout else ""
 
             if not selection or selection.startswith("b."):
                 return
@@ -776,6 +1952,8 @@ def gum_script_action(script_info: ScriptInfo) -> None:
             elif selection.startswith("v."):
                 subprocess.run(["less", str(script_info.path)])
 
+        except TerminalResized:
+            continue  # Restart loop with fresh layout params
         except KeyboardInterrupt:
             return
 
@@ -783,6 +1961,19 @@ def gum_script_action(script_info: ScriptInfo) -> None:
 # ============================================
 # WHIPTAIL FALLBACK MENU
 # ============================================
+
+def _whiptail_dimensions(num_items: int) -> tuple:
+    """Calculate dynamic whiptail dialog dimensions from terminal size.
+
+    Returns (height, width, menu_lines) as strings for whiptail args.
+    """
+    term = shutil.get_terminal_size()
+    width = max(50, min(100, int(term.columns * 0.8)))
+    height = max(15, min(40, int(term.lines * 0.8)))
+    menu_lines = max(4, height - 8)  # Reserve ~8 lines for dialog chrome
+    menu_lines = min(menu_lines, num_items + 2)  # Don't exceed items + nav
+    return (str(height), str(width), str(menu_lines))
+
 
 def whiptail_menu(directory: Path, breadcrumb: List[str] = None) -> None:
     """Display menu using whiptail."""
@@ -812,16 +2003,19 @@ def whiptail_menu(directory: Path, breadcrumb: List[str] = None) -> None:
             menu_items.extend([tag, desc])
 
         # Add navigation
+        if len(breadcrumb) == 1:
+            menu_items.extend(["s", "⚙️  Settings"])
         menu_items.extend(["b", "⬅️  Back"])
         menu_items.extend(["x", "❌ Exit"])
 
         title = " > ".join(breadcrumb)
 
         try:
+            wh_h, wh_w, wh_m = _whiptail_dimensions(len(items))
             cmd = [
                 "whiptail", "--title", title,
                 "--menu", "Select an option (use arrow keys):",
-                "20", "70", "12"
+                wh_h, wh_w, wh_m
             ] + menu_items
 
             # Run whiptail with direct terminal access
@@ -848,6 +2042,10 @@ def whiptail_menu(directory: Path, breadcrumb: List[str] = None) -> None:
 
             if selection == "b":
                 return
+
+            if selection == "s":
+                whiptail_settings_menu()
+                continue
 
             try:
                 idx = int(selection) - 1  # Convert 1-based tag back to 0-based index
@@ -901,10 +2099,11 @@ def whiptail_script_action(script_info: ScriptInfo) -> None:
             ])
 
         try:
+            wh_h, wh_w, wh_m = _whiptail_dimensions(len(menu_items) // 2)
             cmd = [
                 "whiptail", "--title", script_info.name,
                 "--menu", info,
-                "20", "70", "8"
+                wh_h, wh_w, wh_m
             ] + menu_items
 
             # Run whiptail with direct terminal access
@@ -979,6 +2178,13 @@ if HAS_TEXTUAL:
             text-style: bold;
         }
 
+        #content-wrapper {
+            width: 100%;
+            max-width: 100;
+            align-horizontal: center;
+            height: 1fr;
+        }
+
         #menu-list {
             width: 100%;
             height: 1fr;
@@ -1026,15 +2232,24 @@ if HAS_TEXTUAL:
             self.breadcrumb = ["NinjaMenu"]
             self.items: List[MenuItem] = []
             self.history: List[Path] = []
+            self._id_to_item: Dict[str, MenuItem] = {}  # option_id -> MenuItem
 
         def compose(self) -> ComposeResult:
             yield Header(show_clock=True)
             yield Static("📍 NinjaMenu", id="breadcrumb")
-            yield OptionList(id="menu-list")
+            with Container(id="content-wrapper"):
+                yield OptionList(id="menu-list")
             yield Static("Use ↑↓ arrows to navigate, Enter to select, Backspace/Esc to go back, q to quit", id="info-panel")
             yield Footer()
 
         def on_mount(self) -> None:
+            # Apply configured theme (must be done after mount, not in __init__)
+            settings = get_config_settings()
+            theme_name = settings.get('textual.theme', 'textual-dark')
+            try:
+                self.theme = theme_name
+            except Exception:
+                self.theme = "textual-dark"
             self.refresh_menu()
             # Focus the option list for keyboard navigation
             self.query_one("#menu-list", OptionList).focus()
@@ -1049,20 +2264,25 @@ if HAS_TEXTUAL:
             breadcrumb.update(f"📍 {' > '.join(self.breadcrumb)}")
 
             self.items = scan_menu_directory(self.current_dir)
+            self._id_to_item.clear()
 
             folder_num = 1
-            for item in self.items:
+            for idx, item in enumerate(self.items):
+                opt_id = f"item_{idx}"
+                self._id_to_item[opt_id] = item
                 if item.is_submenu:
-                    option_list.add_option(Option(f"{folder_num}. 📁 {item.name}", id=item.path.name))
+                    option_list.add_option(Option(f"{folder_num}. 📁 {item.name}", id=opt_id))
                     folder_num += 1
                 else:
                     status = "✅" if item.script_info.installed else "⬜"
                     root = "🔐" if item.script_info.root else "  "
-                    option_list.add_option(Option(f"   {status}{root} {item.name}", id=item.path.name))
+                    option_list.add_option(Option(f"   {status}{root} {item.name}", id=opt_id))
 
-            # Add separator and back option if not at root
-            if self.history:
-                option_list.add_option(Separator())
+            # Add settings at root level, back option in submenus
+            option_list.add_option(None)  # Separator
+            if not self.history:
+                option_list.add_option(Option("⚙️  Settings", id="__settings__"))
+            else:
                 option_list.add_option(Option("⬅️  Back", id="__back__"))
 
             # Update info panel
@@ -1087,17 +2307,18 @@ if HAS_TEXTUAL:
             else:
                 info_panel.update("Use ↑↓ arrows to navigate, Enter to select, Backspace/Esc to go back, q to quit")
 
+        def _get_item(self, option_id: str) -> Optional[MenuItem]:
+            """Look up a MenuItem by its option ID."""
+            return self._id_to_item.get(option_id)
+
         def on_option_list_option_highlighted(self, event: OptionList.OptionHighlighted) -> None:
             """Handle option highlight (selection change)."""
-            if event.option_id == "__back__":
+            if event.option_id in ("__back__", "__settings__"):
                 self.update_info_panel(None)
                 return
-
-            # Find the highlighted item
-            for item in self.items:
-                if item.path.name == event.option_id:
-                    self.update_info_panel(item)
-                    break
+            item = self._get_item(event.option_id)
+            if item:
+                self.update_info_panel(item)
 
         def on_option_list_option_selected(self, event: OptionList.OptionSelected) -> None:
             """Handle option selection (Enter key or click)."""
@@ -1105,17 +2326,19 @@ if HAS_TEXTUAL:
                 self.action_go_back()
                 return
 
-            # Find and handle selected item
-            for item in self.items:
-                if item.path.name == event.option_id:
-                    if item.is_submenu:
-                        self.history.append(self.current_dir)
-                        self.current_dir = item.path
-                        self.breadcrumb.append(item.name)
-                        self.refresh_menu()
-                    else:
-                        self.handle_script_selection(item)
-                    break
+            if event.option_id == "__settings__":
+                self.exit(result=("settings", None))
+                return
+
+            item = self._get_item(event.option_id)
+            if item:
+                if item.is_submenu:
+                    self.history.append(self.current_dir)
+                    self.current_dir = item.path
+                    self.breadcrumb.append(item.name)
+                    self.refresh_menu()
+                else:
+                    self.handle_script_selection(item)
 
         def handle_script_selection(self, item: MenuItem) -> None:
             """Handle script selection - show action menu."""
@@ -1147,34 +2370,31 @@ if HAS_TEXTUAL:
             option_list = self.query_one("#menu-list", OptionList)
             if option_list.highlighted is not None:
                 option = option_list.get_option_at_index(option_list.highlighted)
-                if option and option.id != "__back__":
-                    for item in self.items:
-                        if item.path.name == option.id and not item.is_submenu:
-                            self.exit(result=("install", item))
-                            break
+                if option:
+                    item = self._get_item(option.id)
+                    if item and not item.is_submenu:
+                        self.exit(result=("install", item))
 
         def action_uninstall(self) -> None:
             """Uninstall currently highlighted script."""
             option_list = self.query_one("#menu-list", OptionList)
             if option_list.highlighted is not None:
                 option = option_list.get_option_at_index(option_list.highlighted)
-                if option and option.id != "__back__":
-                    for item in self.items:
-                        if item.path.name == option.id and not item.is_submenu:
-                            if item.script_info and item.script_info.installed:
-                                self.exit(result=("uninstall", item))
-                            break
+                if option:
+                    item = self._get_item(option.id)
+                    if item and not item.is_submenu:
+                        if item.script_info and item.script_info.installed:
+                            self.exit(result=("uninstall", item))
 
         def action_view_log(self) -> None:
             """View log for currently highlighted script."""
             option_list = self.query_one("#menu-list", OptionList)
             if option_list.highlighted is not None:
                 option = option_list.get_option_at_index(option_list.highlighted)
-                if option and option.id != "__back__":
-                    for item in self.items:
-                        if item.path.name == option.id and not item.is_submenu:
-                            self.exit(result=("log", item))
-                            break
+                if option:
+                    item = self._get_item(option.id)
+                    if item and not item.is_submenu:
+                        self.exit(result=("log", item))
 
 
 def run_textual_menu(start_dir: Path = None):
@@ -1187,6 +2407,10 @@ def run_textual_menu(start_dir: Path = None):
             break
 
         action, item = result
+
+        if action == "settings":
+            textual_settings_menu()
+            continue
 
         if action == "action":
             # Show action menu using gum or whiptail
@@ -1317,28 +2541,64 @@ def main():
     # Select TUI backend
     tui = args.tui
 
+    has_whiptail = shutil.which("whiptail") is not None
+
     if tui == "auto":
         # Read from config file
         config_backend = get_config_backend()
 
-        if config_backend == "textual" and HAS_TEXTUAL:
+        if config_backend == "textual" and _check_backend_available("textual"):
             tui = "textual"
         elif config_backend == "gum" and gum_available():
             tui = "gum"
-        elif config_backend == "whiptail":
+        elif config_backend == "whiptail" and has_whiptail:
             tui = "whiptail"
         else:
-            # Fallback: gum -> whiptail -> textual
+            # Configured backend not available — fall back gracefully
+            if config_backend not in ("gum", "textual", "whiptail"):
+                pass  # Unknown value, use fallback chain
+            elif config_backend != "auto":
+                print(f"Warning: configured backend '{config_backend}' is not available, falling back...")
             if gum_available():
                 tui = "gum"
-            elif HAS_TEXTUAL:
+            elif _check_backend_available("textual"):
                 tui = "textual"
-            else:
+            elif has_whiptail:
                 tui = "whiptail"
+            else:
+                print("Error: no TUI backend available (install gum, textual, or whiptail)")
+                sys.exit(1)
+
+    # Final availability guard for explicit --tui flag
+    if tui == "whiptail" and not has_whiptail:
+        print("Error: whiptail is not installed")
+        sys.exit(1)
+    if tui == "gum" and not gum_available():
+        print("Error: gum is not installed or cannot access TTY")
+        sys.exit(1)
+    if tui == "textual" and not _check_backend_available("textual"):
+        print("Error: textual is not installed (pip install textual)")
+        sys.exit(1)
+
+    # If textual is selected but not importable in the current process,
+    # re-exec through the venv Python where it IS installed.
+    # Guard against infinite re-exec with an env var.
+    if tui == "textual" and not HAS_TEXTUAL:
+        if os.environ.get('_NINJA_VENV_REEXEC'):
+            print("Error: textual could not be imported even from the venv Python.")
+            print("Try: source .venv/bin/activate && pip install textual")
+            sys.exit(1)
+        venv_python = MENU_ROOT / ".venv" / "bin" / "python3"
+        if venv_python.exists():
+            os.environ['_NINJA_VENV_REEXEC'] = '1'
+            os.execv(str(venv_python), [str(venv_python)] + sys.argv)
+        else:
+            print("Error: textual is in the venv but venv python not found")
+            sys.exit(1)
 
     if tui == "gum":
         gum_menu(start_dir)
-    elif tui == "textual" and HAS_TEXTUAL:
+    elif tui == "textual":
         run_textual_menu(start_dir)
     else:
         whiptail_menu(start_dir)
