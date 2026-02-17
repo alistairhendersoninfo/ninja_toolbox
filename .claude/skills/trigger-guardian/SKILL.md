@@ -2,7 +2,7 @@
 name: trigger-guardian
 description: Trigger a Wiki Guardian test run by making a trivial wiki edit and checking the action result
 argument-hint: [optional: "spam" to test spam detection]
-disable-model-invocation: true
+disable-model-invocation: false
 allowed-tools: Bash, Read, AskUserQuestion
 ---
 

@@ -189,16 +189,25 @@ gh pr merge "$PR_NUMBER" $STRATEGY --delete-branch $USE_ADMIN || {
 }
 echo "    Merged."
 
-# --- Return to main ---
+# --- Return to main and clean up ---
 echo ""
 echo "==> Returning to main..."
 git checkout main 2>/dev/null || true
 git pull origin main || true
+
+# Delete local branch if it still exists
+if git show-ref --verify --quiet "refs/heads/$PR_HEAD" 2>/dev/null; then
+    git branch -d "$PR_HEAD" 2>/dev/null || git branch -D "$PR_HEAD" 2>/dev/null || true
+    echo "    Local branch '$PR_HEAD' deleted."
+fi
+
+# Prune stale remote tracking refs
+git remote prune origin 2>/dev/null || true
 
 # --- Done ---
 echo ""
 echo "================================================"
 echo "  PR #$PR_NUMBER merged to main."
 echo "  Strategy: $STRATEGY"
-echo "  Branch '$PR_HEAD' deleted."
+echo "  Branch '$PR_HEAD' deleted (local + remote)."
 echo "================================================"

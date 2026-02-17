@@ -2,7 +2,7 @@
 name: approve-pr
 description: Admin self-review gate — verifies all review issues are resolved then clears PR for merge
 argument-hint: [pr-number]
-disable-model-invocation: true
+disable-model-invocation: false
 allowed-tools: Bash, Read, AskUserQuestion
 ---
 

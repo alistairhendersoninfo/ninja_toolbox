@@ -2,7 +2,7 @@
 name: create-pr
 description: Create a new feature branch, PR, and folder structure for developing a new menu script
 argument-hint: [feature-name]
-disable-model-invocation: true
+disable-model-invocation: false
 allowed-tools: Bash, Read, Write, Edit, Glob, Grep, AskUserQuestion
 ---
 
