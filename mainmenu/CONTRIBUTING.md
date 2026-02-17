@@ -15,6 +15,17 @@ Full technical reference: [`.docs/technical_manuals/os-modular-architecture.md`]
 
 A folder is either a **category** (contains only subfolders) or a **leaf** (contains only scripts) — never both.
 
+### Category Metadata (`category.yaml`)
+
+Submenu folders can include an optional `category.yaml` to set a display name and description shown in the menu:
+
+```yaml
+name: "CLI Tools"
+description: "Command-line LLM interfaces and chatbots"
+```
+
+Both fields are optional. Without `category.yaml`, the folder name is titlecased (e.g. `cli` → `Cli`) and no description is shown.
+
 ## Quick Decision: Which Tier?
 
 - **Does the script need different code per OS?** → **Tier 1** (modular folder)

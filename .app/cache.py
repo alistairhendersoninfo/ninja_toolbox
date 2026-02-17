@@ -65,7 +65,8 @@ CREATE TABLE IF NOT EXISTS submenus (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     path TEXT UNIQUE NOT NULL,
     name TEXT NOT NULL,
-    parent_menu TEXT NOT NULL
+    parent_menu TEXT NOT NULL,
+    description TEXT NOT NULL DEFAULT ''
 );
 
 CREATE TABLE IF NOT EXISTS alias_entries (
@@ -195,6 +196,14 @@ def rebuild_cache(menu_dir: Path, db_path: Path) -> None:
     conn.execute("PRAGMA journal_mode=WAL")
     conn.execute("PRAGMA foreign_keys=ON")
 
+    # Migrate: drop submenus table if it lacks the description column
+    try:
+        cols = {row[1] for row in conn.execute("PRAGMA table_info(submenus)").fetchall()}
+        if cols and 'description' not in cols:
+            conn.execute("DROP TABLE IF EXISTS submenus")
+    except Exception:
+        pass
+
     # Create schema (idempotent)
     conn.executescript(_SCHEMA)
 
@@ -232,9 +241,16 @@ def _walk_and_insert(directory: Path, menu_root: Path, conn: sqlite3.Connection)
                 rel_path = str(entry.relative_to(menu_root))
                 name_parts = entry.name.replace('-', ' ').replace('_', ' ').split()
                 camel_name = ''.join(word.capitalize() for word in name_parts)
+
+                # Check for category.yaml with display name/description
+                cat_yaml = entry / "category.yaml"
+                cat_data = _parse_yaml_file(cat_yaml) if cat_yaml.exists() else None
+                display_name = cat_data.get('name', camel_name) if cat_data else camel_name
+                description = cat_data.get('description', '') if cat_data else ''
+
                 conn.execute(
-                    "INSERT OR REPLACE INTO submenus (path, name, parent_menu) VALUES (?, ?, ?)",
-                    (rel_path, camel_name, parent_menu)
+                    "INSERT OR REPLACE INTO submenus (path, name, parent_menu, description) VALUES (?, ?, ?, ?)",
+                    (rel_path, display_name, parent_menu, description)
                 )
                 # Recurse into submenu
                 _walk_and_insert(entry, menu_root, conn)
@@ -387,10 +403,10 @@ def is_cache_stale(menu_dir: Path, db_path: Path) -> bool:
         return True
 
     # Walk filesystem and compare
-    return _check_staleness(menu_dir, menu_dir, cached)
+    return _check_staleness(menu_dir, menu_root=menu_dir, cached=cached, db_mtime=db_path.stat().st_mtime)
 
 
-def _check_staleness(directory: Path, menu_root: Path, cached: Dict[str, float]) -> bool:
+def _check_staleness(directory: Path, menu_root: Path, cached: Dict[str, float], db_mtime: float = 0) -> bool:
     """Recursively check if any meta file has changed."""
     if not directory.exists():
         return False
@@ -407,7 +423,12 @@ def _check_staleness(directory: Path, menu_root: Path, cached: Dict[str, float])
                 if rel_path not in cached or cached[rel_path] != current_mtime:
                     return True
             else:
-                if _check_staleness(entry, menu_root, cached):
+                # Check if category.yaml is newer than the cache db
+                cat_yaml = entry / "category.yaml"
+                if cat_yaml.exists():
+                    if cat_yaml.stat().st_mtime > db_mtime:
+                        return True
+                if _check_staleness(entry, menu_root, cached, db_mtime):
                     return True
         elif entry.suffix == '.sh':
             sibling_meta = entry.parent / f"{entry.stem}.meta.yaml"
@@ -439,7 +460,7 @@ def get_menu_items(db_path: Path, parent_menu: str, current_os: str) -> List[Dic
 
     # 1. Submenus
     rows = conn.execute(
-        "SELECT path, name FROM submenus WHERE parent_menu = ? ORDER BY name",
+        "SELECT path, name, description FROM submenus WHERE parent_menu = ? ORDER BY name",
         (parent_menu,)
     ).fetchall()
     for row in rows:
@@ -447,6 +468,7 @@ def get_menu_items(db_path: Path, parent_menu: str, current_os: str) -> List[Dic
             'is_submenu': True,
             'path': row['path'],
             'name': row['name'],
+            'description': row['description'],
             'order': 0,
         })
 
