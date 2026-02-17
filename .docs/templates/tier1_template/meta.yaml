@@ -24,3 +24,4 @@ supported_os:                      # REQUIRED — list only the OS scripts you c
   - kali
   - debian
   - ubuntu
+  # - windows                      # Add if windows.ps1 exists
