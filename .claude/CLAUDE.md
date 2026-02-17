@@ -204,23 +204,25 @@ When adding a new script or folder:
 ### Adding New Scripts
 
 1. Decide the tier: Tier 2 (OS-agnostic, most common) or Tier 1 (OS-specific)
-2. Create script in appropriate folder under `mainmenu/`
-3. Copy from `.docs/templates/` (use `script_template.sh` + `script_template.meta.yaml` for Tier 2, or `tier1_template/` for Tier 1)
-4. Create the companion `.meta.yaml` (Tier 2) or `meta.yaml` (Tier 1) with all required fields including `supported_os`
-5. Set `check_command` and/or `check_path` for installation detection
-6. Use logging functions to write to `.docs/logs/`
-7. Test with `bash script.sh install`
-8. Update folder README.md with new script
-9. Update user and technical manuals
+2. **Scripts must go inside a category subfolder** — never place a script directly under a top-level menu folder. Top-level folders (e.g. `mainmenu/llm/`) should only contain category subfolders (`cli/`, `ide/`, `ai-tools/`, etc.), not loose scripts. If no suitable category exists, create one first (see "Creating Submenus" below).
+3. Create script in the appropriate category folder under `mainmenu/`
+4. Copy from `.docs/templates/` (use `script_template.sh` + `script_template.meta.yaml` for Tier 2, or `tier1_template/` for Tier 1)
+5. Create the companion `.meta.yaml` (Tier 2) or `meta.yaml` (Tier 1) with all required fields including `supported_os`
+6. Set `check_command` and/or `check_path` for installation detection
+7. Use logging functions to write to `.docs/logs/`
+8. Test with `bash script.sh install`
+9. Update folder README.md with new script
+10. Update user and technical manuals
 
 ### Creating Submenus
 
-1. Create a new folder under the parent menu
-2. Create README.md from template
-3. Create user manual in `.docs/user_manuals/{folder}.md`
-4. Create technical manual in `.docs/technical_manuals/{folder}.md`
-5. Add scripts to the folder
-6. Menu system auto-discovers on next run
+1. Create a new folder under the parent menu (this becomes a `📁` category in the menu)
+2. **Every top-level menu section must use category subfolders** — scripts are never placed alongside subfolder siblings. A folder either contains only subfolders (category) or only scripts (leaf), never both.
+3. Create README.md from template
+4. Create user manual in `.docs/user_manuals/{folder}.md`
+5. Create technical manual in `.docs/technical_manuals/{folder}.md`
+6. Add scripts to the folder
+7. Menu system auto-discovers on next run
 
 ### Logging
 
