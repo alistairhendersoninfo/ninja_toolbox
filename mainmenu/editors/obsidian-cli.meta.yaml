@@ -1,0 +1,17 @@
+name: "NotesMD CLI (Obsidian CLI)"
+description: "Terminal CLI for Obsidian vaults — create, search, open, delete notes"
+type: install
+root: true
+order: 20
+installed: false
+check_command: "notesmd-cli --version"
+tags:
+  - editors
+  - obsidian
+  - cli
+  - notes
+supported_os:
+  - macos
+  - kali
+  - debian
+  - ubuntu

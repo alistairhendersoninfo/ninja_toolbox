@@ -85,6 +85,7 @@ esac
 _pkg_map_macos() {
     case "$1" in
         # Cask installs (GUI apps)
+        obsidian)       echo "--cask obsidian" ;;
         zenmap)         echo "--cask zenmap" ;;
         wireshark)      echo "--cask wireshark" ;;
 
