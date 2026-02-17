@@ -1,0 +1,18 @@
+name: "Obsidian"
+description: "Markdown-based knowledge base and note-taking app"
+type: install
+root: true
+order: 10
+installed: false
+check_command: ""
+check_path: "/Applications/Obsidian.app:/usr/bin/obsidian"
+tags:
+  - editors
+  - notes
+  - markdown
+  - knowledge-base
+supported_os:
+  - macos
+  - kali
+  - debian
+  - ubuntu
