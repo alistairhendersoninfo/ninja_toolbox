@@ -2,7 +2,7 @@
 name: review-tasks
 description: Read code review comments from a PR and create todo tasks for each issue
 argument-hint: [pr-number]
-disable-model-invocation: true
+disable-model-invocation: false
 allowed-tools: Bash, Read, TaskCreate, TaskUpdate, TaskList, AskUserQuestion
 ---
 

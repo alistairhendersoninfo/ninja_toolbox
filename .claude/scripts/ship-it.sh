@@ -120,15 +120,25 @@ else
 fi
 echo "    Merged and branch deleted."
 
-# --- Step 6: Return to main ---
+# --- Step 6: Return to main and clean up ---
 echo ""
 echo "==> Step 6: Returning to main..."
 git checkout main || { echo "ERROR: Could not checkout main"; exit 1; }
 git pull origin main || { echo "ERROR: Could not pull main"; exit 1; }
 
+# Delete local branch if it still exists
+if git show-ref --verify --quiet "refs/heads/$BRANCH" 2>/dev/null; then
+    git branch -d "$BRANCH" 2>/dev/null || git branch -D "$BRANCH" 2>/dev/null || true
+    echo "    Local branch '$BRANCH' deleted."
+fi
+
+# Prune stale remote tracking refs
+git remote prune origin 2>/dev/null || true
+
 # --- Done ---
 echo ""
 echo "================================================"
 echo "  Shipped! PR #$PR_NUMBER merged to main."
+echo "  Branch '$BRANCH' deleted (local + remote)."
 echo "  $PR_URL"
 echo "================================================"

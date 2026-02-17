@@ -2,7 +2,7 @@
 name: pr-status
 description: "Show open PRs and issues — summary or detailed view"
 argument-hint: "[pr-number | issue-number]"
-disable-model-invocation: true
+disable-model-invocation: false
 allowed-tools: Bash, Read
 ---
 

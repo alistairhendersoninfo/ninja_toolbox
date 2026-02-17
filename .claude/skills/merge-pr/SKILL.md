@@ -2,7 +2,7 @@
 name: merge-pr
 description: Check PR status, resolve issues, and merge a pull request
 argument-hint: [pr-number]
-disable-model-invocation: true
+disable-model-invocation: false
 allowed-tools: Bash, Read, AskUserQuestion
 ---
 
