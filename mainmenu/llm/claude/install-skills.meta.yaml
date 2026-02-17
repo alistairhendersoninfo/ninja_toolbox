@@ -1,0 +1,16 @@
+name: "Install Claude Skills"
+description: "Install custom Claude skills to your .claude configuration folder"
+type: config
+root: false
+order: 20
+installed: false
+tags:
+  - llm
+  - claude
+  - skills
+  - config
+supported_os:
+  - macos
+  - kali
+  - debian
+  - ubuntu

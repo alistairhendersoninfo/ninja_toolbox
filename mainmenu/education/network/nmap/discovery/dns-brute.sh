@@ -1,15 +1,4 @@
 #!/bin/bash
-# ---
-# name: "DNS Brute Force"
-# description: "Enumerate subdomains via DNS brute-force"
-# version: "1.0.0"
-# author: "NinjaMenu"
-# type: tool
-# root: false
-# order: 10
-# binary: "nmap"
-# tags: "network, discovery, nmap, dns"
-# ---
 
 set -euo pipefail
 

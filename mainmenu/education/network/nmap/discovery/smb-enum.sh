@@ -1,15 +1,4 @@
 #!/bin/bash
-# ---
-# name: "SMB Enumeration"
-# description: "Discover SMB shares, users, and OS info"
-# version: "1.0.0"
-# author: "NinjaMenu"
-# type: tool
-# root: false
-# order: 20
-# binary: "nmap"
-# tags: "network, discovery, nmap, smb"
-# ---
 
 set -euo pipefail
 

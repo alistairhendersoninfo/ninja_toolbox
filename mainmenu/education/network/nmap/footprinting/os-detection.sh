@@ -1,15 +1,4 @@
 #!/bin/bash
-# ---
-# name: "OS Detection"
-# description: "OS fingerprinting using TCP/IP stack analysis"
-# version: "1.0.0"
-# author: "NinjaMenu"
-# type: tool
-# root: true
-# order: 10
-# binary: "nmap"
-# tags: "network, footprinting, nmap, os"
-# ---
 
 set -euo pipefail
 

@@ -1,0 +1,16 @@
+name: "iftop"
+description: "Display bandwidth usage per network connection"
+type: install
+root: true
+order: 14
+installed: false
+check_command: "which iftop"
+tags:
+  - monitoring
+  - network
+  - bandwidth
+supported_os:
+  - macos
+  - kali
+  - debian
+  - ubuntu

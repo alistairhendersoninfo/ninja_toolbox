@@ -1,0 +1,16 @@
+name: "masscan"
+description: "Fastest port scanner - scan entire internet in minutes"
+type: install
+root: true
+order: 11
+check_command: "masscan --version"
+tags:
+  - network
+  - scanner
+  - fast
+supported_os:
+  - macos
+  - kali
+  - debian
+  - ubuntu
+installed: false

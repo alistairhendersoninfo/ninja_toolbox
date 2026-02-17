@@ -1,15 +1,4 @@
 #!/bin/bash
-# ---
-# name: "Full Port Scan"
-# description: "Scan all 65535 TCP ports"
-# version: "1.0.0"
-# author: "NinjaMenu"
-# type: tool
-# root: false
-# order: 30
-# binary: "nmap"
-# tags: "network, scanning, nmap, comprehensive"
-# ---
 
 set -euo pipefail
 

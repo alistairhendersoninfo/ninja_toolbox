@@ -1,15 +1,4 @@
 #!/bin/bash
-# ---
-# name: "XML Export"
-# description: "Export scan results as XML for further analysis"
-# version: "1.0.0"
-# author: "NinjaMenu"
-# type: tool
-# root: false
-# order: 20
-# binary: "nu"
-# tags: "network, reporting, nmap-unleashed, xml"
-# ---
 
 set -euo pipefail
 

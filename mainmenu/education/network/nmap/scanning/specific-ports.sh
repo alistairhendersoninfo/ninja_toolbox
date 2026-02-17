@@ -1,15 +1,4 @@
 #!/bin/bash
-# ---
-# name: "Specific Ports"
-# description: "Scan user-specified ports"
-# version: "1.0.0"
-# author: "NinjaMenu"
-# type: tool
-# root: false
-# order: 60
-# binary: "nmap"
-# tags: "network, scanning, nmap, ports"
-# ---
 
 set -euo pipefail
 

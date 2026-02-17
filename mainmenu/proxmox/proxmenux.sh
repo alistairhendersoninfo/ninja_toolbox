@@ -1,23 +1,4 @@
 #!/bin/bash
-# ---
-# name: "ProxMenux"
-# description: "Interactive menu for Proxmox VE management with scripts and commands"
-# version: "1.0.0"
-# author: "MacRimi"
-# root: true
-# order: 10
-# hidden: false
-# installed: false
-# check_command: "proxmenux --help"
-# check_path: "/usr/local/bin/proxmenux"
-# dependencies:
-#   - wget
-#   - curl
-# tags:
-#   - proxmox
-#   - management
-#   - menu
-# ---
 
 set -euo pipefail
 

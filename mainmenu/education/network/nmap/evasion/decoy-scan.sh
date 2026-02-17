@@ -1,15 +1,4 @@
 #!/bin/bash
-# ---
-# name: "Decoy Scan"
-# description: "Spoof multiple source IPs to mask the real scanner"
-# version: "1.0.0"
-# author: "NinjaMenu"
-# type: tool
-# root: true
-# order: 20
-# binary: "nmap"
-# tags: "network, evasion, nmap, decoy"
-# ---
 
 set -euo pipefail
 

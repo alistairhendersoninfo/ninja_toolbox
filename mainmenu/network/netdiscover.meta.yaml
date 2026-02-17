@@ -1,0 +1,15 @@
+name: "netdiscover"
+description: "Active/passive network discovery using ARP requests"
+type: install
+root: true
+order: 18
+check_command: "which netdiscover"
+tags:
+  - network
+  - discovery
+  - passive
+supported_os:
+  - kali
+  - debian
+  - ubuntu
+installed: false

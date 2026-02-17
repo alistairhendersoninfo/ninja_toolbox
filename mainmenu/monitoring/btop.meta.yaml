@@ -1,0 +1,16 @@
+name: "btop"
+description: "Modern resource monitor with beautiful graphs and themes"
+type: install
+root: true
+order: 11
+installed: false
+check_command: "btop --version"
+tags:
+  - monitoring
+  - modern
+  - beautiful
+supported_os:
+  - macos
+  - kali
+  - debian
+  - ubuntu

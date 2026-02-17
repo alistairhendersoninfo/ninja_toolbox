@@ -1,12 +1,4 @@
 #!/bin/bash
-# ---
-# name: "Install Claude Skills"
-# description: "Install custom Claude skills to your .claude configuration folder"
-# type: config
-# root: false
-# order: 20
-# tags: "llm, claude, skills, config"
-# ---
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 MENU_ROOT="${MENU_ROOT:-$(cd "$SCRIPT_DIR" && while [[ ! -f "menu.py" ]] && [[ "$PWD" != "/" ]]; do cd ..; done; pwd)}"

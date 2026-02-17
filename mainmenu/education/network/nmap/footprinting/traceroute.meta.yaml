@@ -1,0 +1,20 @@
+name: "Traceroute"
+description: "Map the network path to a target host"
+version: "1.0.0"
+author: "NinjaMenu"
+type: tool
+root: true
+order: 40
+installed: false
+binary: "nmap"
+check_command: ""
+tags:
+  - network
+  - footprinting
+  - nmap
+  - traceroute
+supported_os:
+  - macos
+  - kali
+  - debian
+  - ubuntu

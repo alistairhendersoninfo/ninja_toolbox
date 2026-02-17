@@ -1,24 +1,4 @@
 #!/bin/bash
-# ---
-# name: "Gemini CLI"
-# description: "Google's Gemini AI command-line interface"
-# version: "1.0.0"
-# author: "Google"
-# root: true
-# order: 20
-# hidden: false
-# installed: false
-# check_command: "gemini --version"
-# check_path: ""
-# dependencies:
-#   - npm
-#   - nodejs
-# tags:
-#   - llm
-#   - cli
-#   - google
-#   - ai
-# ---
 
 set -euo pipefail
 

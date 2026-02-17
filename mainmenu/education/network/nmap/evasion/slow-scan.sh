@@ -1,15 +1,4 @@
 #!/bin/bash
-# ---
-# name: "Slow Scan"
-# description: "Paranoid/sneaky timing to evade IDS detection"
-# version: "1.0.0"
-# author: "NinjaMenu"
-# type: tool
-# root: true
-# order: 40
-# binary: "nmap"
-# tags: "network, evasion, nmap, timing, ids"
-# ---
 
 set -euo pipefail
 

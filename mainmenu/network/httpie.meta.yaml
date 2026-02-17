@@ -1,0 +1,16 @@
+name: "httpie"
+description: "User-friendly HTTP client with JSON support and syntax highlighting"
+type: install
+root: true
+order: 23
+check_command: "http --version"
+tags:
+  - network
+  - http
+  - client
+supported_os:
+  - macos
+  - kali
+  - debian
+  - ubuntu
+installed: false

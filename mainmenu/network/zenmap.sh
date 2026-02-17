@@ -1,13 +1,4 @@
 #!/bin/bash
-# ---
-# name: "zenmap"
-# description: "GUI front-end for Nmap network scanner"
-# type: install
-# root: true
-# order: 11
-# check_command: "zenmap --version"
-# tags: "network, scanner, gui, nmap"
-# ---
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 MENU_ROOT="${MENU_ROOT:-$(cd "$SCRIPT_DIR" && while [[ ! -f "menu.py" ]] && [[ "$PWD" != "/" ]]; do cd ..; done; pwd)}"
 source "$MENU_ROOT/.lib/platform.sh"

@@ -1,0 +1,25 @@
+name: "nmap-tools-bundle"
+description: "Nmap, Zenmap GUI, and nmapUnleashed scanning suite"
+version: "1.0.0"
+author: "alistairhendersoninfo"
+type: install
+root: true
+order: 9
+hidden: false
+installed: false
+check_command: "nmap --version"
+check_path: "/usr/bin/nmap"
+dependencies:
+  - curl
+  - git
+tags:
+  - network
+  - scanner
+  - nmap
+  - zenmap
+  - security
+supported_os:
+  - macos
+  - kali
+  - debian
+  - ubuntu

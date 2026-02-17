@@ -1,15 +1,4 @@
 #!/bin/bash
-# ---
-# name: "Quick Scan"
-# description: "Scan top 100 ports fast using nmap -F"
-# version: "1.0.0"
-# author: "NinjaMenu"
-# type: tool
-# root: false
-# order: 20
-# binary: "nmap"
-# tags: "network, scanning, nmap, fast"
-# ---
 
 set -euo pipefail
 

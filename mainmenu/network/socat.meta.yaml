@@ -1,0 +1,16 @@
+name: "socat"
+description: "Multipurpose relay for bidirectional data transfer"
+type: install
+root: true
+order: 20
+check_command: "socat -V"
+tags:
+  - network
+  - relay
+  - multipurpose
+supported_os:
+  - macos
+  - kali
+  - debian
+  - ubuntu
+installed: false

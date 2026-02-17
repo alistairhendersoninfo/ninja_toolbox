@@ -1,0 +1,20 @@
+name: "Proxmox Toolbox"
+description: "Quick first-time Proxmox VE/BS configuration with fail2ban, dependencies"
+version: "1.0.0"
+author: "Tontonjo"
+root: true
+order: 20
+hidden: false
+installed: false
+check_command: ""
+check_path: ""
+supported_os:
+  - kali
+  - debian
+dependencies:
+  - wget
+tags:
+  - proxmox
+  - configuration
+  - security
+  - fail2ban

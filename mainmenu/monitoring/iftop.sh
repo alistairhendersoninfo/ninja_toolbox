@@ -1,13 +1,4 @@
 #!/bin/bash
-# ---
-# name: "iftop"
-# description: "Display bandwidth usage per network connection"
-# type: install
-# root: true
-# order: 14
-# check_command: "which iftop"
-# tags: "monitoring, network, bandwidth"
-# ---
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 MENU_ROOT="${MENU_ROOT:-$(cd "$SCRIPT_DIR" && while [[ ! -f "menu.py" ]] && [[ "$PWD" != "/" ]]; do cd ..; done; pwd)}"
 source "$MENU_ROOT/.lib/platform.sh"

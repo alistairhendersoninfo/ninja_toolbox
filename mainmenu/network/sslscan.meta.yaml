@@ -1,0 +1,16 @@
+name: "sslscan"
+description: "Test SSL/TLS enabled services for security vulnerabilities"
+type: install
+root: true
+order: 24
+check_command: "sslscan --version"
+tags:
+  - network
+  - ssl
+  - security
+supported_os:
+  - macos
+  - kali
+  - debian
+  - ubuntu
+installed: false

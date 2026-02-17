@@ -1,0 +1,18 @@
+name: "Claude Code CLI"
+description: "Install Anthropic's official Claude Code CLI for AI-assisted development"
+type: install
+root: false
+order: 10
+installed: false
+check_path: "/home/alistair/.local/bin/claude:~/.local/bin/claude"
+tags:
+  - llm
+  - claude
+  - anthropic
+  - ai
+  - cli
+supported_os:
+  - macos
+  - kali
+  - debian
+  - ubuntu

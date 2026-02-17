@@ -1,15 +1,4 @@
 #!/bin/bash
-# ---
-# name: "Fragment Scan"
-# description: "Split packets into fragments to bypass firewalls"
-# version: "1.0.0"
-# author: "NinjaMenu"
-# type: tool
-# root: true
-# order: 10
-# binary: "nmap"
-# tags: "network, evasion, nmap, fragmentation"
-# ---
 
 set -euo pipefail
 

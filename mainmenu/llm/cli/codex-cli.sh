@@ -1,25 +1,4 @@
 #!/bin/bash
-# ---
-# name: "OpenAI Codex CLI"
-# description: "OpenAI's Codex command-line interface for code generation"
-# version: "1.0.0"
-# author: "OpenAI"
-# root: true
-# order: 30
-# hidden: false
-# installed: false
-# check_command: "codex --version"
-# check_path: ""
-# dependencies:
-#   - npm
-#   - nodejs
-# tags:
-#   - llm
-#   - cli
-#   - openai
-#   - ai
-#   - code
-# ---
 
 set -euo pipefail
 

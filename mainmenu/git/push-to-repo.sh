@@ -1,25 +1,4 @@
 #!/bin/bash
-# ---
-# name: "Push to GitHub Repo"
-# description: "Create a GitHub repo and push a local folder"
-# version: "1.0.0"
-# author: "System"
-# type: config
-# root: false
-# order: 25
-# hidden: false
-# installed: false
-# check_command: ""
-# check_path: ""
-# dependencies:
-#   - git
-#   - gh
-# tags:
-#   - git
-#   - github
-#   - push
-#   - repo
-# ---
 
 set -euo pipefail
 

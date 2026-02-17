@@ -1,13 +1,4 @@
 #!/bin/bash
-# ---
-# name: "Install All Network Tools"
-# description: "Install all 15 network tools in one go"
-# type: install
-# root: true
-# order: 1
-# check_command: "nmap --version && tcpdump --version"
-# tags: "network, all, suite"
-# ---
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 MENU_ROOT="${MENU_ROOT:-$(cd "$SCRIPT_DIR" && while [[ ! -f "menu.py" ]] && [[ "$PWD" != "/" ]]; do cd ..; done; pwd)}"
 source "$MENU_ROOT/.lib/platform.sh"

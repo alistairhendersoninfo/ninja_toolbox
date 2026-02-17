@@ -1,13 +1,4 @@
 #!/bin/bash
-# ---
-# name: "Claude Code CLI"
-# description: "Install Anthropic's official Claude Code CLI for AI-assisted development"
-# type: install
-# root: false
-# order: 10
-# check_path: "/home/alistair/.local/bin/claude:~/.local/bin/claude"
-# tags: "llm, claude, anthropic, ai, cli"
-# ---
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 MENU_ROOT="${MENU_ROOT:-$(cd "$SCRIPT_DIR" && while [[ ! -f "menu.py" ]] && [[ "$PWD" != "/" ]]; do cd ..; done; pwd)}"

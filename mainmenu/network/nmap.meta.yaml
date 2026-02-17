@@ -1,0 +1,16 @@
+name: "nmap"
+description: "Network scanner for port discovery and security auditing"
+type: install
+root: true
+order: 10
+check_command: "nmap --version"
+tags:
+  - network
+  - scanner
+  - security
+supported_os:
+  - macos
+  - kali
+  - debian
+  - ubuntu
+installed: false

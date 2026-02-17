@@ -1,0 +1,16 @@
+name: "mtr"
+description: "Network diagnostic combining ping and traceroute"
+type: install
+root: true
+order: 15
+check_command: "mtr --version"
+tags:
+  - network
+  - diagnostic
+  - traceroute
+supported_os:
+  - macos
+  - kali
+  - debian
+  - ubuntu
+installed: false

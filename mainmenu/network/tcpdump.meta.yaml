@@ -1,0 +1,16 @@
+name: "tcpdump"
+description: "Command-line packet analyzer for network troubleshooting"
+type: install
+root: true
+order: 12
+check_command: "tcpdump --version"
+tags:
+  - network
+  - packet
+  - capture
+supported_os:
+  - macos
+  - kali
+  - debian
+  - ubuntu
+installed: false

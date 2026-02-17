@@ -1,0 +1,16 @@
+name: "neofetch"
+description: "Display system info with ASCII art logo"
+type: install
+root: true
+order: 16
+installed: false
+check_command: "neofetch --version"
+tags:
+  - monitoring
+  - info
+  - display
+supported_os:
+  - macos
+  - kali
+  - debian
+  - ubuntu

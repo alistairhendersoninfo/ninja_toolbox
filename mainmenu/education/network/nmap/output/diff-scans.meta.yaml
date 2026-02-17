@@ -1,0 +1,21 @@
+name: "Diff Scans"
+description: "Run two scans and compare differences with ndiff"
+version: "1.0.0"
+author: "NinjaMenu"
+type: tool
+root: false
+order: 30
+installed: false
+binary: "nmap"
+check_command: ""
+tags:
+  - network
+  - output
+  - nmap
+  - diff
+  - ndiff
+supported_os:
+  - macos
+  - kali
+  - debian
+  - ubuntu

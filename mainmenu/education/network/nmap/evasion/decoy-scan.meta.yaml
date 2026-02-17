@@ -1,0 +1,20 @@
+name: "Decoy Scan"
+description: "Spoof multiple source IPs to mask the real scanner"
+version: "1.0.0"
+author: "NinjaMenu"
+type: tool
+root: true
+order: 20
+installed: false
+binary: "nmap"
+check_command: ""
+tags:
+  - network
+  - evasion
+  - nmap
+  - decoy
+supported_os:
+  - macos
+  - kali
+  - debian
+  - ubuntu

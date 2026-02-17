@@ -1,0 +1,20 @@
+name: "Report Scan"
+description: "Run a scan with HTML/XML report output"
+version: "1.0.0"
+author: "NinjaMenu"
+type: tool
+root: false
+order: 20
+installed: false
+binary: "nu"
+check_command: ""
+tags:
+  - network
+  - scanning
+  - nmap-unleashed
+  - report
+supported_os:
+  - macos
+  - kali
+  - debian
+  - ubuntu

@@ -1,0 +1,20 @@
+name: "Auto Scan"
+description: "Run an automated nmap-unleashed scan with default profile"
+version: "1.0.0"
+author: "NinjaMenu"
+type: tool
+root: false
+order: 10
+installed: false
+binary: "nu"
+check_command: ""
+tags:
+  - network
+  - scanning
+  - nmap-unleashed
+  - automation
+supported_os:
+  - macos
+  - kali
+  - debian
+  - ubuntu

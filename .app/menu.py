@@ -157,6 +157,28 @@ def _check_binary_available(binary: str) -> bool:
     return shutil.which(binary, path=extended_path) is not None
 
 
+def _detect_os() -> tuple:
+    """Detect current OS and distro, matching platform.sh conventions."""
+    system = platform.system()
+    if system == "Darwin":
+        return ("macos", "macos")
+    elif system == "Linux":
+        distro = "unknown"
+        try:
+            with open("/etc/os-release") as f:
+                for line in f:
+                    if line.startswith("ID="):
+                        distro = line.strip().split("=", 1)[1].strip('"')
+                        break
+        except FileNotFoundError:
+            pass
+        return ("linux", distro)
+    return ("unknown", "unknown")
+
+
+CURRENT_OS, CURRENT_DISTRO = _detect_os()
+
+
 @dataclass
 class ScriptInfo:
     """Parsed script information from YAML header."""
@@ -177,6 +199,8 @@ class ScriptInfo:
     script_type: str = "install"  # "install" = Install/Uninstall, "config" = Run only, "tool" = Run with binary check
     binary: str = ""         # Required binary command for tool scripts (e.g., "nmap")
     binary_available: bool = True  # Set at runtime after checking binary exists
+    supported_os: List[str] = field(default_factory=list)  # e.g. ["macos", "kali", "debian", "ubuntu"]
+    is_modular_folder: bool = False  # True if script lives in a Tier 1 modular folder
 
 
 @dataclass
@@ -243,6 +267,75 @@ def parse_yaml_header(script_path: Path) -> Optional[ScriptInfo]:
         return None
 
 
+def parse_meta_yaml(meta_path: Path, script_path: Path) -> Optional[ScriptInfo]:
+    """Parse a standalone meta.yaml or .meta.yaml file."""
+    if not HAS_YAML or not meta_path.exists():
+        return None
+    try:
+        data = yaml.safe_load(meta_path.read_text())
+        if not data:
+            return None
+
+        info = ScriptInfo(
+            path=script_path,
+            name=data.get('name', script_path.stem),
+            description=data.get('description', 'No description'),
+            version=data.get('version', '1.0.0'),
+            author=data.get('author', 'Unknown'),
+            root=data.get('root', False),
+            order=data.get('order', 50),
+            hidden=data.get('hidden', False),
+            installed=data.get('installed', False),
+            uninstall=data.get('uninstall', ''),
+            dependencies=data.get('dependencies', []),
+            tags=data.get('tags', []),
+            check_command=data.get('check_command', ''),
+            check_path=data.get('check_path', ''),
+            script_type=data.get('type', 'install'),
+            binary=data.get('binary', ''),
+            supported_os=data.get('supported_os', []),
+        )
+        info.installed = check_if_installed(info)
+        if info.binary:
+            info.binary_available = _check_binary_available(info.binary)
+        return info
+    except Exception as e:
+        print(f"Error parsing {meta_path}: {e}", file=sys.stderr)
+        return None
+
+
+def _resolve_modular_script(folder: Path) -> Optional[Path]:
+    """Resolve a Tier 1 modular folder to the correct OS-specific script.
+
+    Checks for exact distro match first (e.g. kali.sh), then falls back
+    to generic linux.sh, then _common.sh as last resort.
+    """
+    # Try exact distro match: kali.sh, ubuntu.sh, debian.sh, macos.sh
+    distro_script = folder / f"{CURRENT_DISTRO}.sh"
+    if distro_script.exists():
+        return distro_script
+
+    # Try distro variants with version: ubuntu-22.04.sh, kali-linux.sh
+    for f in folder.iterdir():
+        if f.suffix == '.sh' and not f.name.startswith('_'):
+            stem = f.stem.replace('-', ' ').replace('_', ' ').split()[0]
+            if stem == CURRENT_DISTRO:
+                return f
+
+    # Try generic OS match: linux.sh, macos.sh
+    os_script = folder / f"{CURRENT_OS}.sh"
+    if os_script.exists():
+        return os_script
+
+    # No match found for this OS
+    return None
+
+
+def _is_modular_folder(directory: Path) -> bool:
+    """Check if a directory is a Tier 1 modular script folder (has meta.yaml)."""
+    return (directory / "meta.yaml").exists()
+
+
 def scan_menu_directory(directory: Path) -> List[MenuItem]:
     """Scan a directory and return menu items."""
     items = []
@@ -256,18 +349,42 @@ def scan_menu_directory(directory: Path) -> List[MenuItem]:
             continue
 
         if entry.is_dir():
-            # It's a submenu - convert to CamelCase
-            name_parts = entry.name.replace('-', ' ').replace('_', ' ').split()
-            camel_name = ''.join(word.capitalize() for word in name_parts)
-            items.append(MenuItem(
-                name=camel_name,
-                path=entry,
-                is_submenu=True,
-                order=0  # Submenus first
-            ))
+            if _is_modular_folder(entry):
+                # Tier 1: modular folder with meta.yaml
+                meta_path = entry / "meta.yaml"
+                script_path = _resolve_modular_script(entry)
+                if script_path is None:
+                    # OS not supported — skip this item
+                    continue
+                script_info = parse_meta_yaml(meta_path, script_path)
+                if script_info and not script_info.hidden:
+                    script_info.is_modular_folder = True
+                    items.append(MenuItem(
+                        name=script_info.name,
+                        path=entry,
+                        is_submenu=False,
+                        script_info=script_info,
+                        order=script_info.order
+                    ))
+            else:
+                # It's a submenu - convert to CamelCase
+                name_parts = entry.name.replace('-', ' ').replace('_', ' ').split()
+                camel_name = ''.join(word.capitalize() for word in name_parts)
+                items.append(MenuItem(
+                    name=camel_name,
+                    path=entry,
+                    is_submenu=True,
+                    order=0  # Submenus first
+                ))
         elif entry.suffix == '.sh':
-            # It's a script
-            script_info = parse_yaml_header(entry)
+            # Check for sibling .meta.yaml (Tier 2/3)
+            sibling_meta = entry.parent / f"{entry.stem}.meta.yaml"
+            if sibling_meta.exists():
+                script_info = parse_meta_yaml(sibling_meta, entry)
+            else:
+                # Legacy: inline YAML header
+                script_info = parse_yaml_header(entry)
+
             if script_info and not script_info.hidden:
                 items.append(MenuItem(
                     name=script_info.name,
@@ -280,6 +397,29 @@ def scan_menu_directory(directory: Path) -> List[MenuItem]:
     # Sort by order, then by name
     items.sort(key=lambda x: (0 if x.is_submenu else 1, x.order, x.name))
     return items
+
+
+def _reparse_script_info(script_info: ScriptInfo) -> Optional[ScriptInfo]:
+    """Re-parse a script's metadata after install/uninstall.
+
+    Handles all three tiers: modular folder meta.yaml, sibling .meta.yaml,
+    and legacy inline YAML headers.
+    """
+    path = script_info.path
+
+    # Tier 1: modular folder — re-read the folder's meta.yaml
+    if script_info.is_modular_folder:
+        meta_path = path.parent / "meta.yaml"
+        if meta_path.exists():
+            return parse_meta_yaml(meta_path, path)
+
+    # Tier 2/3: sibling .meta.yaml
+    sibling_meta = path.parent / f"{path.stem}.meta.yaml"
+    if sibling_meta.exists():
+        return parse_meta_yaml(sibling_meta, path)
+
+    # Legacy: inline YAML header
+    return parse_yaml_header(path)
 
 
 def run_script(script_info: ScriptInfo, action: str = "install") -> int:
@@ -571,14 +711,14 @@ def gum_script_action(script_info: ScriptInfo) -> None:
             if selection.startswith("r.") or selection.startswith("i."):
                 run_script(script_info, "install")
                 if script_info.script_type not in ("config", "tool"):
-                    updated = parse_yaml_header(script_info.path)
+                    updated = _reparse_script_info(script_info)
                     if updated:
                         script_info.installed = updated.installed
                 input("\nPress Enter to continue...")
 
             elif selection.startswith("u."):
                 run_script(script_info, "uninstall")
-                updated = parse_yaml_header(script_info.path)
+                updated = _reparse_script_info(script_info)
                 if updated:
                     script_info.installed = updated.installed
                 input("\nPress Enter to continue...")
@@ -746,14 +886,14 @@ def whiptail_script_action(script_info: ScriptInfo) -> None:
 
             elif selection == "install":
                 run_script(script_info, "install")
-                updated = parse_yaml_header(script_info.path)
+                updated = _reparse_script_info(script_info)
                 if updated:
                     script_info.installed = updated.installed
                 input("\nPress Enter to continue...")
 
             elif selection == "uninstall":
                 run_script(script_info, "uninstall")
-                updated = parse_yaml_header(script_info.path)
+                updated = _reparse_script_info(script_info)
                 if updated:
                     script_info.installed = updated.installed
                 input("\nPress Enter to continue...")

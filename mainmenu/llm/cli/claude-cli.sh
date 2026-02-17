@@ -1,23 +1,4 @@
 #!/bin/bash
-# ---
-# name: "Claude CLI"
-# description: "Anthropic's official CLI for Claude AI"
-# version: "1.0.0"
-# author: "Anthropic"
-# root: false
-# order: 10
-# hidden: false
-# installed: false
-# check_command: "claude --version"
-# check_path: "~/.local/bin/claude"
-# dependencies:
-#   - curl
-# tags:
-#   - llm
-#   - cli
-#   - anthropic
-#   - ai
-# ---
 
 set -euo pipefail
 

@@ -1,0 +1,22 @@
+name: "Catppuccin Themes"
+description: "Installs Catppuccin themes for Terminal, GTK, ZSH, and VS Code"
+version: "1.0.0"
+author: "System"
+root: false
+order: 30
+hidden: false
+installed: false
+check_command: ""
+check_path: "~/.themes/catppuccin-mocha-blue-standard+default"
+supported_os:
+  - kali
+  - debian
+  - ubuntu
+dependencies:
+  - curl
+  - git
+  - unzip
+tags:
+  - themes
+  - appearance
+  - catppuccin

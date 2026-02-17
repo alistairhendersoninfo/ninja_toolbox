@@ -1,15 +1,4 @@
 #!/bin/bash
-# ---
-# name: "Idle Scan"
-# description: "Use a zombie host to scan without revealing your IP"
-# version: "1.0.0"
-# author: "NinjaMenu"
-# type: tool
-# root: true
-# order: 30
-# binary: "nmap"
-# tags: "network, evasion, nmap, idle, zombie"
-# ---
 
 set -euo pipefail
 

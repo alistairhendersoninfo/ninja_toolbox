@@ -1,15 +1,4 @@
 #!/bin/bash
-# ---
-# name: "Auto Scan"
-# description: "Run an automated nmap-unleashed scan with default profile"
-# version: "1.0.0"
-# author: "NinjaMenu"
-# type: tool
-# root: false
-# order: 10
-# binary: "nu"
-# tags: "network, scanning, nmap-unleashed, automation"
-# ---
 
 set -euo pipefail
 

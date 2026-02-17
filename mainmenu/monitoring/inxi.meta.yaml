@@ -1,0 +1,16 @@
+name: "inxi"
+description: "Full system information tool - hardware, software, network"
+type: install
+root: true
+order: 19
+installed: false
+check_command: "inxi --version"
+tags:
+  - monitoring
+  - system
+  - info
+supported_os:
+  - macos
+  - kali
+  - debian
+  - ubuntu

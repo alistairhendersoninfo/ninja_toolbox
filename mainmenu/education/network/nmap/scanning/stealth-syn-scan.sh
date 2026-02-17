@@ -1,15 +1,4 @@
 #!/bin/bash
-# ---
-# name: "Stealth SYN Scan"
-# description: "Half-open SYN scan that doesn't complete TCP handshake"
-# version: "1.0.0"
-# author: "NinjaMenu"
-# type: tool
-# root: true
-# order: 40
-# binary: "nmap"
-# tags: "network, scanning, nmap, stealth"
-# ---
 
 set -euo pipefail
 

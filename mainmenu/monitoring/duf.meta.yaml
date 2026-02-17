@@ -1,0 +1,16 @@
+name: "duf"
+description: "Modern disk usage utility with colorful output"
+type: install
+root: true
+order: 18
+installed: false
+check_command: "duf --version"
+tags:
+  - monitoring
+  - disk
+  - modern
+supported_os:
+  - macos
+  - kali
+  - debian
+  - ubuntu

@@ -1,15 +1,4 @@
 #!/bin/bash
-# ---
-# name: "Save All Formats"
-# description: "Save scan results in XML, grepable, and normal formats"
-# version: "1.0.0"
-# author: "NinjaMenu"
-# type: tool
-# root: false
-# order: 10
-# binary: "nmap"
-# tags: "network, output, nmap, report"
-# ---
 
 set -euo pipefail
 

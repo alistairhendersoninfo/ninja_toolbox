@@ -1,21 +1,4 @@
 #!/bin/bash
-# ---
-# name: "Fix ZSH Configuration"
-# description: "Fixes the 'closing brace expected' error in ZSH caused by undercover mode"
-# version: "1.0.0"
-# author: "System"
-# root: false
-# order: 10
-# hidden: false
-# installed: false
-# check_command: ""
-# check_path: ""
-# dependencies: []
-# tags:
-#   - shell
-#   - zsh
-#   - fix
-# ---
 
 set -euo pipefail
 

@@ -1,15 +1,4 @@
 #!/bin/bash
-# ---
-# name: "Diff Scans"
-# description: "Run two scans and compare differences with ndiff"
-# version: "1.0.0"
-# author: "NinjaMenu"
-# type: tool
-# root: false
-# order: 30
-# binary: "nmap"
-# tags: "network, output, nmap, diff, ndiff"
-# ---
 
 set -euo pipefail
 
