@@ -180,6 +180,8 @@ def _detect_os() -> tuple:
         except FileNotFoundError:
             pass
         return ("linux", distro)
+    elif system == "Windows":
+        return ("windows", "windows")
     return ("unknown", "unknown")
 
 
@@ -335,6 +337,12 @@ def _resolve_modular_script(folder: Path) -> Optional[Path]:
     os_script = folder / f"{CURRENT_OS}.sh"
     if os_script.exists():
         return os_script
+
+    # Windows: try .ps1 extension
+    if CURRENT_OS == "windows":
+        ps1_script = folder / "windows.ps1"
+        if ps1_script.exists():
+            return ps1_script
 
     # No match found for this OS
     return None
