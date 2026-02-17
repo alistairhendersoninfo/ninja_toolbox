@@ -1,0 +1,16 @@
+name: "Install All Monitoring Tools"
+description: "Install all 12 monitoring tools in one go"
+type: install
+root: true
+order: 1
+installed: false
+check_command: "htop --version && btop --version && glances --version"
+tags:
+  - monitoring
+  - all
+  - suite
+supported_os:
+  - macos
+  - kali
+  - debian
+  - ubuntu

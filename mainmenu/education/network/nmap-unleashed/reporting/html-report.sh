@@ -1,15 +1,4 @@
 #!/bin/bash
-# ---
-# name: "HTML Report"
-# description: "Generate a formatted HTML scan report"
-# version: "1.0.0"
-# author: "NinjaMenu"
-# type: tool
-# root: false
-# order: 10
-# binary: "nu"
-# tags: "network, reporting, nmap-unleashed, html"
-# ---
 
 set -euo pipefail
 

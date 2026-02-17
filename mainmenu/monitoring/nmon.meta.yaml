@@ -1,0 +1,15 @@
+name: "nmon"
+description: "Performance monitor with keyboard shortcuts for different views"
+type: install
+root: true
+order: 21
+installed: false
+check_command: "which nmon"
+tags:
+  - monitoring
+  - performance
+  - interactive
+supported_os:
+  - kali
+  - debian
+  - ubuntu

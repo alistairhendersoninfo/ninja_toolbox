@@ -1,0 +1,20 @@
+name: "UDP Scan"
+description: "Scan top 100 UDP ports for services like DNS, SNMP, DHCP"
+version: "1.0.0"
+author: "NinjaMenu"
+type: tool
+root: true
+order: 50
+installed: false
+binary: "nmap"
+check_command: ""
+tags:
+  - network
+  - scanning
+  - nmap
+  - udp
+supported_os:
+  - macos
+  - kali
+  - debian
+  - ubuntu

@@ -1,0 +1,20 @@
+name: "Specific Ports"
+description: "Scan user-specified ports"
+version: "1.0.0"
+author: "NinjaMenu"
+type: tool
+root: false
+order: 60
+installed: false
+binary: "nmap"
+check_command: ""
+tags:
+  - network
+  - scanning
+  - nmap
+  - ports
+supported_os:
+  - macos
+  - kali
+  - debian
+  - ubuntu

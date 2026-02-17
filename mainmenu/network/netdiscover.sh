@@ -1,13 +1,4 @@
 #!/bin/bash
-# ---
-# name: "netdiscover"
-# description: "Active/passive network discovery using ARP requests"
-# type: install
-# root: true
-# order: 18
-# check_command: "which netdiscover"
-# tags: "network, discovery, passive"
-# ---
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 MENU_ROOT="${MENU_ROOT:-$(cd "$SCRIPT_DIR" && while [[ ! -f "menu.py" ]] && [[ "$PWD" != "/" ]]; do cd ..; done; pwd)}"
 source "$MENU_ROOT/.lib/platform.sh"

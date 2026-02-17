@@ -1,13 +1,4 @@
 #!/bin/bash
-# ---
-# name: "masscan"
-# description: "Fastest port scanner - scan entire internet in minutes"
-# type: install
-# root: true
-# order: 11
-# check_command: "masscan --version"
-# tags: "network, scanner, fast"
-# ---
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 MENU_ROOT="${MENU_ROOT:-$(cd "$SCRIPT_DIR" && while [[ ! -f "menu.py" ]] && [[ "$PWD" != "/" ]]; do cd ..; done; pwd)}"
 source "$MENU_ROOT/.lib/platform.sh"

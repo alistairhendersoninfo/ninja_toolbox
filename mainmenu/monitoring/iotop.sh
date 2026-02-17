@@ -1,13 +1,4 @@
 #!/bin/bash
-# ---
-# name: "iotop"
-# description: "Monitor disk I/O usage by process in real-time"
-# type: install
-# root: true
-# order: 13
-# check_command: "iotop --version"
-# tags: "monitoring, io, disk"
-# ---
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 MENU_ROOT="${MENU_ROOT:-$(cd "$SCRIPT_DIR" && while [[ ! -f "menu.py" ]] && [[ "$PWD" != "/" ]]; do cd ..; done; pwd)}"
 source "$MENU_ROOT/.lib/platform.sh"

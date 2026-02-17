@@ -1,15 +1,4 @@
 #!/bin/bash
-# ---
-# name: "Ping Sweep"
-# description: "Discover live hosts on a subnet using ICMP ping"
-# version: "1.0.0"
-# author: "NinjaMenu"
-# type: tool
-# root: false
-# order: 10
-# binary: "nmap"
-# tags: "network, scanning, nmap, discovery"
-# ---
 
 set -euo pipefail
 

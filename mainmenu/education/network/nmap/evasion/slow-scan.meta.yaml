@@ -1,0 +1,21 @@
+name: "Slow Scan"
+description: "Paranoid/sneaky timing to evade IDS detection"
+version: "1.0.0"
+author: "NinjaMenu"
+type: tool
+root: true
+order: 40
+installed: false
+binary: "nmap"
+check_command: ""
+tags:
+  - network
+  - evasion
+  - nmap
+  - timing
+  - ids
+supported_os:
+  - macos
+  - kali
+  - debian
+  - ubuntu

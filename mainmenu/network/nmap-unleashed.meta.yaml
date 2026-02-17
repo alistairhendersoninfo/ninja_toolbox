@@ -1,0 +1,17 @@
+name: "nmap-unleashed"
+description: "Enhanced Nmap wrapper with automated scanning and reporting"
+type: install
+root: false
+order: 12
+check_command: "nu --help"
+tags:
+  - network
+  - scanner
+  - nmap
+  - automation
+supported_os:
+  - macos
+  - kali
+  - debian
+  - ubuntu
+installed: false

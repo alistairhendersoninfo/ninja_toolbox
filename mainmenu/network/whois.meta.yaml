@@ -1,0 +1,16 @@
+name: "whois"
+description: "Query domain registration and IP ownership information"
+type: install
+root: true
+order: 22
+check_command: "whois --version"
+tags:
+  - network
+  - dns
+  - lookup
+supported_os:
+  - macos
+  - kali
+  - debian
+  - ubuntu
+installed: false

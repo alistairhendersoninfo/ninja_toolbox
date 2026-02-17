@@ -1,0 +1,21 @@
+name: "Fix ZSH Configuration"
+description: "Fixes the 'closing brace expected' error in ZSH caused by undercover mode"
+type: install
+root: false
+order: 10
+hidden: false
+installed: false
+version: "1.0.0"
+author: "System"
+check_command: ""
+check_path: ""
+dependencies: []
+tags:
+  - shell
+  - zsh
+  - fix
+supported_os:
+  - kali
+  - debian
+  - ubuntu
+  - macos

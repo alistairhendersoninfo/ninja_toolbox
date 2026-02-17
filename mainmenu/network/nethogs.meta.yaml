@@ -1,0 +1,15 @@
+name: "nethogs"
+description: "Monitor bandwidth usage per process in real-time"
+type: install
+root: true
+order: 16
+check_command: "which nethogs"
+tags:
+  - network
+  - bandwidth
+  - per-process
+supported_os:
+  - kali
+  - debian
+  - ubuntu
+installed: false

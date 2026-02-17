@@ -1,0 +1,23 @@
+name: "Node.js 20 LTS"
+description: "Installs Node.js 20.x LTS and npm package manager"
+version: "1.0.0"
+author: "System"
+type: install
+root: true
+order: 5
+hidden: false
+installed: false
+check_command: "node --version"
+check_path: "/usr/bin/node"
+supported_os:
+  - macos
+  - kali
+  - debian
+  - ubuntu
+dependencies:
+  - curl
+tags:
+  - development
+  - nodejs
+  - npm
+  - javascript

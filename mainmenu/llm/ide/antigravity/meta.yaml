@@ -1,0 +1,24 @@
+name: "Google Antigravity IDE"
+description: "Google's AI-powered agentic development platform"
+version: "1.0.0"
+author: "Google"
+root: true
+order: 20
+hidden: false
+installed: false
+check_command: "antigravity --version"
+check_path: "/usr/bin/antigravity"
+supported_os:
+  - macos
+  - kali
+  - debian
+  - ubuntu
+dependencies:
+  - curl
+  - gpg
+tags:
+  - ide
+  - editor
+  - ai
+  - google
+  - antigravity

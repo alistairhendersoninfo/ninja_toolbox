@@ -1,0 +1,23 @@
+name: "Claude CLI"
+description: "Anthropic's official CLI for Claude AI"
+version: "1.0.0"
+author: "Anthropic"
+type: install
+root: false
+order: 10
+hidden: false
+installed: false
+check_command: "claude --version"
+check_path: "~/.local/bin/claude"
+dependencies:
+  - curl
+tags:
+  - llm
+  - cli
+  - anthropic
+  - ai
+supported_os:
+  - macos
+  - kali
+  - debian
+  - ubuntu

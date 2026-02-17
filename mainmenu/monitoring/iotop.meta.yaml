@@ -1,0 +1,15 @@
+name: "iotop"
+description: "Monitor disk I/O usage by process in real-time"
+type: install
+root: true
+order: 13
+installed: false
+check_command: "iotop --version"
+tags:
+  - monitoring
+  - io
+  - disk
+supported_os:
+  - kali
+  - debian
+  - ubuntu

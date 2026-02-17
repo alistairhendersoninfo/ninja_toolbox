@@ -1,0 +1,15 @@
+name: "sysstat (sar, iostat)"
+description: "System performance tools for CPU, memory, I/O statistics"
+type: install
+root: true
+order: 20
+installed: false
+check_command: "sar -V"
+tags:
+  - monitoring
+  - performance
+  - statistics
+supported_os:
+  - kali
+  - debian
+  - ubuntu

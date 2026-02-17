@@ -1,0 +1,20 @@
+name: "SMB Enumeration"
+description: "Discover SMB shares, users, and OS info"
+version: "1.0.0"
+author: "NinjaMenu"
+type: tool
+root: false
+order: 20
+installed: false
+binary: "nmap"
+check_command: ""
+tags:
+  - network
+  - discovery
+  - nmap
+  - smb
+supported_os:
+  - macos
+  - kali
+  - debian
+  - ubuntu

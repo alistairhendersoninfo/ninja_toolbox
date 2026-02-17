@@ -1,15 +1,4 @@
 #!/bin/bash
-# ---
-# name: "Report Scan"
-# description: "Run a scan with HTML/XML report output"
-# version: "1.0.0"
-# author: "NinjaMenu"
-# type: tool
-# root: false
-# order: 20
-# binary: "nu"
-# tags: "network, scanning, nmap-unleashed, report"
-# ---
 
 set -euo pipefail
 

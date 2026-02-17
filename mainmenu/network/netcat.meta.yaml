@@ -1,0 +1,16 @@
+name: "netcat (nc)"
+description: "TCP/UDP Swiss Army knife - read/write network connections"
+type: install
+root: true
+order: 14
+check_command: "nc -h"
+tags:
+  - network
+  - connection
+  - swiss-army
+supported_os:
+  - macos
+  - kali
+  - debian
+  - ubuntu
+installed: false

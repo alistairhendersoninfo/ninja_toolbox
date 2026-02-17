@@ -1,23 +1,4 @@
 #!/bin/bash
-# ---
-# name: "PVE Helper Scripts (Community)"
-# description: "400+ Proxmox VE helper scripts for LXC containers and VMs"
-# version: "1.0.0"
-# author: "Community (tteck legacy)"
-# root: true
-# order: 30
-# hidden: false
-# installed: false
-# check_command: ""
-# check_path: ""
-# dependencies:
-#   - curl
-# tags:
-#   - proxmox
-#   - scripts
-#   - lxc
-#   - containers
-# ---
 
 set -euo pipefail
 

@@ -1,15 +1,4 @@
 #!/bin/bash
-# ---
-# name: "SNMP Enumeration"
-# description: "Discover SNMP community strings and device info"
-# version: "1.0.0"
-# author: "NinjaMenu"
-# type: tool
-# root: false
-# order: 30
-# binary: "nmap"
-# tags: "network, discovery, nmap, snmp"
-# ---
 
 set -euo pipefail
 

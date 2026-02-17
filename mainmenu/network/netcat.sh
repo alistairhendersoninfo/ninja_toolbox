@@ -1,13 +1,4 @@
 #!/bin/bash
-# ---
-# name: "netcat (nc)"
-# description: "TCP/UDP Swiss Army knife - read/write network connections"
-# type: install
-# root: true
-# order: 14
-# check_command: "nc -h"
-# tags: "network, connection, swiss-army"
-# ---
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 MENU_ROOT="${MENU_ROOT:-$(cd "$SCRIPT_DIR" && while [[ ! -f "menu.py" ]] && [[ "$PWD" != "/" ]]; do cd ..; done; pwd)}"
 source "$MENU_ROOT/.lib/platform.sh"

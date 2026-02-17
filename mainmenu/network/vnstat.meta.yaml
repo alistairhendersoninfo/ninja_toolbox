@@ -1,0 +1,16 @@
+name: "vnstat"
+description: "Network traffic monitor with daily/monthly statistics"
+type: install
+root: true
+order: 21
+check_command: "vnstat --version"
+tags:
+  - network
+  - traffic
+  - statistics
+supported_os:
+  - macos
+  - kali
+  - debian
+  - ubuntu
+installed: false

@@ -1,0 +1,17 @@
+name: "zenmap"
+description: "GUI front-end for Nmap network scanner"
+type: install
+root: true
+order: 11
+check_command: "zenmap --version"
+tags:
+  - network
+  - scanner
+  - gui
+  - nmap
+supported_os:
+  - macos
+  - kali
+  - debian
+  - ubuntu
+installed: false

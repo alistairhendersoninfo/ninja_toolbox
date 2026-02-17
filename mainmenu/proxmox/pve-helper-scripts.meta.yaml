@@ -1,0 +1,21 @@
+name: "PVE Helper Scripts (Community)"
+description: "400+ Proxmox VE helper scripts for LXC containers and VMs"
+version: "1.0.0"
+author: "Community (tteck legacy)"
+type: install
+root: true
+order: 30
+hidden: false
+installed: false
+check_command: ""
+check_path: ""
+dependencies:
+  - curl
+tags:
+  - proxmox
+  - scripts
+  - lxc
+  - containers
+supported_os:
+  - kali
+  - debian

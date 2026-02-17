@@ -228,9 +228,10 @@ nt_sed_i() {
     fi
 }
 
-# mark_installed: update YAML header installed field
+# mark_installed: update installed field in metadata
 # Usage: mark_installed true   (or: mark_installed false)
-# Uses BASH_SOURCE[1] to find the calling script
+# Checks for meta.yaml (Tier 1 folder), sibling .meta.yaml (Tier 2/3),
+# then falls back to inline YAML header (legacy).
 mark_installed() {
     local status="${1:-true}"
     local script="${BASH_SOURCE[1]}"
@@ -238,6 +239,28 @@ mark_installed() {
         log_warn "mark_installed: could not determine calling script"
         return 1
     fi
+
+    local script_dir
+    script_dir="$(cd "$(dirname "$script")" && pwd)"
+    local script_name
+    script_name="$(basename "$script" .sh)"
+
+    # Tier 1: folder with meta.yaml (script is inside a modular folder)
+    if [[ -f "${script_dir}/meta.yaml" ]]; then
+        nt_sed_i "s/^installed: .*/installed: $status/" "${script_dir}/meta.yaml"
+        log_info "Marked meta.yaml as installed=$status"
+        return 0
+    fi
+
+    # Tier 2/3: sibling .meta.yaml
+    local sibling_meta="${script_dir}/${script_name}.meta.yaml"
+    if [[ -f "$sibling_meta" ]]; then
+        nt_sed_i "s/^installed: .*/installed: $status/" "$sibling_meta"
+        log_info "Marked ${script_name}.meta.yaml as installed=$status"
+        return 0
+    fi
+
+    # Legacy: inline YAML header
     nt_sed_i "s/^# installed: .*/# installed: $status/" "$script"
     log_info "Marked script as installed=$status"
 }

@@ -1,0 +1,19 @@
+name: "Proxmox Guest Agent"
+description: "Installs QEMU guest agent for Proxmox VM integration"
+version: "1.0.0"
+author: "System"
+root: true
+order: 20
+hidden: false
+installed: false
+check_command: ""
+check_path: "/usr/sbin/qemu-ga"
+supported_os:
+  - kali
+  - debian
+dependencies:
+  - apt
+tags:
+  - proxmox
+  - virtualization
+  - system

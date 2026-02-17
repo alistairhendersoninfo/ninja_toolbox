@@ -1,0 +1,16 @@
+name: "ncdu"
+description: "NCurses disk usage analyzer - find large files interactively"
+type: install
+root: true
+order: 17
+installed: false
+check_command: "ncdu --version"
+tags:
+  - monitoring
+  - disk
+  - usage
+supported_os:
+  - macos
+  - kali
+  - debian
+  - ubuntu

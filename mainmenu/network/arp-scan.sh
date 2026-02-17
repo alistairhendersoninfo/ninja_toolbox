@@ -1,13 +1,4 @@
 #!/bin/bash
-# ---
-# name: "arp-scan"
-# description: "Discover hosts on local network using ARP"
-# type: install
-# root: true
-# order: 17
-# check_command: "arp-scan --version"
-# tags: "network, discovery, arp"
-# ---
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 MENU_ROOT="${MENU_ROOT:-$(cd "$SCRIPT_DIR" && while [[ ! -f "menu.py" ]] && [[ "$PWD" != "/" ]]; do cd ..; done; pwd)}"
 source "$MENU_ROOT/.lib/platform.sh"

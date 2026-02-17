@@ -1,0 +1,16 @@
+name: "htop"
+description: "Interactive process viewer with color display and mouse support"
+type: install
+root: true
+order: 10
+installed: false
+check_command: "htop --version"
+tags:
+  - monitoring
+  - process
+  - interactive
+supported_os:
+  - macos
+  - kali
+  - debian
+  - ubuntu

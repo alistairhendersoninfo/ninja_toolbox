@@ -1,0 +1,21 @@
+name: "XRDP Remote Desktop"
+description: "Installs XRDP with XFCE desktop for remote access (Proxmox optimized)"
+version: "1.0.0"
+author: "System"
+root: true
+order: 40
+hidden: false
+installed: false
+check_command: ""
+check_path: "/usr/sbin/xrdp"
+supported_os:
+  - kali
+  - debian
+dependencies:
+  - apt
+tags:
+  - remote
+  - xrdp
+  - xfce
+  - desktop
+  - proxmox

@@ -1,0 +1,16 @@
+name: "arp-scan"
+description: "Discover hosts on local network using ARP"
+type: install
+root: true
+order: 17
+check_command: "arp-scan --version"
+tags:
+  - network
+  - discovery
+  - arp
+supported_os:
+  - macos
+  - kali
+  - debian
+  - ubuntu
+installed: false

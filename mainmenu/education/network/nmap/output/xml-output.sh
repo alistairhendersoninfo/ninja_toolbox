@@ -1,15 +1,4 @@
 #!/bin/bash
-# ---
-# name: "XML Output"
-# description: "Save scan results as XML for tool parsing"
-# version: "1.0.0"
-# author: "NinjaMenu"
-# type: tool
-# root: false
-# order: 20
-# binary: "nmap"
-# tags: "network, output, nmap, xml"
-# ---
 
 set -euo pipefail
 

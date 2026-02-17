@@ -1,15 +1,4 @@
 #!/bin/bash
-# ---
-# name: "Broadcast Discovery"
-# description: "Find hosts on the local network via broadcast protocols"
-# version: "1.0.0"
-# author: "NinjaMenu"
-# type: tool
-# root: true
-# order: 40
-# binary: "nmap"
-# tags: "network, discovery, nmap, broadcast"
-# ---
 
 set -euo pipefail
 

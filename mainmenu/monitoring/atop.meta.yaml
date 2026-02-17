@@ -1,0 +1,16 @@
+name: "atop"
+description: "Advanced system monitor with logging and historical playback"
+type: install
+root: true
+order: 12
+installed: false
+check_command: "atop -V"
+tags:
+  - monitoring
+  - advanced
+  - logging
+supported_os:
+  - macos
+  - kali
+  - debian
+  - ubuntu

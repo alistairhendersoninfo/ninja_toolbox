@@ -1,0 +1,23 @@
+name: "Cursor IDE"
+description: "AI-powered code editor built on VS Code"
+version: "1.0.0"
+author: "Cursor"
+root: true
+order: 10
+hidden: false
+installed: false
+check_command: "cursor --version"
+check_path: "/usr/bin/cursor:/opt/Cursor/cursor"
+supported_os:
+  - macos
+  - kali
+  - debian
+  - ubuntu
+dependencies:
+  - curl
+  - dpkg
+tags:
+  - ide
+  - editor
+  - ai
+  - cursor

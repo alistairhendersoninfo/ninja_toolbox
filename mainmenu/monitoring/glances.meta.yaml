@@ -1,0 +1,16 @@
+name: "glances"
+description: "Cross-platform system monitor with web interface support"
+type: install
+root: true
+order: 15
+installed: false
+check_command: "glances --version"
+tags:
+  - monitoring
+  - all-in-one
+  - web
+supported_os:
+  - macos
+  - kali
+  - debian
+  - ubuntu

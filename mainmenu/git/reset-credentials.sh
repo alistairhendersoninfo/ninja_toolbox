@@ -1,23 +1,4 @@
 #!/bin/bash
-# ---
-# name: "Reset Git Credentials"
-# description: "Remove SSH keys, logout GitHub CLI, clear git config - start fresh"
-# version: "1.0.0"
-# author: "System"
-# type: config
-# root: false
-# order: 20
-# hidden: false
-# installed: false
-# check_command: ""
-# check_path: ""
-# dependencies: []
-# tags:
-#   - git
-#   - github
-#   - credentials
-#   - reset
-# ---
 
 set -euo pipefail
 

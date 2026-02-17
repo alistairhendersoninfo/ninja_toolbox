@@ -1,13 +1,4 @@
 #!/bin/bash
-# ---
-# name: "htop"
-# description: "Interactive process viewer with color display and mouse support"
-# type: install
-# root: true
-# order: 10
-# check_command: "htop --version"
-# tags: "monitoring, process, interactive"
-# ---
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 MENU_ROOT="${MENU_ROOT:-$(cd "$SCRIPT_DIR" && while [[ ! -f "menu.py" ]] && [[ "$PWD" != "/" ]]; do cd ..; done; pwd)}"
 source "$MENU_ROOT/.lib/platform.sh"

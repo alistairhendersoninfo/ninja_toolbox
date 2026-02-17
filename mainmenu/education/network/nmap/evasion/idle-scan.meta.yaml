@@ -1,0 +1,21 @@
+name: "Idle Scan"
+description: "Use a zombie host to scan without revealing your IP"
+version: "1.0.0"
+author: "NinjaMenu"
+type: tool
+root: true
+order: 30
+installed: false
+binary: "nmap"
+check_command: ""
+tags:
+  - network
+  - evasion
+  - nmap
+  - idle
+  - zombie
+supported_os:
+  - macos
+  - kali
+  - debian
+  - ubuntu

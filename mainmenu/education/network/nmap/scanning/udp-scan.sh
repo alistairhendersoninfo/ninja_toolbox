@@ -1,15 +1,4 @@
 #!/bin/bash
-# ---
-# name: "UDP Scan"
-# description: "Scan top 100 UDP ports for services like DNS, SNMP, DHCP"
-# version: "1.0.0"
-# author: "NinjaMenu"
-# type: tool
-# root: true
-# order: 50
-# binary: "nmap"
-# tags: "network, scanning, nmap, udp"
-# ---
 
 set -euo pipefail
 

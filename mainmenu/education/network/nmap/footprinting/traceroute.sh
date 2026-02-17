@@ -1,15 +1,4 @@
 #!/bin/bash
-# ---
-# name: "Traceroute"
-# description: "Map the network path to a target host"
-# version: "1.0.0"
-# author: "NinjaMenu"
-# type: tool
-# root: true
-# order: 40
-# binary: "nmap"
-# tags: "network, footprinting, nmap, traceroute"
-# ---
 
 set -euo pipefail
 

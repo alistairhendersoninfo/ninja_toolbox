@@ -1,23 +1,4 @@
 #!/bin/bash
-# ---
-# name: "Test GitHub Connection"
-# description: "Test SSH authentication with GitHub"
-# version: "1.0.0"
-# author: "System"
-# type: config
-# root: false
-# order: 15
-# hidden: false
-# installed: false
-# check_command: ""
-# check_path: ""
-# dependencies: []
-# tags:
-#   - git
-#   - github
-#   - ssh
-#   - test
-# ---
 
 set -euo pipefail
 

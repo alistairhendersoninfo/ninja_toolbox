@@ -1,0 +1,20 @@
+name: "OS Detection"
+description: "OS fingerprinting using TCP/IP stack analysis"
+version: "1.0.0"
+author: "NinjaMenu"
+type: tool
+root: true
+order: 10
+installed: false
+binary: "nmap"
+check_command: ""
+tags:
+  - network
+  - footprinting
+  - nmap
+  - os
+supported_os:
+  - macos
+  - kali
+  - debian
+  - ubuntu

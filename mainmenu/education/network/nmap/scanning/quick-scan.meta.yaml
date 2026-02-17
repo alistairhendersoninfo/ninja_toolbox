@@ -1,0 +1,20 @@
+name: "Quick Scan"
+description: "Scan top 100 ports fast using nmap -F"
+version: "1.0.0"
+author: "NinjaMenu"
+type: tool
+root: false
+order: 20
+installed: false
+binary: "nmap"
+check_command: ""
+tags:
+  - network
+  - scanning
+  - nmap
+  - fast
+supported_os:
+  - macos
+  - kali
+  - debian
+  - ubuntu

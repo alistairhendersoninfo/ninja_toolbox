@@ -1,0 +1,16 @@
+name: "wireshark"
+description: "GUI and CLI packet analyzer for deep network inspection"
+type: install
+root: true
+order: 13
+check_command: "wireshark --version"
+tags:
+  - network
+  - packet
+  - gui
+supported_os:
+  - macos
+  - kali
+  - debian
+  - ubuntu
+installed: false

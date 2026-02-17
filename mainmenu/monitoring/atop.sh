@@ -1,13 +1,4 @@
 #!/bin/bash
-# ---
-# name: "atop"
-# description: "Advanced system monitor with logging and historical playback"
-# type: install
-# root: true
-# order: 12
-# check_command: "atop -V"
-# tags: "monitoring, advanced, logging"
-# ---
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 MENU_ROOT="${MENU_ROOT:-$(cd "$SCRIPT_DIR" && while [[ ! -f "menu.py" ]] && [[ "$PWD" != "/" ]]; do cd ..; done; pwd)}"
 source "$MENU_ROOT/.lib/platform.sh"

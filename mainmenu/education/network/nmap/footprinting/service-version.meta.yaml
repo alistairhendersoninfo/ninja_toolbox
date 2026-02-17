@@ -1,0 +1,20 @@
+name: "Service Version"
+description: "Detect service versions running on open ports"
+version: "1.0.0"
+author: "NinjaMenu"
+type: tool
+root: false
+order: 20
+installed: false
+binary: "nmap"
+check_command: ""
+tags:
+  - network
+  - footprinting
+  - nmap
+  - services
+supported_os:
+  - macos
+  - kali
+  - debian
+  - ubuntu

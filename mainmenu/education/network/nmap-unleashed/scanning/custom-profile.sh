@@ -1,15 +1,4 @@
 #!/bin/bash
-# ---
-# name: "Custom Profile"
-# description: "Run a scan with user-selected nmap-unleashed options"
-# version: "1.0.0"
-# author: "NinjaMenu"
-# type: tool
-# root: false
-# order: 30
-# binary: "nu"
-# tags: "network, scanning, nmap-unleashed, custom"
-# ---
 
 set -euo pipefail
 

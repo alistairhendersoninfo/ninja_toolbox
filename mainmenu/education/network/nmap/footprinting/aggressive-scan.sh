@@ -1,15 +1,4 @@
 #!/bin/bash
-# ---
-# name: "Aggressive Scan"
-# description: "Full enumeration with OS detection, versions, scripts, and traceroute"
-# version: "1.0.0"
-# author: "NinjaMenu"
-# type: tool
-# root: true
-# order: 30
-# binary: "nmap"
-# tags: "network, footprinting, nmap, aggressive"
-# ---
 
 set -euo pipefail
 

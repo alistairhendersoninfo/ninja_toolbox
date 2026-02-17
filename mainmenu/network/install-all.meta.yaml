@@ -1,0 +1,16 @@
+name: "Install All Network Tools"
+description: "Install all 15 network tools in one go"
+type: install
+root: true
+order: 1
+check_command: "nmap --version && tcpdump --version"
+tags:
+  - network
+  - all
+  - suite
+supported_os:
+  - macos
+  - kali
+  - debian
+  - ubuntu
+installed: false

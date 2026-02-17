@@ -1,0 +1,22 @@
+name: "Git & GitHub Setup"
+description: "Install git/gh, create SSH key, create GitHub repo, initial push"
+version: "2.0.0"
+author: "System"
+root: false
+order: 10
+hidden: false
+installed: false
+check_command: "gh auth status"
+check_path: "~/.ssh/id_ed25519"
+supported_os:
+  - macos
+  - kali
+  - debian
+  - ubuntu
+dependencies:
+  - curl
+tags:
+  - git
+  - github
+  - ssh
+  - dev

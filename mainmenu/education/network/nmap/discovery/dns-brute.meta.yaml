@@ -1,0 +1,20 @@
+name: "DNS Brute Force"
+description: "Enumerate subdomains via DNS brute-force"
+version: "1.0.0"
+author: "NinjaMenu"
+type: tool
+root: false
+order: 10
+installed: false
+binary: "nmap"
+check_command: ""
+tags:
+  - network
+  - discovery
+  - nmap
+  - dns
+supported_os:
+  - macos
+  - kali
+  - debian
+  - ubuntu

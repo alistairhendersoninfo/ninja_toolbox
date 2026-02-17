@@ -1,15 +1,4 @@
 #!/bin/bash
-# ---
-# name: "Service Version"
-# description: "Detect service versions running on open ports"
-# version: "1.0.0"
-# author: "NinjaMenu"
-# type: tool
-# root: false
-# order: 20
-# binary: "nmap"
-# tags: "network, footprinting, nmap, services"
-# ---
 
 set -euo pipefail
 

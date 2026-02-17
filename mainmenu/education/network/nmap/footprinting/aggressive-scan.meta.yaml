@@ -1,0 +1,20 @@
+name: "Aggressive Scan"
+description: "Full enumeration with OS detection, versions, scripts, and traceroute"
+version: "1.0.0"
+author: "NinjaMenu"
+type: tool
+root: true
+order: 30
+installed: false
+binary: "nmap"
+check_command: ""
+tags:
+  - network
+  - footprinting
+  - nmap
+  - aggressive
+supported_os:
+  - macos
+  - kali
+  - debian
+  - ubuntu
