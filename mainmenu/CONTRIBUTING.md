@@ -9,6 +9,12 @@ NinjaMenu uses a **three-tier metadata system**. Every script has externalised m
 
 Full technical reference: [`.docs/technical_manuals/os-modular-architecture.md`](../.docs/technical_manuals/os-modular-architecture.md)
 
+## Placement Rule
+
+**Scripts must always go inside a category subfolder** — never directly under a top-level menu folder. Top-level folders (e.g. `mainmenu/llm/`) should only contain category subfolders (`cli/`, `ide/`, `ai-tools/`, etc.), not loose scripts or script folders. If no suitable category exists, create one first.
+
+A folder is either a **category** (contains only subfolders) or a **leaf** (contains only scripts) — never both.
+
 ## Quick Decision: Which Tier?
 
 - **Does the script need different code per OS?** → **Tier 1** (modular folder)
