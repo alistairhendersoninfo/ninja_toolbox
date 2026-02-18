@@ -1,0 +1,19 @@
+name: "ClamAV"
+description: "Open-source antivirus engine with automatic definition updates"
+version: "1.0.0"
+author: "System"
+type: install
+root: true
+order: 30
+hidden: false
+installed: false
+check_command: "clamscan --version"
+tags:
+  - security
+  - antivirus
+  - clamav
+  - malware
+supported_os:
+  - kali
+  - debian
+  - ubuntu

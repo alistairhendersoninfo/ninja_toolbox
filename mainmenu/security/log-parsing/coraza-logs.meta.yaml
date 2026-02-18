@@ -1,0 +1,20 @@
+name: "Coraza WAF Logs"
+description: "Parse Coraza/ModSecurity audit logs — blocked IPs, triggered rules"
+version: "1.0.0"
+author: "System"
+type: tool
+binary: "nginx"
+root: false
+order: 10
+hidden: false
+installed: false
+check_command: "nginx -v"
+tags:
+  - security
+  - waf
+  - coraza
+  - log-parsing
+supported_os:
+  - kali
+  - debian
+  - ubuntu

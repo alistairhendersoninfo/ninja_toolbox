@@ -1,0 +1,20 @@
+name: "Falco Logs"
+description: "Parse Falco alerts — priority breakdown, top rules, recent alerts"
+version: "1.0.0"
+author: "System"
+type: tool
+binary: "falco"
+root: false
+order: 30
+hidden: false
+installed: false
+check_command: "falco --version"
+tags:
+  - security
+  - falco
+  - log-parsing
+  - runtime
+supported_os:
+  - kali
+  - debian
+  - ubuntu

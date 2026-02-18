@@ -1,0 +1,19 @@
+name: "AppArmor"
+description: "Mandatory access control with enforced security profiles"
+version: "1.0.0"
+author: "System"
+type: install
+root: true
+order: 40
+hidden: false
+installed: false
+check_command: "aa-status"
+tags:
+  - security
+  - apparmor
+  - mac
+  - hardening
+supported_os:
+  - kali
+  - debian
+  - ubuntu

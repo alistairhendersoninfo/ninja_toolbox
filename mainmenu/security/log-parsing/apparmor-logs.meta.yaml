@@ -1,0 +1,20 @@
+name: "AppArmor Logs"
+description: "Parse AppArmor logs — denied events by profile, operation types"
+version: "1.0.0"
+author: "System"
+type: tool
+binary: "aa-status"
+root: false
+order: 50
+hidden: false
+installed: false
+check_command: "aa-status"
+tags:
+  - security
+  - apparmor
+  - log-parsing
+  - mac
+supported_os:
+  - kali
+  - debian
+  - ubuntu

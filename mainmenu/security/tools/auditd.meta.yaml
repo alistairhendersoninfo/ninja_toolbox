@@ -1,0 +1,19 @@
+name: "auditd"
+description: "Linux audit daemon with file and syscall hardening rules"
+version: "1.0.0"
+author: "System"
+type: install
+root: true
+order: 20
+hidden: false
+installed: false
+check_command: "auditctl -l"
+tags:
+  - security
+  - audit
+  - monitoring
+  - hardening
+supported_os:
+  - kali
+  - debian
+  - ubuntu
