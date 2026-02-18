@@ -1,0 +1,22 @@
+name: "Wazuh SIEM"
+description: "Full SIEM stack with manager, indexer, and dashboard for threat detection"
+version: "1.0.0"
+author: "System"
+type: install
+root: true
+order: 80
+hidden: false
+installed: false
+check_command: "docker ps --filter name=wazuh-manager --format '{{.Names}}' | grep -q wazuh-manager"
+dependencies:
+  - docker
+tags:
+  - docker
+  - siem
+  - security
+  - monitoring
+  - threat-detection
+supported_os:
+  - kali
+  - debian
+  - ubuntu

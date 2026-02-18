@@ -1,0 +1,24 @@
+name: "Security Onion"
+description: "Network security monitoring platform with IDS, NSM, and log management"
+version: "1.0.0"
+author: "System"
+type: install
+root: true
+order: 90
+hidden: false
+installed: false
+check_command: "docker ps --filter name=so-manager --format '{{.Names}}' | grep -q so-manager"
+dependencies:
+  - docker
+  - git
+  - curl
+tags:
+  - docker
+  - security
+  - ids
+  - nsm
+  - siem
+supported_os:
+  - kali
+  - debian
+  - ubuntu
