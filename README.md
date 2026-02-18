@@ -6,7 +6,7 @@
 
 [![Pages](https://img.shields.io/badge/Pages_Site-17_pages-fca311?style=for-the-badge&logo=github&logoColor=white)](https://alistairhendersoninfo.github.io/ninja_toolbox/)
 [![Wiki](https://img.shields.io/badge/Wiki-9_pages-14213d?style=for-the-badge&logo=github&logoColor=white)](https://github.com/alistairhendersoninfo/ninja_toolbox/wiki)
-[![Scripts](https://img.shields.io/badge/Scripts-75+-e5e5e5?style=for-the-badge&logo=gnubash&logoColor=000000)](https://alistairhendersoninfo.github.io/ninja_toolbox/reference/tools/)
+[![Scripts](https://img.shields.io/badge/Scripts-80+-e5e5e5?style=for-the-badge&logo=gnubash&logoColor=000000)](https://alistairhendersoninfo.github.io/ninja_toolbox/reference/tools/)
 
 **Stop hunting for install commands. Start getting things done.**
 
@@ -54,18 +54,20 @@ NinjaMenu organizes your entire toolkit into a browsable, searchable menu:
 
 ## What's Included
 
-```
-mainmenu/
-├── monitoring/     # htop, btop, glances, iotop, ncdu, neofetch...
-├── network/        # nmap, wireshark, tcpdump, netcat, masscan...
-├── llm/            # Claude Code, LLM CLI tools, IDE extensions
-├── git/            # Git setup, SSH keys, credential management
-├── postsetup-kali/ # Themes, shell fixes, desktop environment
-├── proxmox/        # VM management scripts
-└── education/      # Tool usage scripts (scanning, analysis, etc.)
-```
+<!-- AUTO:WHATS_INCLUDED -->
+**80 scripts** across 8 categories, with more being added regularly.
 
-**50+ scripts** ready to go, with more being added regularly.
+| Category | Description | Scripts |
+|----------|-------------|:-------:|
+| Editors | Text editors and IDE installers | 2 |
+| Education | Security training and learning tools | 29 |
+| Git | Git setup and repository management | 4 |
+| LLM | Large language model tools and integrations | 9 |
+| Monitoring | System monitoring and process management | 13 |
+| Network | Network analysis and security tools | 19 |
+| Post-Setup Kali | Kali Linux post-installation configuration | 2 |
+| Proxmox | Proxmox VE virtualisation platform setup | 2 |
+<!-- /AUTO:WHATS_INCLUDED -->
 
 ## Quick Start
 
@@ -92,17 +94,11 @@ ninjamenu
 
 ## Adding Your Own Scripts
 
-Drop a `.sh` file in any menu folder. Add a YAML header to control how it appears:
+<!-- AUTO:ADDING_SCRIPTS -->
+Create a `.sh` script and a matching `.meta.yaml` file in any category folder:
 
 ```bash
-#!/bin/bash
-# ---
-# name: "My Custom Tool"
-# description: "What it does in one line"
-# root: true
-# check_command: "mytool --version"
-# tags: [utilities, custom]
-# ---
+# mainmenu/monitoring/mytool.sh
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 MENU_ROOT="${MENU_ROOT:-$(cd "$SCRIPT_DIR" && while [[ ! -f "install_menu.sh" ]] && [[ "$PWD" != "/" ]]; do cd ..; done; pwd)}"
 source "$MENU_ROOT/.lib/platform.sh"
@@ -117,21 +113,41 @@ else
 fi
 ```
 
-That's it. Your script now appears in the menu with install status detection. `pkg_install` automatically uses `apt-get` on Linux and `brew` on macOS.
+```yaml
+# mainmenu/monitoring/mytool.meta.yaml
+name: "My Tool"
+description: "What it does in one line"
+type: install
+root: true
+order: 50
+check_command: "mytool --version"
+tags:
+  - monitoring
+supported_os:
+  - macos
+  - kali
+  - debian
+  - ubuntu
+```
 
-### Header Options
+That's it. Your script appears in the menu with install status detection. `pkg_install` uses `apt-get` on Linux and `brew` on macOS automatically.
+
+### Key Fields
 
 | Field | Purpose |
 |-------|---------|
 | `name` | Display name in menu |
 | `description` | Shows in detail view |
+| `type` | `install`, `config` (run-only), or `tool` (requires binary) |
 | `root` | `true` if needs sudo |
+| `order` | Sort position (lower = higher) |
 | `check_command` | How to verify it's installed |
 | `check_path` | Alternative: check if path exists |
-| `type` | `install`, `config` (run-only), or `tool` (requires binary) |
-| `binary` | Required command for `tool` scripts (e.g., `"nmap"`) |
-| `order` | Sort position (lower = higher) |
-| `hidden` | `true` to hide from menu |
+| `supported_os` | `macos`, `kali`, `debian`, `ubuntu` |
+| `binary` | Required command for `tool` type scripts |
+
+For multi-OS scripts, Tier 1 modular folders, and full guidelines see the [Contributing Guide](mainmenu/CONTRIBUTING.md).
+<!-- /AUTO:ADDING_SCRIPTS -->
 
 ## Multiple Interfaces
 
