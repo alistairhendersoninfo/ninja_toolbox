@@ -1,0 +1,19 @@
+name: "Basic Server Block"
+description: "Generate a standard nginx virtual-host server block"
+version: "1.0.0"
+author: "System"
+type: tool
+binary: "nginx"
+root: false
+order: 10
+hidden: false
+installed: false
+check_command: "nginx -v"
+tags:
+  - nginx
+  - configuration
+  - education
+supported_os:
+  - kali
+  - debian
+  - ubuntu

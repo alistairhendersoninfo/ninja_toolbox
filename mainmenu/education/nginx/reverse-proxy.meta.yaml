@@ -1,0 +1,20 @@
+name: "Reverse Proxy"
+description: "Generate a reverse-proxy config with WebSocket and header forwarding"
+version: "1.0.0"
+author: "System"
+type: tool
+binary: "nginx"
+root: false
+order: 20
+hidden: false
+installed: false
+check_command: "nginx -v"
+tags:
+  - nginx
+  - configuration
+  - education
+  - reverse-proxy
+supported_os:
+  - kali
+  - debian
+  - ubuntu
