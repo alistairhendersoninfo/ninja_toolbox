@@ -1,0 +1,20 @@
+name: "Fluent Bit Logs"
+description: "Parse Fluent Bit logs — plugin stats, errors, records processed"
+version: "1.0.0"
+author: "System"
+type: tool
+binary: "fluent-bit"
+root: false
+order: 60
+hidden: false
+installed: false
+check_command: "fluent-bit --version"
+tags:
+  - security
+  - fluent-bit
+  - log-parsing
+  - monitoring
+supported_os:
+  - kali
+  - debian
+  - ubuntu

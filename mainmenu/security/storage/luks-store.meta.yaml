@@ -1,0 +1,19 @@
+name: "LUKS Store"
+description: "LUKS-encrypted file-backed volume with persistent mount"
+version: "1.0.0"
+author: "System"
+type: install
+root: true
+order: 10
+hidden: false
+installed: false
+check_command: "cryptsetup status secure-vault"
+tags:
+  - security
+  - encryption
+  - luks
+  - storage
+supported_os:
+  - kali
+  - debian
+  - ubuntu

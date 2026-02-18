@@ -1,0 +1,19 @@
+name: "Fluent Bit"
+description: "Lightweight log processor and forwarder"
+version: "1.0.0"
+author: "System"
+type: install
+root: true
+order: 50
+hidden: false
+installed: false
+check_command: "fluent-bit --version"
+tags:
+  - security
+  - logging
+  - fluent-bit
+  - monitoring
+supported_os:
+  - kali
+  - debian
+  - ubuntu

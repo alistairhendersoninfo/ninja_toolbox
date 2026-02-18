@@ -1,0 +1,20 @@
+name: "auditd Logs"
+description: "Parse audit logs — failed syscalls, file access, auth events"
+version: "1.0.0"
+author: "System"
+type: tool
+binary: "ausearch"
+root: false
+order: 40
+hidden: false
+installed: false
+check_command: "auditctl -l"
+tags:
+  - security
+  - audit
+  - log-parsing
+  - monitoring
+supported_os:
+  - kali
+  - debian
+  - ubuntu

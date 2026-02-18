@@ -1,0 +1,20 @@
+name: "nftables Logs"
+description: "Parse nftables firewall logs — blocked packets, top IPs, ports"
+version: "1.0.0"
+author: "System"
+type: tool
+binary: "nft"
+root: false
+order: 20
+hidden: false
+installed: false
+check_command: "nft list ruleset"
+tags:
+  - security
+  - firewall
+  - nftables
+  - log-parsing
+supported_os:
+  - kali
+  - debian
+  - ubuntu

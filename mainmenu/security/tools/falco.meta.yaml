@@ -1,0 +1,19 @@
+name: "Falco"
+description: "Runtime security and threat detection via syscall monitoring"
+version: "1.0.0"
+author: "System"
+type: install
+root: true
+order: 10
+hidden: false
+installed: false
+check_command: "falco --version"
+tags:
+  - security
+  - monitoring
+  - falco
+  - runtime
+supported_os:
+  - kali
+  - debian
+  - ubuntu
