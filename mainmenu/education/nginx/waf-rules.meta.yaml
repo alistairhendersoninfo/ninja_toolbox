@@ -1,0 +1,23 @@
+name: "WAF Rules"
+description: "Coraza/ModSecurity WAF rule examples for SQLi, XSS, RFI, bots, and rate limiting"
+version: "1.0.0"
+author: "System"
+type: tool
+binary: "nginx"
+root: false
+order: 50
+hidden: false
+installed: false
+check_command: "nginx -v"
+tags:
+  - nginx
+  - configuration
+  - education
+  - waf
+  - modsecurity
+  - coraza
+  - security
+supported_os:
+  - kali
+  - debian
+  - ubuntu

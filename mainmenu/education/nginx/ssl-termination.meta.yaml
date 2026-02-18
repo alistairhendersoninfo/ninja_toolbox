@@ -1,0 +1,22 @@
+name: "SSL/TLS Termination"
+description: "Generate an HTTPS config with TLS 1.2+, OCSP stapling, and HTTP redirect"
+version: "1.0.0"
+author: "System"
+type: tool
+binary: "nginx"
+root: false
+order: 30
+hidden: false
+installed: false
+check_command: "nginx -v"
+tags:
+  - nginx
+  - configuration
+  - education
+  - ssl
+  - tls
+  - https
+supported_os:
+  - kali
+  - debian
+  - ubuntu

@@ -1,0 +1,23 @@
+name: "Security Headers"
+description: "Generate a reusable security-headers snippet with CSP, HSTS, and more"
+version: "1.0.0"
+author: "System"
+type: tool
+binary: "nginx"
+root: false
+order: 40
+hidden: false
+installed: false
+check_command: "nginx -v"
+tags:
+  - nginx
+  - configuration
+  - education
+  - security
+  - headers
+  - csp
+  - hsts
+supported_os:
+  - kali
+  - debian
+  - ubuntu

@@ -1,0 +1,23 @@
+name: "Nginx + Coraza WAF"
+description: "Nginx with ModSecurity/Coraza web application firewall and OWASP CRS"
+version: "1.0.0"
+author: "System"
+type: install
+root: true
+order: 20
+hidden: false
+installed: false
+check_path: "/usr/lib/nginx/modules/ngx_http_modsecurity_module.so"
+dependencies:
+  - nginx
+  - git
+tags:
+  - web-server
+  - waf
+  - security
+  - coraza
+  - modsecurity
+supported_os:
+  - kali
+  - debian
+  - ubuntu
