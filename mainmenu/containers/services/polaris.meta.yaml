@@ -1,0 +1,20 @@
+name: "Apache Polaris"
+description: "Open catalog service for Apache Iceberg tables"
+version: "1.0.0"
+author: "System"
+type: install
+root: true
+order: 40
+hidden: false
+installed: false
+check_command: "docker ps --filter name=polaris --format '{{.Names}}' | grep -q polaris"
+dependencies:
+  - docker
+tags:
+  - docker
+  - data-lake
+  - catalog
+supported_os:
+  - kali
+  - debian
+  - ubuntu

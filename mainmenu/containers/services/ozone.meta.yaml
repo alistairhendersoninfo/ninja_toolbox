@@ -1,0 +1,20 @@
+name: "Apache Ozone"
+description: "Distributed object store for Hadoop ecosystem"
+version: "1.0.0"
+author: "System"
+type: install
+root: true
+order: 30
+hidden: false
+installed: false
+check_command: "docker ps --filter name=ozone-om --format '{{.Names}}' | grep -q ozone-om"
+dependencies:
+  - docker
+tags:
+  - docker
+  - object-store
+  - hadoop
+supported_os:
+  - kali
+  - debian
+  - ubuntu
