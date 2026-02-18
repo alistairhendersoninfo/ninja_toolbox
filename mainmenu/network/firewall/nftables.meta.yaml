@@ -1,0 +1,18 @@
+name: "nftables"
+description: "Netfilter firewall with deny-all + SSH-only ruleset"
+version: "1.0.0"
+author: "System"
+type: install
+root: true
+order: 10
+hidden: false
+installed: false
+check_command: "nft list ruleset"
+tags:
+  - firewall
+  - nftables
+  - security
+supported_os:
+  - kali
+  - debian
+  - ubuntu
