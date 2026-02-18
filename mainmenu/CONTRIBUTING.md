@@ -201,6 +201,55 @@ The menu system uses an SQLite cache (`.cache/menu.db`) built from YAML metadata
 
 YAML metadata files are the single source of truth. The cache is a derived, disposable artifact. If the cache is deleted, it auto-rebuilds on next `menu.py` launch.
 
+## Documentation
+
+Every new script or folder **must** have accompanying documentation. Templates are provided — copy and fill in the placeholders.
+
+### Required Docs
+
+| Doc | Location | Template |
+|-----|----------|----------|
+| **Folder README** | `mainmenu/<category>/README.md` | `.docs/templates/folder_readme_template.md` |
+| **User Manual** | `.docs/user_manuals/<folder>.md` | `.docs/templates/user_doc_template.md` |
+| **Technical Manual** | `.docs/technical_manuals/<folder>.md` | `.docs/templates/technical_doc_template.md` |
+
+### Folder README
+
+Every menu folder must have a `README.md` (shown on GitHub). It should:
+
+- Describe what the category covers
+- List all scripts in a table (name, description, type)
+- Link to the user guide and technical manual
+
+```bash
+cp .docs/templates/folder_readme_template.md mainmenu/<category>/README.md
+```
+
+### User Manual
+
+End-user documentation explaining how to use each tool, common tasks, and troubleshooting.
+
+```bash
+cp .docs/templates/user_doc_template.md .docs/user_manuals/<folder>.md
+```
+
+### Technical Manual
+
+Developer documentation covering architecture, script details, dependencies, integration points, and security considerations.
+
+```bash
+cp .docs/templates/technical_doc_template.md .docs/technical_manuals/<folder>.md
+```
+
+### Linking
+
+The folder `README.md` must link to both manuals:
+
+```markdown
+- [User Guide](../../.docs/user_manuals/<folder>.md)
+- [Technical Manual](../../.docs/technical_manuals/<folder>.md)
+```
+
 ## Checklist
 
 - [ ] Metadata file (`meta.yaml` or `.meta.yaml`) with all required fields
@@ -209,3 +258,7 @@ YAML metadata files are the single source of truth. The cache is a derived, disp
 - [ ] Tested install and uninstall on available OSes
 - [ ] No inline YAML headers in `.sh` files
 - [ ] Cache rebuilds correctly (`./menu.py --rebuild`)
+- [ ] Folder has `README.md` (from `folder_readme_template.md`)
+- [ ] User manual exists in `.docs/user_manuals/`
+- [ ] Technical manual exists in `.docs/technical_manuals/`
+- [ ] `README.md` links to both manuals
