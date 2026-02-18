@@ -1,0 +1,21 @@
+name: "HAProxy"
+description: "High-performance TCP/HTTP load balancer with stats dashboard"
+version: "1.0.0"
+author: "System"
+type: install
+root: true
+order: 70
+hidden: false
+installed: false
+check_command: "docker ps --filter name=haproxy --format '{{.Names}}' | grep -q '^haproxy$'"
+dependencies:
+  - docker
+tags:
+  - docker
+  - load-balancer
+  - proxy
+  - security
+supported_os:
+  - kali
+  - debian
+  - ubuntu
