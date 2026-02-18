@@ -1,0 +1,20 @@
+name: "Nginx Moderate Hardening"
+description: "Rate limiting, SSL hardening, and security headers for nginx"
+version: "1.0.0"
+author: "System"
+type: config
+binary: "nginx"
+root: true
+order: 20
+hidden: false
+installed: false
+check_command: "test -f /etc/nginx/conf.d/security-moderate.conf"
+tags:
+  - security
+  - nginx
+  - hardening
+  - ssl
+supported_os:
+  - kali
+  - debian
+  - ubuntu

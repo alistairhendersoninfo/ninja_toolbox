@@ -1,0 +1,20 @@
+name: "nftables Hardened Firewall"
+description: "Hardened firewall with SYN flood protection, rate limiting, and scan blocking"
+version: "1.0.0"
+author: "System"
+type: config
+binary: "nft"
+root: true
+order: 50
+hidden: false
+installed: false
+check_command: "nft list ruleset 2>/dev/null | grep -q 'nftables-drop'"
+tags:
+  - security
+  - firewall
+  - nftables
+  - hardened
+supported_os:
+  - kali
+  - debian
+  - ubuntu
