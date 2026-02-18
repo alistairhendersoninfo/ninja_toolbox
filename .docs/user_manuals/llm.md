@@ -50,10 +50,25 @@ Google's experimental AI IDE.
 **Installation:**
 1. Run `ninjamenu` → Llm → Ide → Antigravity
 
+### AI Tools
+
+#### ComfyUI
+Node-based GUI for AI image and video generation using Stable Diffusion, LTX-Video, and more.
+
+**Getting started after install:**
+1. Start: `cd /opt/apps/LLM/ComfyUI && source venv/bin/activate && python3 main.py`
+2. Open http://127.0.0.1:8188
+3. Download models via the **Manager** button > **Model Manager**
+4. Upload PNGs by dragging onto the canvas or copying to `/opt/apps/LLM/ComfyUI/input/`
+5. Output saves to `/opt/apps/LLM/ComfyUI/output/`
+
+For the full guide including video generation and marketing clips, see: [ComfyUI Complete Guide](../../docs/comfyui-guide.md)
+
 ## Prerequisites
 
-- Node.js 20.x (install via PostsetupKali → Node.js)
-- API keys from respective providers
+- Node.js 20.x (install via PostsetupKali → Node.js) — for CLI tools
+- API keys from respective providers — for CLI tools
+- 16 GB+ RAM recommended for ComfyUI video generation
 
 ## Troubleshooting
 
