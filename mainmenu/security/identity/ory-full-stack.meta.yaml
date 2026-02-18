@@ -1,0 +1,22 @@
+name: "Ory Full Stack"
+description: "Complete Ory identity stack — Kratos, Hydra, Oathkeeper, Keto + PostgreSQL"
+version: "1.0.0"
+author: "System"
+type: install
+root: true
+order: 1
+hidden: false
+installed: false
+check_command: "docker ps --filter name=ory-kratos --format '{{.Names}}' | grep -q ory-kratos"
+dependencies:
+  - docker
+tags:
+  - security
+  - identity
+  - ory
+  - oauth2
+  - docker
+supported_os:
+  - kali
+  - debian
+  - ubuntu

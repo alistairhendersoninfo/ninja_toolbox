@@ -1,0 +1,23 @@
+name: "Ory Keto"
+description: "Fine-grained authorization — Zanzibar/ReBAC permission system"
+version: "1.0.0"
+author: "System"
+type: install
+root: true
+order: 50
+hidden: false
+installed: false
+check_command: "docker ps --filter name=keto --format '{{.Names}}' | grep -q keto"
+dependencies:
+  - docker
+tags:
+  - security
+  - identity
+  - ory
+  - keto
+  - authorization
+  - docker
+supported_os:
+  - kali
+  - debian
+  - ubuntu
