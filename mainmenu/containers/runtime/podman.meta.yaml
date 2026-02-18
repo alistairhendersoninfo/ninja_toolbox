@@ -1,0 +1,19 @@
+name: "Podman"
+description: "Rootless container engine — daemonless Docker alternative"
+version: "1.0.0"
+author: "System"
+type: install
+root: true
+order: 20
+hidden: false
+installed: false
+check_command: "podman --version"
+tags:
+  - containers
+  - podman
+  - rootless
+  - runtime
+supported_os:
+  - kali
+  - debian
+  - ubuntu

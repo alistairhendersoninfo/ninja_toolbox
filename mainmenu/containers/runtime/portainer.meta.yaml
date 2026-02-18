@@ -1,0 +1,20 @@
+name: "Portainer CE"
+description: "Web-based Docker management UI running as a container"
+version: "1.0.0"
+author: "System"
+type: install
+root: false
+order: 30
+hidden: false
+installed: false
+check_command: "docker ps --filter name=portainer --format '{{.Names}}' 2>/dev/null | grep -q portainer"
+tags:
+  - containers
+  - portainer
+  - docker
+  - management
+  - webui
+supported_os:
+  - kali
+  - debian
+  - ubuntu
