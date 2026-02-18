@@ -1,0 +1,21 @@
+name: "Apache Superset"
+description: "Business intelligence dashboards with SQL editor and visualisations"
+version: "1.0.0"
+author: "System"
+type: install
+root: true
+order: 60
+hidden: false
+installed: false
+check_command: "docker ps --filter name=superset-app --format '{{.Names}}' | grep -q superset-app"
+dependencies:
+  - docker
+tags:
+  - docker
+  - bi
+  - dashboards
+  - visualisation
+supported_os:
+  - kali
+  - debian
+  - ubuntu

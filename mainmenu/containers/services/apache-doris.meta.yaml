@@ -1,0 +1,20 @@
+name: "Apache Doris"
+description: "Real-time analytics database with MySQL-compatible interface"
+version: "1.0.0"
+author: "System"
+type: install
+root: true
+order: 10
+hidden: false
+installed: false
+check_command: "docker ps --filter name=doris-fe --format '{{.Names}}' | grep -q doris-fe"
+dependencies:
+  - docker
+tags:
+  - docker
+  - database
+  - analytics
+supported_os:
+  - kali
+  - debian
+  - ubuntu

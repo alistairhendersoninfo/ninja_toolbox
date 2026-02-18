@@ -1,0 +1,21 @@
+name: "Apache Atlas"
+description: "Data governance and metadata management with lineage tracking"
+version: "1.0.0"
+author: "System"
+type: install
+root: true
+order: 50
+hidden: false
+installed: false
+check_command: "docker ps --filter name=atlas --format '{{.Names}}' | grep -q '^atlas$'"
+dependencies:
+  - docker
+tags:
+  - docker
+  - governance
+  - metadata
+  - lineage
+supported_os:
+  - kali
+  - debian
+  - ubuntu
