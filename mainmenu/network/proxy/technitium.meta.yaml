@@ -1,0 +1,21 @@
+name: "Technitium DNS"
+description: "Self-hosted DNS server with web management UI via Docker"
+version: "1.0.0"
+author: "System"
+type: install
+root: true
+order: 10
+hidden: false
+installed: false
+check_command: "docker ps --filter name=technitium --format '{{.Names}}' | grep -q technitium"
+dependencies:
+  - docker
+tags:
+  - network
+  - dns
+  - docker
+  - technitium
+supported_os:
+  - kali
+  - debian
+  - ubuntu

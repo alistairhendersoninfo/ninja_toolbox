@@ -1,0 +1,19 @@
+name: "Squid Proxy"
+description: "Caching HTTP proxy server with access controls"
+version: "1.0.0"
+author: "System"
+type: install
+root: true
+order: 20
+hidden: false
+installed: false
+check_command: "squid -v"
+tags:
+  - network
+  - proxy
+  - squid
+  - caching
+supported_os:
+  - kali
+  - debian
+  - ubuntu
