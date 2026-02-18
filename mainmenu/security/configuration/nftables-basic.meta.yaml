@@ -1,0 +1,19 @@
+name: "nftables Basic Firewall"
+description: "Basic firewall rules allowing SSH, HTTP, HTTPS inbound"
+version: "1.0.0"
+author: "System"
+type: config
+binary: "nft"
+root: true
+order: 40
+hidden: false
+installed: false
+check_command: "nft list ruleset 2>/dev/null | grep -q 'chain input'"
+tags:
+  - security
+  - firewall
+  - nftables
+supported_os:
+  - kali
+  - debian
+  - ubuntu

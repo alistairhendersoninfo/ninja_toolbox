@@ -1,0 +1,21 @@
+name: "Nginx Extreme Hardening"
+description: "Full lockdown with HSTS, WAF, bot blocking, and attack pattern filtering"
+version: "1.0.0"
+author: "System"
+type: config
+binary: "nginx"
+root: true
+order: 30
+hidden: false
+installed: false
+check_command: "test -f /etc/nginx/conf.d/security-extreme.conf"
+tags:
+  - security
+  - nginx
+  - hardening
+  - waf
+  - hsts
+supported_os:
+  - kali
+  - debian
+  - ubuntu
