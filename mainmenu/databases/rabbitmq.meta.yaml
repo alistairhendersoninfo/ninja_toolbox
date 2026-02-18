@@ -1,0 +1,21 @@
+name: "RabbitMQ"
+description: "Message broker with SSL/TLS and management console"
+version: "1.0.0"
+author: "System"
+type: install
+root: true
+order: 30
+hidden: false
+installed: false
+check_command: "rabbitmqctl status"
+dependencies:
+  - openssl
+tags:
+  - messaging
+  - rabbitmq
+  - amqp
+  - broker
+supported_os:
+  - kali
+  - debian
+  - ubuntu
