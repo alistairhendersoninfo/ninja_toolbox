@@ -1,0 +1,22 @@
+name: "PostgreSQL (Security-Hardened)"
+description: "Hardened PostgreSQL with SSL, strict pg_hba.conf, and Ory stack databases"
+version: "1.0.0"
+author: "System"
+type: install
+root: true
+order: 20
+hidden: false
+installed: false
+check_command: "psql --version"
+dependencies:
+  - openssl
+tags:
+  - database
+  - postgresql
+  - security
+  - hardened
+  - ory
+supported_os:
+  - kali
+  - debian
+  - ubuntu
