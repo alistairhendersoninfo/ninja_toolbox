@@ -1,0 +1,23 @@
+name: "Ory Login Consent App"
+description: "Login and consent UI that Hydra redirects to for authentication"
+version: "1.0.0"
+author: "System"
+type: install
+root: true
+order: 30
+hidden: false
+installed: false
+check_command: "docker ps --filter name=login-consent --format '{{.Names}}' | grep -q login-consent"
+dependencies:
+  - docker
+tags:
+  - security
+  - identity
+  - ory
+  - hydra
+  - consent
+  - docker
+supported_os:
+  - kali
+  - debian
+  - ubuntu

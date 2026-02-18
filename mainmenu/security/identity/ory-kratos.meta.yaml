@@ -1,0 +1,22 @@
+name: "Ory Kratos"
+description: "Identity management — login, registration, WebAuthn/passkeys, sessions"
+version: "1.0.0"
+author: "System"
+type: install
+root: true
+order: 10
+hidden: false
+installed: false
+check_command: "docker ps --filter name=kratos --format '{{.Names}}' | grep -q kratos"
+dependencies:
+  - docker
+tags:
+  - security
+  - identity
+  - ory
+  - kratos
+  - docker
+supported_os:
+  - kali
+  - debian
+  - ubuntu

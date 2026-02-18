@@ -1,0 +1,23 @@
+name: "Ory Oathkeeper"
+description: "Identity and Access Proxy — zero-trust API gateway"
+version: "1.0.0"
+author: "System"
+type: install
+root: true
+order: 40
+hidden: false
+installed: false
+check_command: "docker ps --filter name=oathkeeper --format '{{.Names}}' | grep -q oathkeeper"
+dependencies:
+  - docker
+tags:
+  - security
+  - identity
+  - ory
+  - oathkeeper
+  - proxy
+  - docker
+supported_os:
+  - kali
+  - debian
+  - ubuntu

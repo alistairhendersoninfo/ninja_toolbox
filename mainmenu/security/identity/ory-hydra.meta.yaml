@@ -1,0 +1,24 @@
+name: "Ory Hydra"
+description: "OAuth2 and OpenID Connect provider"
+version: "1.0.0"
+author: "System"
+type: install
+root: true
+order: 20
+hidden: false
+installed: false
+check_command: "docker ps --filter name=hydra --format '{{.Names}}' | grep -q hydra"
+dependencies:
+  - docker
+tags:
+  - security
+  - identity
+  - ory
+  - hydra
+  - oauth2
+  - oidc
+  - docker
+supported_os:
+  - kali
+  - debian
+  - ubuntu
