@@ -12,8 +12,12 @@ Standalone AI applications and frameworks for image generation, model serving, a
 
 ```bash
 ninjamenu
-# Navigate to: Llm -> Ai-Tools -> ComfyUI
+# Navigate to: Llm -> Ai-Tools -> Comfyui -> ComfyUI
 ```
+
+## Usage Guide
+
+See the [ComfyUI Complete Guide](../../../docs/comfyui-guide.md) for downloading models, uploading images, generating videos, and creating marketing clips.
 
 ## Requirements
 

@@ -2,9 +2,10 @@
 
 ## Architecture
 
-LLM tools are organized into two submenus:
+LLM tools are organized into three submenus:
 - `cli/` - Command-line interfaces
 - `ide/` - Graphical IDE applications
+- `ai-tools/` - Standalone AI applications (ComfyUI)
 
 Most CLI tools require Node.js and are installed via npm.
 
@@ -57,10 +58,33 @@ curl -fsSL https://cursor.sh/download/linux -o cursor.AppImage
 curl -fsSL https://antigravity.google/download/linux
 ```
 
+### ai-tools/comfyui/comfyui/ (Tier 1 Modular)
+
+**Purpose:** ComfyUI node-based AI image/video generation platform
+
+**Location:** `mainmenu/llm/ai-tools/comfyui/comfyui/`
+
+**Files:**
+- `meta.yaml` — Metadata (name, description, check_path)
+- `_common.sh` — Shared config (install path, repo URLs, Python version)
+- `macos.sh` — macOS install/uninstall logic
+
+**Check path:** `/opt/apps/LLM/ComfyUI/main.py`
+
+**Key paths:**
+- Install dir: `/opt/apps/LLM/ComfyUI`
+- Models: `/opt/apps/LLM/ComfyUI/models/checkpoints/`
+- User uploads: `/opt/apps/LLM/ComfyUI/input/`
+- Output: `/opt/apps/LLM/ComfyUI/output/`
+- Venv: `/opt/apps/LLM/ComfyUI/venv/`
+
+**Full usage guide:** [ComfyUI Complete Guide](../../docs/comfyui-guide.md)
+
 ## Dependencies
 
-- Node.js 20.x (from postsetup-kali/nodejs.sh)
-- npm
+- Node.js 20.x (from postsetup-kali/nodejs.sh) — for CLI tools
+- npm — for CLI tools
+- Python 3.12+, git, brew — for ComfyUI
 
 ## Development
 
