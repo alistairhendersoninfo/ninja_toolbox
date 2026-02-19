@@ -1,0 +1,21 @@
+name: "Google NotebookLM"
+description: "AI-powered research and note-taking tool — desktop app wrapper"
+version: "1.0.0"
+author: "Google"
+type: install
+root: false
+order: 20
+hidden: false
+installed: false
+check_path: "~/Applications/Google NotebookLM.app"
+tags:
+  - llm
+  - ai
+  - google
+  - notebooklm
+  - research
+supported_os:
+  - macos
+  - kali
+  - debian
+  - ubuntu
