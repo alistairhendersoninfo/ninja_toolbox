@@ -1,0 +1,23 @@
+name: "NotebookLM CLI"
+description: "Google NotebookLM CLI — manage notebooks, sources, and podcasts from terminal"
+version: "1.0.0"
+author: "jacob-bd"
+type: install
+root: false
+order: 30
+hidden: false
+installed: false
+check_command: "nlm --version"
+dependencies:
+  - python3
+tags:
+  - llm
+  - cli
+  - google
+  - notebooklm
+  - ai
+supported_os:
+  - macos
+  - kali
+  - debian
+  - ubuntu
