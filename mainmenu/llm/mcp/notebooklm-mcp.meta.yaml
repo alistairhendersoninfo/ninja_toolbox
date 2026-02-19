@@ -1,0 +1,23 @@
+name: "NotebookLM MCP Server"
+description: "MCP server for AI assistants to interact with Google NotebookLM"
+version: "1.0.0"
+author: "jacob-bd"
+type: install
+root: false
+order: 20
+hidden: false
+installed: false
+check_command: "notebooklm-mcp --help"
+dependencies:
+  - python3
+tags:
+  - llm
+  - mcp
+  - google
+  - notebooklm
+  - ai
+supported_os:
+  - macos
+  - kali
+  - debian
+  - ubuntu
