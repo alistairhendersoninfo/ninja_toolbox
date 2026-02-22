@@ -3,7 +3,7 @@ description: "Terminal CLI for Obsidian vaults — create, search, open, delete 
 type: install
 root: true
 order: 20
-installed: false
+installed: true
 check_command: "notesmd-cli --version"
 tags:
   - editors
