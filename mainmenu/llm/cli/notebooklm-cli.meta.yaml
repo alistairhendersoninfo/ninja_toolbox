@@ -6,7 +6,7 @@ type: install
 root: false
 order: 30
 hidden: false
-installed: false
+installed: true
 check_command: "nlm --version"
 dependencies:
   - python3
