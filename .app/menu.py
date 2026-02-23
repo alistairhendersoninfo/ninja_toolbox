@@ -640,7 +640,7 @@ def scan_menu_directory(directory: Path) -> List[MenuItem]:
     except ValueError:
         parent_menu = ""
 
-    cached_items = get_menu_items(DB_PATH, parent_menu, CURRENT_OS)
+    cached_items = get_menu_items(DB_PATH, parent_menu, CURRENT_OS, CURRENT_DISTRO)
     items = []
 
     for d in cached_items:
