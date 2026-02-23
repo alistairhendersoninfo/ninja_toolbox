@@ -11,6 +11,7 @@ Security tool installers for Linux systems.
 | auditd.sh | Linux audit daemon with hardening rules |
 | clamav.sh | Open-source antivirus engine |
 | apparmor.sh | Mandatory access control with enforced profiles |
+| fail2ban.sh | Intrusion prevention — bans IPs after repeated auth failures |
 | fluent-bit.sh | Lightweight log processor and forwarder |
 
 ## Documentation
