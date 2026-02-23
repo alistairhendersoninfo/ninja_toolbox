@@ -448,7 +448,7 @@ def _check_staleness(directory: Path, menu_root: Path, cached: Dict[str, float],
 # Query functions
 # ---------------------------------------------------------------------------
 
-def get_menu_items(db_path: Path, parent_menu: str, current_os: str) -> List[Dict[str, Any]]:
+def get_menu_items(db_path: Path, parent_menu: str, current_os: str, current_distro: str = "") -> List[Dict[str, Any]]:
     """Get all menu items (submenus + scripts + aliases) for a given parent menu.
 
     Returns a sorted list of dicts with keys matching MenuItem/ScriptInfo fields.
@@ -472,6 +472,12 @@ def get_menu_items(db_path: Path, parent_menu: str, current_os: str) -> List[Dic
             'order': 0,
         })
 
+    # Build the set of OS values to match against supported_os lists.
+    # On Linux, match both the generic "linux" and the specific distro (e.g. "ubuntu").
+    os_matches = {current_os}
+    if current_distro and current_distro != current_os:
+        os_matches.add(current_distro)
+
     # 2. Scripts in this menu (filtered by current OS)
     rows = conn.execute(
         "SELECT * FROM scripts WHERE parent_menu = ? AND hidden = 0 ORDER BY menu_order, name",
@@ -479,7 +485,7 @@ def get_menu_items(db_path: Path, parent_menu: str, current_os: str) -> List[Dic
     ).fetchall()
     for row in rows:
         supported = json.loads(row['supported_os'])
-        if supported and current_os not in supported:
+        if supported and not os_matches.intersection(supported):
             continue
         items.append(_row_to_dict(row))
 
@@ -492,7 +498,7 @@ def get_menu_items(db_path: Path, parent_menu: str, current_os: str) -> List[Dic
     """, (parent_menu,)).fetchall()
     for row in rows:
         supported = json.loads(row['supported_os'])
-        if supported and current_os not in supported:
+        if supported and not os_matches.intersection(supported):
             continue
         items.append(_row_to_dict(row))
 
