@@ -1773,7 +1773,8 @@ def gum_menu(directory: Path, breadcrumb: List[str] = None) -> None:
                     "--margin", margin_str,
                     "--width", str(layout['content_width']),
                     f"📍 {path_display}",
-                    "Type number to select, b=back, x=exit"
+                    "Type number to select, b=back, x=exit",
+                    "✅ Installed  ⬜ Not installed  🔐 Requires root"
                 ])
 
                 # Pad filter choices for visual centering
