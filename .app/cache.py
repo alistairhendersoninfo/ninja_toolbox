@@ -187,8 +187,8 @@ def _parse_yaml_header(script_path: Path) -> Optional[Dict[str, Any]]:
 def rebuild_cache(menu_dir: Path, db_path: Path) -> None:
     """Full cache rebuild — walk mainmenu/, parse all metadata, write to SQLite.
 
-    Installed status is NOT checked here (no subprocess calls).
-    It will be checked lazily when scripts are viewed/selected.
+    After inserting all rows, runs check_command/check_path for every script
+    so installed status reflects what is actually on the system.
     """
     db_path.parent.mkdir(parents=True, exist_ok=True)
 
@@ -216,6 +216,9 @@ def rebuild_cache(menu_dir: Path, db_path: Path) -> None:
         _walk_and_insert(menu_dir, menu_dir, conn)
 
     conn.close()
+
+    # Detect what is actually installed on the system
+    check_installed_all(db_path)
 
 
 def _walk_and_insert(directory: Path, menu_root: Path, conn: sqlite3.Connection) -> None:
@@ -534,6 +537,64 @@ def search_scripts(db_path: Path, query: str) -> List[Dict[str, Any]]:
     ).fetchall()
     conn.close()
     return [_row_to_dict(row) for row in rows]
+
+
+def check_installed_all(db_path: Path) -> None:
+    """Run check_command / check_path for every script and update the DB.
+
+    Called after a cache rebuild so installed status reflects reality
+    rather than the static YAML value (which is always false in git).
+    """
+    import subprocess as _sp
+    from datetime import datetime
+
+    home = os.path.expanduser("~")
+    extra_paths = [
+        f"{home}/.local/bin",
+        f"{home}/.cargo/bin",
+        f"{home}/.npm-global/bin",
+        "/usr/local/bin",
+        "/opt/homebrew/bin",
+    ]
+    env = os.environ.copy()
+    env["PATH"] = ":".join(extra_paths) + ":" + env.get("PATH", "")
+
+    conn = sqlite3.connect(str(db_path))
+    conn.row_factory = sqlite3.Row
+    rows = conn.execute(
+        "SELECT path, check_command, check_path FROM scripts"
+    ).fetchall()
+
+    now = datetime.now().isoformat()
+    updates = []
+    for row in rows:
+        installed = False
+        # Check by command
+        if row['check_command']:
+            try:
+                result = _sp.run(
+                    row['check_command'], shell=True,
+                    capture_output=True, timeout=5, env=env,
+                )
+                if result.returncode == 0:
+                    installed = True
+            except Exception:
+                pass
+        # Check by path
+        if not installed and row['check_path']:
+            for p in row['check_path'].split(':'):
+                expanded = os.path.expanduser(p.strip())
+                if os.path.exists(expanded):
+                    installed = True
+                    break
+        updates.append((1 if installed else 0, now, row['path']))
+
+    with conn:
+        conn.executemany(
+            "UPDATE scripts SET installed = ?, installed_checked_at = ? WHERE path = ?",
+            updates,
+        )
+    conn.close()
 
 
 def update_installed(db_path: Path, script_path: str, installed: bool) -> None:
