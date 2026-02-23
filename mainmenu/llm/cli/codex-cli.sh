@@ -21,6 +21,7 @@ install_nodejs() {
     log_step "Installing Node.js and npm..."
 
     if [[ "$NT_OS" == "linux" ]]; then
+        require_root
         curl -fsSL https://deb.nodesource.com/setup_20.x | bash -
         apt-get install -y nodejs
         # npm is included with NodeSource package; install separately if missing
@@ -28,7 +29,7 @@ install_nodejs() {
             apt-get install -y npm
         fi
     elif [[ "$NT_OS" == "macos" ]]; then
-        brew install node
+        brew install node@20
     fi
 
     if ! command -v node &>/dev/null || ! command -v npm &>/dev/null; then

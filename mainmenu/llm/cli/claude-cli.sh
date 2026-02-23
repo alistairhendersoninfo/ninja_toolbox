@@ -55,7 +55,11 @@ install() {
         mark_installed true
     else
         log_warn "Claude CLI installed but not found in PATH."
-        log_warn "Restart your shell or run: source ~/.bashrc"
+        if [[ -n "${ZSH_VERSION:-}" ]] || [[ "$(basename "${SHELL:-}")" == "zsh" ]]; then
+            log_warn "Restart your shell or run: source ~/.zshrc"
+        else
+            log_warn "Restart your shell or run: source ~/.bashrc"
+        fi
         mark_installed true
     fi
 }
