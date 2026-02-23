@@ -12,23 +12,38 @@ mkdir -p "$LOG_DIR"
 LOG_FILE="$LOG_DIR/${SCRIPT_NAME}_$(date +%Y%m%d_%H%M%S).log"
 exec > >(tee -a "$LOG_FILE") 2>&1
 
-check_nodejs() {
-    if ! command -v node &>/dev/null; then
-        log_error "Node.js is not installed. Please install Node.js first."
-        log_info "Run the Node.js installer from postsetup-kali menu"
+install_nodejs() {
+    if command -v node &>/dev/null && command -v npm &>/dev/null; then
+        log_info "Node.js $(node --version) and npm already available"
+        return 0
+    fi
+
+    log_step "Installing Node.js and npm..."
+
+    if [[ "$NT_OS" == "linux" ]]; then
+        require_root
+        curl -fsSL https://deb.nodesource.com/setup_20.x | bash -
+        apt-get install -y nodejs
+        # npm is included with NodeSource package; install separately if missing
+        if ! command -v npm &>/dev/null; then
+            apt-get install -y npm
+        fi
+    elif [[ "$NT_OS" == "macos" ]]; then
+        brew install node@20
+    fi
+
+    if ! command -v node &>/dev/null || ! command -v npm &>/dev/null; then
+        log_error "Failed to install Node.js/npm"
         exit 1
     fi
-    if ! command -v npm &>/dev/null; then
-        log_error "npm is not installed. Please install npm first."
-        exit 1
-    fi
+    log_success "Node.js $(node --version) installed"
 }
 
 install() {
     log_info "Installing Gemini CLI..."
     log_info "Log file: $LOG_FILE"
 
-    check_nodejs
+    install_nodejs
 
     # Check if already installed
     if command -v gemini &>/dev/null; then
