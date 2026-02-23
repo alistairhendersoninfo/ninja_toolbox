@@ -2,6 +2,7 @@ name: "Cursor IDE"
 description: "AI-powered code editor built on VS Code"
 version: "1.0.0"
 author: "Cursor"
+type: install
 root: true
 order: 10
 hidden: false

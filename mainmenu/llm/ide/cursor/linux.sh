@@ -17,28 +17,10 @@ install() {
         return 0
     fi
 
-    TEMP_DIR=$(mktemp -d)
-    cd "$TEMP_DIR"
+    log_step "Downloading and running Cursor installer..."
+    curl -fsS https://cursor.com/install | bash
 
-    if [[ "$NT_ARCH" == "x86_64" ]]; then
-        DEB_URL="https://api2.cursor.sh/updates/download/golden/linux-x64-deb/cursor/2.4"
-    elif [[ "$NT_ARCH" == "aarch64" ]]; then
-        DEB_URL="https://api2.cursor.sh/updates/download/golden/linux-arm64-deb/cursor/2.4"
-    else
-        log_error "Unsupported architecture: $NT_ARCH"
-        exit 1
-    fi
-
-    log_step "Downloading Cursor .deb package for $NT_ARCH..."
-    curl -fsSL -o cursor.deb "$DEB_URL"
-
-    log_step "Installing Cursor..."
-    dpkg -i cursor.deb || apt-get install -f -y
-
-    cd ~
-    rm -rf "$TEMP_DIR"
-
-    if command -v cursor &>/dev/null || [[ -f /opt/Cursor/cursor ]]; then
+    if command -v cursor &>/dev/null || [[ -f /usr/bin/cursor ]] || [[ -f /opt/Cursor/cursor ]]; then
         log_success "Cursor IDE installed successfully!"
         echo ""
         echo "Run 'cursor' to launch Cursor IDE"

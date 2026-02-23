@@ -12,6 +12,24 @@ mkdir -p "$LOG_DIR"
 LOG_FILE="$LOG_DIR/${SCRIPT_NAME}_$(date +%Y%m%d_%H%M%S).log"
 exec > >(tee -a "$LOG_FILE") 2>&1
 
+ensure_path() {
+    local path_line='export PATH="$HOME/.local/bin:$PATH"'
+    local shell_rc
+
+    if [[ -n "${ZSH_VERSION:-}" ]] || [[ "$(basename "${SHELL:-}")" == "zsh" ]]; then
+        shell_rc="$HOME/.zshrc"
+    else
+        shell_rc="$HOME/.bashrc"
+    fi
+
+    if [[ -f "$shell_rc" ]] && ! grep -qF '.local/bin' "$shell_rc"; then
+        log_step "Adding ~/.local/bin to PATH in $shell_rc..."
+        echo "$path_line" >> "$shell_rc"
+    fi
+
+    export PATH="$HOME/.local/bin:$PATH"
+}
+
 install() {
     log_info "Installing Claude CLI..."
     log_info "Log file: $LOG_FILE"
@@ -26,8 +44,8 @@ install() {
     log_step "Downloading and running Claude installer..."
     curl -fsSL https://claude.ai/install.sh | bash
 
-    # Ensure PATH is updated
-    export PATH="$HOME/.local/bin:$PATH"
+    # Ensure PATH is updated in current session and persisted to shell config
+    ensure_path
 
     if command -v claude &>/dev/null; then
         log_success "Claude CLI installed successfully!"
@@ -36,8 +54,8 @@ install() {
         echo ""
         mark_installed true
     else
-        log_warn "Claude CLI may need PATH update. Add to your shell config:"
-        echo 'export PATH="$HOME/.local/bin:$PATH"'
+        log_warn "Claude CLI installed but not found in PATH."
+        log_warn "Restart your shell or run: source ~/.bashrc"
         mark_installed true
     fi
 }
