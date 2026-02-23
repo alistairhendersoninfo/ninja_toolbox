@@ -1,0 +1,19 @@
+name: "fail2ban"
+description: "Intrusion prevention — bans IPs after repeated authentication failures"
+version: "1.0.0"
+author: "System"
+type: install
+root: true
+order: 35
+hidden: false
+installed: false
+check_command: "fail2ban-client version"
+tags:
+  - security
+  - intrusion-prevention
+  - fail2ban
+  - ssh
+supported_os:
+  - kali
+  - debian
+  - ubuntu
