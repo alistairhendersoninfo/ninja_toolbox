@@ -1,5 +1,5 @@
 #!/bin/bash
-set -euo pipefail
+set -Eeuo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 SCRIPT_NAME="docker"
@@ -11,10 +11,22 @@ mkdir -p "$LOG_DIR"
 LOG_FILE="$LOG_DIR/${SCRIPT_NAME}_$(date +%Y%m%d_%H%M%S).log"
 exec > >(tee -a "$LOG_FILE") 2>&1
 
-# Trap errors so failures are visible instead of silent exit
-trap 'log_error "FAILED at line $LINENO: $BASH_COMMAND (exit code $?)"; log_error "Log: $LOG_FILE"; exit 1' ERR
+# -E makes ERR trap fire inside functions, not just at top level
+trap 'log_error "FAILED at line $LINENO: $BASH_COMMAND (exit $?)"; log_error "Log: $LOG_FILE"; exit 1' ERR
 
 DATA_ROOT="/opt/app/docker"
+
+# Resolve distro for Docker repo once (Kali uses Debian's repo)
+_resolve_docker_distro() {
+    # shellcheck source=/dev/null
+    . /etc/os-release
+    DOCKER_DISTRO="$ID"
+    DOCKER_CODENAME="${VERSION_CODENAME:-}"
+    if [[ "$DOCKER_DISTRO" == "kali" ]]; then
+        DOCKER_DISTRO="debian"
+        DOCKER_CODENAME="bookworm"
+    fi
+}
 
 install() {
     log_info "Installing Docker CE"
@@ -22,11 +34,12 @@ install() {
     echo ""
 
     require_root
+    _resolve_docker_distro
 
     # Step 0: Clear any stuck apt/dpkg locks
     wait_for_apt
 
-    # Step 1: Remove old/conflicting packages (single apt call, suppress "not installed" noise)
+    # Step 1: Remove old/conflicting packages
     log_step "Removing old Docker packages if present..."
     apt-get remove -y docker.io docker-doc docker-compose podman-docker containerd runc 2>/dev/null || true
 
@@ -36,33 +49,25 @@ install() {
     pkg_install ca-certificates curl gnupg
 
     # Step 3: Add Docker GPG key
-    log_step "Adding Docker's official GPG key..."
+    log_step "Adding Docker GPG key from download.docker.com/linux/${DOCKER_DISTRO}..."
     install -m 0755 -d /etc/apt/keyrings
     rm -f /etc/apt/keyrings/docker.gpg
 
-    # Resolve distro for Docker repo (Kali uses Debian's repo)
-    local docker_distro docker_codename
-    # shellcheck source=/dev/null
-    . /etc/os-release
-    docker_distro="$ID"
-    docker_codename="${VERSION_CODENAME:-}"
-    if [[ "$docker_distro" == "kali" ]]; then
-        docker_distro="debian"
-        docker_codename="bookworm"
-    fi
+    local gpg_url="https://download.docker.com/linux/${DOCKER_DISTRO}/gpg"
+    log_info "Downloading: $gpg_url"
+    curl -fsSL "$gpg_url" -o /tmp/docker-gpg-key
+    log_info "Downloaded $(wc -c < /tmp/docker-gpg-key) bytes"
 
-    curl -fsSL "https://download.docker.com/linux/${docker_distro}/gpg" \
-        | gpg --dearmor --batch --yes -o /etc/apt/keyrings/docker.gpg
+    gpg --dearmor --batch --yes -o /etc/apt/keyrings/docker.gpg < /tmp/docker-gpg-key
+    rm -f /tmp/docker-gpg-key
     chmod a+r /etc/apt/keyrings/docker.gpg
-    log_info "GPG key installed"
+    log_info "GPG key installed to /etc/apt/keyrings/docker.gpg"
 
     # Step 4: Add Docker apt repository
-    log_step "Adding Docker apt repository..."
-    echo \
-        "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] \
-        https://download.docker.com/linux/${docker_distro} \
-        ${docker_codename} stable" | \
-        tee /etc/apt/sources.list.d/docker.list > /dev/null
+    log_step "Adding Docker apt repository (${DOCKER_DISTRO} ${DOCKER_CODENAME})..."
+    echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/${DOCKER_DISTRO} ${DOCKER_CODENAME} stable" \
+        | tee /etc/apt/sources.list.d/docker.list > /dev/null
+    log_info "Repo written to /etc/apt/sources.list.d/docker.list"
     apt-get update
 
     # Step 5: Install Docker CE and plugins
