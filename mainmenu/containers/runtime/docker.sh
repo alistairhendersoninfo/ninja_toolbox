@@ -20,6 +20,9 @@ install() {
 
     require_root
 
+    # Step 0: Clear any stuck apt/dpkg locks
+    wait_for_apt
+
     # Step 1: Remove old/conflicting packages
     log_step "Removing old Docker packages if present..."
     local OLD_PKGS=(docker.io docker-doc docker-compose podman-docker containerd runc)
