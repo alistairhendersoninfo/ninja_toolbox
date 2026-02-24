@@ -12,7 +12,7 @@ LOG_FILE="$LOG_DIR/${SCRIPT_NAME}_$(date +%Y%m%d_%H%M%S).log"
 exec > >(tee -a "$LOG_FILE") 2>&1
 
 # Trap errors so failures are visible instead of silent exit
-trap 'log_error "Docker install failed at line $LINENO (exit code $?). Check log: $LOG_FILE"; exit 1' ERR
+trap 'log_error "FAILED at line $LINENO: $BASH_COMMAND (exit code $?)"; log_error "Log: $LOG_FILE"; exit 1' ERR
 
 DATA_ROOT="/opt/app/docker"
 
