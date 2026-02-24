@@ -159,39 +159,39 @@ pkg_update() {
     esac
 }
 
-# pkg_install: install one or more packages
+# pkg_install: install one or more packages (single apt call on Linux)
 # Usage: pkg_install htop btop nmap
 #        pkg_install zenmap  # auto-maps to 'brew install --cask zenmap' on macOS
 pkg_install() {
-    local pkg mapped rc
-    for pkg in "$@"; do
-        if [[ "$NT_OS" == "linux" ]]; then
-            apt-get install -y "$pkg"
-        elif [[ "$NT_OS" == "macos" ]]; then
+    if [[ "$NT_OS" == "linux" ]]; then
+        wait_for_apt
+        apt-get install -y "$@"
+    elif [[ "$NT_OS" == "macos" ]]; then
+        local pkg mapped rc
+        for pkg in "$@"; do
             mapped=$(_pkg_map_macos "$pkg") && rc=0 || rc=$?
             if [[ $rc -eq 0 ]]; then
-                # Mapped to a different brew package/cask name
                 # shellcheck disable=SC2086
                 brew install $mapped
             elif [[ $rc -eq 2 ]]; then
                 log_warn "Package '$pkg' is not available on macOS — skipping"
                 continue
             else
-                # No mapping — use original name as-is
                 brew install "$pkg"
             fi
-        fi
-    done
+        done
+    fi
 }
 
-# pkg_remove: remove one or more packages
+# pkg_remove: remove one or more packages (single apt call on Linux)
 # Usage: pkg_remove htop btop
 pkg_remove() {
-    local pkg mapped rc
-    for pkg in "$@"; do
-        if [[ "$NT_OS" == "linux" ]]; then
-            apt-get remove -y "$pkg"
-        elif [[ "$NT_OS" == "macos" ]]; then
+    if [[ "$NT_OS" == "linux" ]]; then
+        wait_for_apt
+        apt-get remove -y "$@"
+    elif [[ "$NT_OS" == "macos" ]]; then
+        local pkg mapped rc
+        for pkg in "$@"; do
             mapped=$(_pkg_map_macos "$pkg") && rc=0 || rc=$?
             if [[ $rc -eq 0 ]]; then
                 # shellcheck disable=SC2086
@@ -201,8 +201,8 @@ pkg_remove() {
             else
                 brew uninstall "$pkg" 2>/dev/null || true
             fi
-        fi
-    done
+        done
+    fi
 }
 
 #######################################
