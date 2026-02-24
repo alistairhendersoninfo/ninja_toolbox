@@ -1,0 +1,19 @@
+name: "Portainer CE"
+description: "Web-based Docker management UI for monitoring Penpot containers"
+version: "1.0.0"
+author: "System"
+type: install
+root: false
+order: 50
+hidden: false
+installed: false
+check_command: "docker ps --filter name=portainer --format '{{.Names}}' 2>/dev/null | grep -q portainer"
+tags:
+  - portainer
+  - docker
+  - management
+  - penpot
+supported_os:
+  - kali
+  - debian
+  - ubuntu

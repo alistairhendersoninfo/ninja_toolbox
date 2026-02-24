@@ -1,0 +1,18 @@
+name: "Docker CE"
+description: "Install Docker CE container runtime (required for Penpot)"
+version: "1.0.0"
+author: "System"
+type: install
+root: true
+order: 10
+hidden: false
+installed: false
+check_command: "docker --version"
+tags:
+  - docker
+  - containers
+  - runtime
+supported_os:
+  - kali
+  - debian
+  - ubuntu

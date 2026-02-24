@@ -9,6 +9,7 @@ Container engines and management UIs.
 | Docker CE | Full Docker Community Edition with Compose and Buildx plugins | install |
 | Podman | Rootless container engine — daemonless Docker alternative | install |
 | Portainer CE | Web-based Docker management UI running as a container | install |
+| Reverse Proxy | Install nginx reverse proxy for container services | install |
 
 ## Quick Start
 
@@ -39,6 +40,11 @@ Web-based management UI for Docker:
 - Persistent data volume
 - Optional systemd service integration
 - Manages containers, images, volumes, networks
+
+### Reverse Proxy
+Nginx reverse proxy for container services:
+- Wrapper around the network/web-servers/nginx install
+- Used by service submenus (e.g. Penpot) to install nginx as a prerequisite
 
 ## Requirements
 
