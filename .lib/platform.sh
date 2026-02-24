@@ -112,10 +112,49 @@ _pkg_map_macos() {
 # PACKAGE MANAGEMENT
 #######################################
 
+# wait_for_apt: wait for any running apt/dpkg processes to finish
+# Kills stopped (Ctrl+Z) apt/dpkg processes, then waits up to 60s for
+# active ones to complete before proceeding.
+# Usage: wait_for_apt   (call before any apt-get/dpkg operation)
+wait_for_apt() {
+    [[ "$NT_OS" != "linux" ]] && return 0
+
+    # Kill stopped (T state) apt/dpkg processes — these are orphans from Ctrl+Z
+    local stopped_pids
+    stopped_pids=$(ps -eo pid,stat,comm | awk '$2 ~ /T/ && ($3 == "apt-get" || $3 == "apt" || $3 == "dpkg") {print $1}')
+    if [[ -n "$stopped_pids" ]]; then
+        log_warn "Killing stopped apt/dpkg processes: $stopped_pids"
+        # shellcheck disable=SC2086
+        kill -9 $stopped_pids 2>/dev/null || true
+        sleep 1
+    fi
+
+    # Wait for any active apt/dpkg processes to finish
+    local waited=0
+    while fuser /var/lib/dpkg/lock-frontend &>/dev/null 2>&1; do
+        if [[ $waited -eq 0 ]]; then
+            log_info "Waiting for another apt/dpkg process to finish..."
+        fi
+        sleep 2
+        waited=$((waited + 2))
+        if [[ $waited -ge 60 ]]; then
+            log_error "Timed out waiting for apt/dpkg lock after 60s"
+            log_info "Check with: ps aux | grep -E 'apt|dpkg'"
+            exit 1
+        fi
+    done
+
+    # Clean up stale lock files if no process holds them
+    if [[ -f /var/lib/dpkg/lock-frontend ]] && ! fuser /var/lib/dpkg/lock-frontend &>/dev/null 2>&1; then
+        rm -f /var/lib/dpkg/lock-frontend /var/lib/dpkg/lock /var/cache/apt/archives/lock 2>/dev/null || true
+        dpkg --configure -a 2>/dev/null || true
+    fi
+}
+
 # pkg_update: refresh package index
 pkg_update() {
     case "$NT_OS" in
-        linux)  apt-get update -qq ;;
+        linux)  wait_for_apt; apt-get update -qq ;;
         macos)  brew update --quiet ;;
     esac
 }
