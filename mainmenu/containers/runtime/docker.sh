@@ -46,6 +46,9 @@ install() {
     log_step "Stopping background apt services to prevent lock conflicts..."
     systemctl stop unattended-upgrades apt-daily apt-daily-upgrade 2>/dev/null || true
     systemctl kill --kill-who=all unattended-upgrades 2>/dev/null || true
+    # Kill residual apt-get/apt processes orphaned by the stopped services
+    pkill -x apt-get 2>/dev/null || true
+    pkill -x apt     2>/dev/null || true
     sleep 1
 
     # Step 1: Remove old/conflicting packages
