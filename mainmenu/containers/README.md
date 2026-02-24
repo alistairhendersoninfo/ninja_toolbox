@@ -7,6 +7,7 @@ Container runtimes and orchestration tools.
 | Category | Description |
 |----------|-------------|
 | [Runtime](runtime/) | Container engines and management UIs |
+| [Services](services/) | Dockerised application services (SIEM, analytics, design) |
 
 ## Quick Start
 

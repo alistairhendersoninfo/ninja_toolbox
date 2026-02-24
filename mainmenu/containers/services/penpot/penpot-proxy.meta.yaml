@@ -1,0 +1,19 @@
+name: "Penpot Proxy Config"
+description: "Nginx reverse proxy configuration for Penpot with WebSocket support"
+version: "1.0.0"
+author: "System"
+type: config
+binary: "nginx"
+root: true
+order: 40
+hidden: false
+installed: false
+check_command: "test -f /etc/nginx/sites-available/penpot"
+tags:
+  - nginx
+  - proxy
+  - penpot
+supported_os:
+  - kali
+  - debian
+  - ubuntu

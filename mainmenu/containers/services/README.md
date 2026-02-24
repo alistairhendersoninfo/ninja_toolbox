@@ -23,6 +23,12 @@ Dockerised application services deployed via `docker-compose` with systemd manag
 | [wazuh.sh](wazuh.sh) | Wazuh SIEM full stack (manager, indexer, dashboard) | 443 (dashboard), 1514/1515 (agents), 9200 (indexer), 55000 (API) |
 | [security-onion.sh](security-onion.sh) | Security Onion network security monitoring | Configured during setup wizard |
 
+### Design & Collaboration
+
+| Submenu | Description |
+|---------|-------------|
+| [Penpot/](penpot/) | Self-hosted design and prototyping platform (guided 5-step workflow) |
+
 ## Common Operations
 
 ```bash
