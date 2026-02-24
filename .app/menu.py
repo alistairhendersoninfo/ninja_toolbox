@@ -1938,19 +1938,27 @@ def gum_script_action(script_info: ScriptInfo) -> None:
                 return
 
             if selection.startswith("r.") or selection.startswith("i."):
-                run_script(script_info, "install")
+                rc = run_script(script_info, "install")
                 if script_info.script_type not in ("config", "tool"):
                     updated = _reparse_script_info(script_info)
                     if updated:
                         script_info.installed = updated.installed
+                if rc != 0:
+                    print(f"\n⚠ Script failed (exit code {rc}). Returning to menu.")
                 input("\nPress Enter to continue...")
+                if rc != 0:
+                    return
 
             elif selection.startswith("u."):
-                run_script(script_info, "uninstall")
+                rc = run_script(script_info, "uninstall")
                 updated = _reparse_script_info(script_info)
                 if updated:
                     script_info.installed = updated.installed
+                if rc != 0:
+                    print(f"\n⚠ Script failed (exit code {rc}). Returning to menu.")
                 input("\nPress Enter to continue...")
+                if rc != 0:
+                    return
 
             elif selection.startswith("l."):
                 view_log(script_info.path.stem)
@@ -2136,22 +2144,34 @@ def whiptail_script_action(script_info: ScriptInfo) -> None:
                 return
 
             if selection == "run":
-                run_script(script_info, "install")  # Config scripts use install action
+                rc = run_script(script_info, "install")  # Config scripts use install action
+                if rc != 0:
+                    print(f"\n⚠ Script failed (exit code {rc}). Returning to menu.")
                 input("\nPress Enter to continue...")
+                if rc != 0:
+                    return
 
             elif selection == "install":
-                run_script(script_info, "install")
+                rc = run_script(script_info, "install")
                 updated = _reparse_script_info(script_info)
                 if updated:
                     script_info.installed = updated.installed
+                if rc != 0:
+                    print(f"\n⚠ Script failed (exit code {rc}). Returning to menu.")
                 input("\nPress Enter to continue...")
+                if rc != 0:
+                    return
 
             elif selection == "uninstall":
-                run_script(script_info, "uninstall")
+                rc = run_script(script_info, "uninstall")
                 updated = _reparse_script_info(script_info)
                 if updated:
                     script_info.installed = updated.installed
+                if rc != 0:
+                    print(f"\n⚠ Script failed (exit code {rc}). Returning to menu.")
                 input("\nPress Enter to continue...")
+                if rc != 0:
+                    return
 
             elif selection == "log":
                 view_log(script_info.path.stem)
