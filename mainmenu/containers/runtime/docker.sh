@@ -23,12 +23,9 @@ install() {
     # Step 0: Clear any stuck apt/dpkg locks
     wait_for_apt
 
-    # Step 1: Remove old/conflicting packages
+    # Step 1: Remove old/conflicting packages (single apt call, suppress "not installed" noise)
     log_step "Removing old Docker packages if present..."
-    local OLD_PKGS=(docker.io docker-doc docker-compose podman-docker containerd runc)
-    for pkg in "${OLD_PKGS[@]}"; do
-        apt-get remove -y "$pkg" 2>/dev/null || true
-    done
+    apt-get remove -y docker.io docker-doc docker-compose podman-docker containerd runc 2>/dev/null || true
 
     # Step 2: Install prerequisites
     log_step "Installing prerequisites..."
