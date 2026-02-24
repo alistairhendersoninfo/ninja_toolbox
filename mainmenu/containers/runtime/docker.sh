@@ -11,6 +11,9 @@ mkdir -p "$LOG_DIR"
 LOG_FILE="$LOG_DIR/${SCRIPT_NAME}_$(date +%Y%m%d_%H%M%S).log"
 exec > >(tee -a "$LOG_FILE") 2>&1
 
+# Trap errors so failures are visible instead of silent exit
+trap 'log_error "Docker install failed at line $LINENO (exit code $?). Check log: $LOG_FILE"; exit 1' ERR
+
 DATA_ROOT="/opt/app/docker"
 
 install() {
@@ -35,19 +38,30 @@ install() {
     # Step 3: Add Docker GPG key
     log_step "Adding Docker's official GPG key..."
     install -m 0755 -d /etc/apt/keyrings
-    if [[ -f /etc/apt/keyrings/docker.gpg ]]; then
-        rm -f /etc/apt/keyrings/docker.gpg
+    rm -f /etc/apt/keyrings/docker.gpg
+
+    # Resolve distro for Docker repo (Kali uses Debian's repo)
+    local docker_distro docker_codename
+    # shellcheck source=/dev/null
+    . /etc/os-release
+    docker_distro="$ID"
+    docker_codename="${VERSION_CODENAME:-}"
+    if [[ "$docker_distro" == "kali" ]]; then
+        docker_distro="debian"
+        docker_codename="bookworm"
     fi
-    curl -fsSL https://download.docker.com/linux/$(. /etc/os-release && echo "$ID")/gpg | \
-        gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+
+    curl -fsSL "https://download.docker.com/linux/${docker_distro}/gpg" \
+        | gpg --dearmor --batch --yes -o /etc/apt/keyrings/docker.gpg
     chmod a+r /etc/apt/keyrings/docker.gpg
+    log_info "GPG key installed"
 
     # Step 4: Add Docker apt repository
     log_step "Adding Docker apt repository..."
     echo \
         "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] \
-        https://download.docker.com/linux/$(. /etc/os-release && echo "$ID") \
-        $(. /etc/os-release && echo "$VERSION_CODENAME") stable" | \
+        https://download.docker.com/linux/${docker_distro} \
+        ${docker_codename} stable" | \
         tee /etc/apt/sources.list.d/docker.list > /dev/null
     apt-get update
 
