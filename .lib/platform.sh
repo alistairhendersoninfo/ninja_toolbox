@@ -113,7 +113,7 @@ _pkg_map_macos() {
 #######################################
 
 # wait_for_apt: wait for any running apt/dpkg processes to finish
-# Kills stopped (Ctrl+Z) apt/dpkg processes, then waits up to 60s for
+# Kills stopped (Ctrl+Z) apt/dpkg processes, then waits up to 120s for
 # active ones to complete before proceeding.
 # Usage: wait_for_apt   (call before any apt-get/dpkg operation)
 wait_for_apt() {
@@ -137,8 +137,11 @@ wait_for_apt() {
         fi
         sleep 2
         waited=$((waited + 2))
-        if [[ $waited -ge 60 ]]; then
-            log_error "Timed out waiting for apt/dpkg lock after 60s"
+        if [[ $((waited % 10)) -eq 0 ]]; then
+            log_info "Still waiting for apt/dpkg lock... (${waited}s elapsed)"
+        fi
+        if [[ $waited -ge 120 ]]; then
+            log_error "Timed out waiting for apt/dpkg lock after 120s"
             log_info "Check with: ps aux | grep -E 'apt|dpkg'"
             exit 1
         fi

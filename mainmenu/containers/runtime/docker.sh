@@ -33,11 +33,20 @@ install() {
     log_info "Log file: $LOG_FILE"
     echo ""
 
+    export DEBIAN_FRONTEND=noninteractive
+    export APT_LISTCHANGES_FRONTEND=none
+
     require_root
     _resolve_docker_distro
 
-    # Step 0: Clear any stuck apt/dpkg locks
-    wait_for_apt
+    # Restore unattended-upgrades on exit (even on failure)
+    trap 'systemctl start unattended-upgrades 2>/dev/null || true' EXIT
+
+    # Step 0: Stop background apt services to prevent dpkg lock conflicts
+    log_step "Stopping background apt services to prevent lock conflicts..."
+    systemctl stop unattended-upgrades apt-daily apt-daily-upgrade 2>/dev/null || true
+    systemctl kill --kill-who=all unattended-upgrades 2>/dev/null || true
+    sleep 1
 
     # Step 1: Remove old/conflicting packages
     log_step "Removing old Docker packages if present..."
@@ -68,11 +77,11 @@ install() {
     echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/${DOCKER_DISTRO} ${DOCKER_CODENAME} stable" \
         | tee /etc/apt/sources.list.d/docker.list > /dev/null
     log_info "Repo written to /etc/apt/sources.list.d/docker.list"
-    apt-get update
+    pkg_update
 
     # Step 5: Install Docker CE and plugins
     log_step "Installing Docker CE, CLI, containerd, Buildx, and Compose..."
-    apt-get install -y \
+    pkg_install \
         docker-ce \
         docker-ce-cli \
         containerd.io \
