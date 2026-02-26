@@ -44,7 +44,7 @@ run() {
 # ============================================================
 
 upstream penpot_backend {
-    server 127.0.0.1:9091;
+    server 127.0.0.1:9001;
 }
 
 server {
@@ -83,7 +83,7 @@ NGINX
     echo ""
     log_success "Nginx reverse proxy configured for Penpot."
     log_info "Config written to: ${CONF_FILE}"
-    log_info "Penpot is now proxied on port 8091 → container port 9091"
+    log_info "Penpot is now proxied on port 8091 → container port 9001"
 }
 
 run
