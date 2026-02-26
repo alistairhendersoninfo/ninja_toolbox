@@ -13,23 +13,34 @@ LOG_FILE="$LOG_DIR/${SCRIPT_NAME}_$(date +%Y%m%d_%H%M%S).log"
 exec > >(tee -a "$LOG_FILE") 2>&1
 
 install_nodejs() {
-    if command -v node &>/dev/null && command -v npm &>/dev/null; then
+    local min_major=20
+    local node_major=0
+
+    if command -v node &>/dev/null; then
+        node_major=$(node --version | sed 's/v//' | cut -d. -f1)
+    fi
+
+    if command -v node &>/dev/null && command -v npm &>/dev/null && [[ "$node_major" -ge "$min_major" ]]; then
         log_info "Node.js $(node --version) and npm already available"
         return 0
     fi
 
-    log_step "Installing Node.js and npm..."
+    if [[ "$node_major" -gt 0 && "$node_major" -lt "$min_major" ]]; then
+        log_warn "Node.js v${node_major} is too old (requires v${min_major}+) — upgrading to latest LTS..."
+    else
+        log_step "Installing Node.js and npm..."
+    fi
 
     if [[ "$NT_OS" == "linux" ]]; then
         require_root
-        curl -fsSL https://deb.nodesource.com/setup_20.x | bash -
+        curl -fsSL https://deb.nodesource.com/setup_lts.x | bash -
         apt-get install -y nodejs
         # npm is included with NodeSource package; install separately if missing
         if ! command -v npm &>/dev/null; then
             apt-get install -y npm
         fi
     elif [[ "$NT_OS" == "macos" ]]; then
-        brew install node@20
+        brew install node
     fi
 
     if ! command -v node &>/dev/null || ! command -v npm &>/dev/null; then
