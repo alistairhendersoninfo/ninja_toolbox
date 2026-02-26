@@ -1151,6 +1151,26 @@ def _whiptail_active(value: str, current: str) -> str:
     return f"* {value}" if value == current else f"  {value}"
 
 
+def _safe_term_env() -> dict:
+    """Return env with TERM safe for whiptail.
+
+    Ghostty (and some other terminals) set TERM=xterm-ghostty, which is not
+    present in the Kali terminfo database. whiptail prints an 'unknown terminal
+    type' warning in that case. We fall back to xterm-256color, which Ghostty
+    fully supports, to suppress the noise.
+    """
+    env = os.environ.copy()
+    term = env.get("TERM", "")
+    if term and shutil.which("tput"):
+        result = subprocess.run(
+            ["tput", "-T", term, "lines"],
+            capture_output=True
+        )
+        if result.returncode != 0:
+            env["TERM"] = "xterm-256color"
+    return env
+
+
 def _whiptail_run(title: str, text: str, menu_items: List[str],
                   num_items: int) -> Optional[str]:
     """Run a whiptail --menu dialog, return selected tag or None."""
@@ -1160,7 +1180,8 @@ def _whiptail_run(title: str, text: str, menu_items: List[str],
             ["whiptail", "--title", title, "--menu", text,
              wh_h, wh_w, wh_m] + menu_items,
             stdin=tty_in, stdout=tty_out,
-            stderr=subprocess.PIPE, text=True
+            stderr=subprocess.PIPE, text=True,
+            env=_safe_term_env()
         )
         _, stderr = proc.communicate()
         if proc.returncode == 0 and stderr.strip():
@@ -1173,7 +1194,8 @@ def _whiptail_confirm(text: str) -> bool:
     with open("/dev/tty", "r") as ti, open("/dev/tty", "w") as to_:
         p = subprocess.Popen(
             ["whiptail", "--title", "Confirm", "--yesno", text, "8", "50"],
-            stdin=ti, stdout=to_, stderr=subprocess.PIPE, text=True
+            stdin=ti, stdout=to_, stderr=subprocess.PIPE, text=True,
+            env=_safe_term_env()
         )
         p.communicate()
         return p.returncode == 0
