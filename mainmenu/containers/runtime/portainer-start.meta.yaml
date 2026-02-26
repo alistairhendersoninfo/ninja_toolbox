@@ -1,0 +1,16 @@
+name: "Portainer Start"
+description: "Start the Portainer container"
+type: config
+root: true
+order: 32
+hidden: false
+installed: false
+check_command: ""
+tags:
+  - portainer
+  - docker
+  - service
+supported_os:
+  - kali
+  - debian
+  - ubuntu

@@ -1,0 +1,15 @@
+name: "Nginx Start"
+description: "Test nginx config and start the nginx service"
+type: config
+root: true
+order: 42
+hidden: false
+installed: false
+check_command: ""
+tags:
+  - nginx
+  - service
+supported_os:
+  - kali
+  - debian
+  - ubuntu

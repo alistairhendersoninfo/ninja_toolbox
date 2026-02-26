@@ -1,0 +1,16 @@
+name: "Docker Stop"
+description: "Stop the Docker service and all running containers"
+type: config
+root: true
+order: 11
+hidden: false
+installed: false
+check_command: ""
+tags:
+  - docker
+  - containers
+  - service
+supported_os:
+  - kali
+  - debian
+  - ubuntu
