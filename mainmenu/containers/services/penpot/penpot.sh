@@ -9,7 +9,9 @@ mkdir -p "$LOG_DIR"
 LOG_FILE="$LOG_DIR/${SCRIPT_NAME}_$(date +%Y%m%d_%H%M%S).log"
 exec > >(tee -a "$LOG_FILE") 2>&1
 
-SERVICE_DIR="/opt/app/docker/${SCRIPT_NAME}"
+COMPOSE_DIR="/opt/app/docker/${SCRIPT_NAME}"
+COMPOSE_FILE="${COMPOSE_DIR}/docker-compose.yaml"
+PROJECT_NAME="penpot"
 
 install() {
     log_info "Installing ${SCRIPT_NAME}"
@@ -20,16 +22,22 @@ install() {
         exit 1
     fi
 
-    mkdir -p "${SERVICE_DIR}"/{data,config}
-    mkdir -p "${SERVICE_DIR}/data/postgres"
-    mkdir -p "${SERVICE_DIR}/data/assets"
-    mkdir -p "${SERVICE_DIR}/data/valkey"
+    if ! docker compose version &>/dev/null; then
+        log_error "Docker Compose plugin is required. Install Docker CE which includes it."
+        exit 1
+    fi
 
-    # Generate secret key for Penpot
+    mkdir -p "${COMPOSE_DIR}"
+
+    # Generate a cryptographically secure secret key
     log_step "Generating secret key..."
-    PENPOT_SECRET_KEY="$(openssl rand -hex 32)"
+    if command -v python3 &>/dev/null; then
+        PENPOT_SECRET_KEY="$(python3 -c 'import secrets; print(secrets.token_urlsafe(64))')"
+    else
+        PENPOT_SECRET_KEY="$(openssl rand -base64 64 | tr -d '\n')"
+    fi
 
-    # Auto-detect LAN IP
+    # Auto-detect LAN IP for the public URI
     LAN_IP="$(ip -4 route get 1.1.1.1 2>/dev/null | awk '{print $7; exit}')"
     if [[ -z "$LAN_IP" ]]; then
         LAN_IP="$(hostname -I | awk '{print $1}')"
@@ -43,99 +51,68 @@ install() {
     PENPOT_PUBLIC_URI="http://${LAN_IP}:9001"
     log_info "Public URI: ${PENPOT_PUBLIC_URI}"
 
-    cat > "${SERVICE_DIR}/docker-compose.yml" <<COMPOSE
-services:
-  penpot-frontend:
-    image: penpotapp/frontend:latest
-    container_name: penpot-frontend
-    restart: unless-stopped
-    ports:
-      - "9001:8080"
-    volumes:
-      - ${SERVICE_DIR}/data/assets:/opt/data/assets
-    depends_on:
-      - penpot-backend
-    environment:
-      PENPOT_FLAGS: "enable-registration enable-login-with-password"
-    networks:
-      - penpot-net
+    # Download official Penpot docker-compose.yaml and patch for LAN install
+    # Source: https://help.penpot.app/technical-guide/getting-started/docker/
+    COMPOSE_URL="https://raw.githubusercontent.com/penpot/penpot/main/docker/images/docker-compose.yaml"
 
-  penpot-backend:
-    image: penpotapp/backend:latest
-    container_name: penpot-backend
-    restart: unless-stopped
-    volumes:
-      - ${SERVICE_DIR}/data/assets:/opt/data/assets
-    depends_on:
-      - penpot-postgres
-      - penpot-valkey
-    environment:
-      PENPOT_FLAGS: "enable-registration enable-login-with-password disable-email-verification enable-smtp disable-onboarding-questions"
-      PENPOT_SECRET_KEY: ${PENPOT_SECRET_KEY}
-      PENPOT_PUBLIC_URI: ${PENPOT_PUBLIC_URI}
-      PENPOT_DATABASE_URI: postgresql://penpot-postgres/penpot
-      PENPOT_DATABASE_USERNAME: penpot
-      PENPOT_DATABASE_PASSWORD: penpot
-      PENPOT_REDIS_URI: redis://penpot-valkey/0
-      PENPOT_ASSETS_STORAGE_BACKEND: assets-fs
-      PENPOT_STORAGE_ASSETS_FS_DIRECTORY: /opt/data/assets
-      PENPOT_TELEMETRY_ENABLED: "false"
-      PENPOT_SMTP_ENABLED: "false"
-    networks:
-      - penpot-net
+    log_step "Downloading official Penpot docker-compose.yaml..."
+    if command -v curl &>/dev/null; then
+        curl -fsSL "${COMPOSE_URL}" -o "${COMPOSE_FILE}" || {
+            log_error "Failed to download ${COMPOSE_URL}"
+            exit 1
+        }
+    elif command -v wget &>/dev/null; then
+        wget -qO "${COMPOSE_FILE}" "${COMPOSE_URL}" || {
+            log_error "Failed to download ${COMPOSE_URL}"
+            exit 1
+        }
+    else
+        log_error "curl or wget is required to download the Penpot compose file"
+        exit 1
+    fi
+    log_info "Downloaded: ${COMPOSE_FILE}"
 
-  penpot-exporter:
-    image: penpotapp/exporter:latest
-    container_name: penpot-exporter
-    restart: unless-stopped
-    environment:
-      PENPOT_PUBLIC_URI: http://penpot-frontend:8080
-    depends_on:
-      - penpot-frontend
-    networks:
-      - penpot-net
+    log_step "Patching docker-compose.yaml for LAN install..."
 
-  penpot-postgres:
-    image: postgres:16
-    container_name: penpot-postgres
-    restart: unless-stopped
-    volumes:
-      - ${SERVICE_DIR}/data/postgres:/var/lib/postgresql/data
-    environment:
-      POSTGRES_INITDB_ARGS: --data-checksums
-      POSTGRES_DB: penpot
-      POSTGRES_USER: penpot
-      POSTGRES_PASSWORD: penpot
-    networks:
-      - penpot-net
+    # Patch 1 — Secret key (replaces placeholder in YAML anchor)
+    sed -i "s|PENPOT_SECRET_KEY: change-this-insecure-key|PENPOT_SECRET_KEY: ${PENPOT_SECRET_KEY}|" "${COMPOSE_FILE}"
 
-  penpot-valkey:
-    image: valkey/valkey:8
-    container_name: penpot-valkey
-    restart: unless-stopped
-    volumes:
-      - ${SERVICE_DIR}/data/valkey:/data
-    networks:
-      - penpot-net
+    # Patch 2 — Public URI (replaces localhost with LAN IP in YAML anchor)
+    sed -i "s|PENPOT_PUBLIC_URI: http://localhost:9001|PENPOT_PUBLIC_URI: ${PENPOT_PUBLIC_URI}|" "${COMPOSE_FILE}"
 
-networks:
-  penpot-net:
-    driver: bridge
-COMPOSE
+    # Patch 3 — Registration flags (prepend to existing flags value)
+    sed -i "s|PENPOT_FLAGS: disable-email-verification|PENPOT_FLAGS: enable-registration enable-login-with-password disable-email-verification|" "${COMPOSE_FILE}"
 
+    # Verify all patches applied (fail-fast if upstream yaml format changed)
+    grep -q "${PENPOT_SECRET_KEY}" "${COMPOSE_FILE}" || {
+        log_error "Secret key patch failed — upstream yaml format may have changed"
+        exit 1
+    }
+    grep -q "${LAN_IP}" "${COMPOSE_FILE}" || {
+        log_error "Public URI patch failed — upstream yaml format may have changed"
+        exit 1
+    }
+    grep -q "enable-registration" "${COMPOSE_FILE}" || {
+        log_error "Flags patch failed — upstream yaml format may have changed"
+        exit 1
+    }
+    log_info "All patches applied and verified"
+
+    # Create systemd service for boot persistence
     cat > "/etc/systemd/system/${SCRIPT_NAME}.service" <<UNIT
 [Unit]
-Description=${SCRIPT_NAME} (Docker)
+Description=Penpot (Docker Compose)
 Requires=docker.service
-After=docker.service
+After=docker.service network-online.target
+Wants=network-online.target
 
 [Service]
 Type=oneshot
 RemainAfterExit=yes
 User=root
-WorkingDirectory=${SERVICE_DIR}
-ExecStart=/usr/bin/docker compose up -d
-ExecStop=/usr/bin/docker compose down
+WorkingDirectory=${COMPOSE_DIR}
+ExecStart=/usr/bin/docker compose -p ${PROJECT_NAME} -f ${COMPOSE_FILE} up -d --remove-orphans
+ExecStop=/usr/bin/docker compose -p ${PROJECT_NAME} -f ${COMPOSE_FILE} down
 TimeoutStartSec=300
 
 [Install]
@@ -146,47 +123,58 @@ UNIT
     systemctl enable "${SCRIPT_NAME}"
 
     log_step "Pulling Penpot images (this may take a few minutes)..."
-    docker compose -f "${SERVICE_DIR}/docker-compose.yml" pull
+    docker compose -p "${PROJECT_NAME}" -f "${COMPOSE_FILE}" pull
 
     log_step "Starting Penpot containers..."
-    if ! docker compose -f "${SERVICE_DIR}/docker-compose.yml" up -d; then
+    if ! docker compose -p "${PROJECT_NAME}" -f "${COMPOSE_FILE}" up -d --remove-orphans; then
         log_error "Failed to start Penpot containers"
-        log_info "Check logs: journalctl -xeu penpot.service --no-pager | tail -30"
-        log_info "Or: docker compose -f ${SERVICE_DIR}/docker-compose.yml logs"
+        log_info "Check: docker compose -p ${PROJECT_NAME} -f ${COMPOSE_FILE} logs"
         exit 1
     fi
 
-    # Verify containers actually came up
-    sleep 3
+    # Wait briefly then verify containers are up
+    sleep 5
     if ! docker ps --filter name=penpot-frontend --format '{{.Names}}' | grep -q penpot-frontend; then
-        log_error "Containers started but penpot-frontend is not running"
-        log_info "Check: docker compose -f ${SERVICE_DIR}/docker-compose.yml logs"
+        log_error "penpot-frontend container is not running"
+        log_info "Check: docker compose -p ${PROJECT_NAME} -f ${COMPOSE_FILE} logs"
         exit 1
     fi
 
-    log_success "Penpot design platform installed"
-    log_info "UI: ${PENPOT_PUBLIC_URI}"
-    log_info "Data directory: ${SERVICE_DIR}/data"
+    log_success "Penpot installed successfully"
+    log_info "UI:          ${PENPOT_PUBLIC_URI}"
+    log_info "Mail UI:     http://${LAN_IP}:1080  (catch all outgoing emails)"
+    log_info "Compose:     ${COMPOSE_FILE}"
     log_info ""
-    log_info "Create your first account at ${PENPOT_PUBLIC_URI} (registration is enabled)"
+    log_info "Register your first account at ${PENPOT_PUBLIC_URI}"
+    log_info "(Registration is open — create an account to get started)"
     mark_installed true
 }
 
 uninstall() {
     log_info "Uninstalling ${SCRIPT_NAME}"
     require_root
+
     systemctl stop "${SCRIPT_NAME}" 2>/dev/null || true
     systemctl disable "${SCRIPT_NAME}" 2>/dev/null || true
     rm -f "/etc/systemd/system/${SCRIPT_NAME}.service"
     systemctl daemon-reload
-    cd "${SERVICE_DIR}" && docker compose down --volumes 2>/dev/null || true
-    log_info "Data preserved at ${SERVICE_DIR}. Remove manually if desired."
+
+    if [[ -f "${COMPOSE_FILE}" ]]; then
+        log_step "Stopping and removing containers..."
+        docker compose -p "${PROJECT_NAME}" -f "${COMPOSE_FILE}" down 2>/dev/null || true
+    fi
+
+    log_warn "Docker volumes (database + assets) are preserved."
+    log_info "To also delete all data run:"
+    log_info "  docker volume rm penpot_postgres_v15 penpot_assets"
+    log_info "Compose file preserved at: ${COMPOSE_FILE}"
+
     log_success "Penpot uninstalled"
     mark_installed false
 }
 
 case "${1:-install}" in
-    install) install ;;
+    install)   install ;;
     uninstall) uninstall ;;
     *) echo "Usage: $0 {install|uninstall}"; exit 1 ;;
 esac
