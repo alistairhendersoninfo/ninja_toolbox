@@ -1,5 +1,6 @@
 name: "Ory Full Stack"
 description: "Complete Ory identity stack — Kratos, Hydra, Oathkeeper, Keto + PostgreSQL"
+long_description: "Usage:  docker [OPTIONS] COMMAND"
 version: "1.0.0"
 author: "System"
 type: install

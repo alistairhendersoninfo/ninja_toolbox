@@ -1,5 +1,6 @@
 name: "iftop"
 description: "Display bandwidth usage per network connection"
+long_description: "Usage: /usr/bin/which [-as] args"
 type: install
 root: true
 order: 14

@@ -1,5 +1,6 @@
 name: "sysstat (sar, iostat)"
 description: "System performance tools for CPU, memory, I/O statistics"
+long_description: "Usage: sar [ options ] [ <interval> [ <count> ] ]"
 type: install
 root: true
 order: 20

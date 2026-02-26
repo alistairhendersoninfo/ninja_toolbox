@@ -1,5 +1,6 @@
 name: "netdiscover"
 description: "Active/passive network discovery using ARP requests"
+long_description: "Usage: /usr/bin/which [-as] args"
 type: install
 root: true
 order: 18

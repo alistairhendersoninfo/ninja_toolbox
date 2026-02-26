@@ -1,5 +1,6 @@
 name: "AppArmor"
 description: "Mandatory access control with enforced security profiles"
+long_description: "Usage: aa-status [OPTIONS]"
 version: "1.0.0"
 author: "System"
 type: install

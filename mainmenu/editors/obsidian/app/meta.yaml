@@ -1,5 +1,6 @@
 name: "Obsidian"
 description: "Markdown-based knowledge base and note-taking app"
+long_description: The free and flexible app for your private thoughts.
 website: "https://obsidian.md"
 type: install
 root: true

@@ -1,5 +1,6 @@
 name: "LUKS Store"
 description: "LUKS-encrypted file-backed volume with persistent mount"
+long_description: "cryptsetup 2.7.0 flags: UDEV BLKID KEYRING FIPS KERNEL_CAPI HW_OPAL"
 version: "1.0.0"
 author: "System"
 type: install

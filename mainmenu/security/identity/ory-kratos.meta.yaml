@@ -1,5 +1,6 @@
 name: "Ory Kratos"
 description: "Identity management — login, registration, WebAuthn/passkeys, sessions"
+long_description: "Usage:  docker [OPTIONS] COMMAND"
 version: "1.0.0"
 author: "System"
 type: install

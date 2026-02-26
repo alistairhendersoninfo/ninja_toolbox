@@ -1,5 +1,6 @@
 name: "Apache Superset"
 description: "Business intelligence dashboards with SQL editor and visualisations"
+long_description: "Usage:  docker [OPTIONS] COMMAND"
 version: "1.0.0"
 author: "System"
 type: install

@@ -1,5 +1,6 @@
 name: "Security Onion"
 description: "Network security monitoring platform with IDS, NSM, and log management"
+long_description: "Usage:  docker [OPTIONS] COMMAND"
 version: "1.0.0"
 author: "System"
 type: install

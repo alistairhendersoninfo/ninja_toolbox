@@ -1,5 +1,6 @@
 name: "Ory Login Consent App"
 description: "Login and consent UI that Hydra redirects to for authentication"
+long_description: "Usage:  docker [OPTIONS] COMMAND"
 version: "1.0.0"
 author: "System"
 type: install

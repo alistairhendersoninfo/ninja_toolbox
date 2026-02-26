@@ -1,5 +1,6 @@
 name: "Node.js 20 LTS"
 description: "Installs Node.js 20.x LTS and npm package manager"
+long_description: "Usage: node [options] [ script.js ] [arguments]"
 version: "1.0.0"
 author: "System"
 type: install

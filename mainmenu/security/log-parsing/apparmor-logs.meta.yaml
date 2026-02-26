@@ -1,5 +1,6 @@
 name: "AppArmor Logs"
 description: "Parse AppArmor logs — denied events by profile, operation types"
+long_description: "Usage: aa-status [OPTIONS]"
 version: "1.0.0"
 author: "System"
 type: tool

@@ -1,5 +1,6 @@
 name: "Gemini CLI"
 description: "Google's Gemini AI command-line interface"
+long_description: "Usage: gemini [options] [command]"
 website: "https://ai.google.dev/gemini-api/docs/gemini-cli"
 version: "1.0.0"
 author: "Google"

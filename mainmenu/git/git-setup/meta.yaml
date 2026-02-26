@@ -1,5 +1,6 @@
 name: "Git & GitHub Setup"
 description: "Install git/gh, create SSH key, create GitHub repo, initial push"
+long_description: Work seamlessly with GitHub from the command line.
 version: "2.0.0"
 author: "System"
 root: false

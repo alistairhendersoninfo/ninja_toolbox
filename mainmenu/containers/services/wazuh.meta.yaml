@@ -1,5 +1,6 @@
 name: "Wazuh SIEM"
 description: "Full SIEM stack with manager, indexer, and dashboard for threat detection"
+long_description: "Usage:  docker [OPTIONS] COMMAND"
 version: "1.0.0"
 author: "System"
 type: install
