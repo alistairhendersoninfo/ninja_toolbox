@@ -68,7 +68,8 @@ CREATE TABLE IF NOT EXISTS submenus (
     path TEXT UNIQUE NOT NULL,
     name TEXT NOT NULL,
     parent_menu TEXT NOT NULL,
-    description TEXT NOT NULL DEFAULT ''
+    description TEXT NOT NULL DEFAULT '',
+    menu_order INTEGER DEFAULT 50
 );
 
 CREATE TABLE IF NOT EXISTS alias_entries (
@@ -198,10 +199,10 @@ def rebuild_cache(menu_dir: Path, db_path: Path) -> None:
     conn.execute("PRAGMA journal_mode=WAL")
     conn.execute("PRAGMA foreign_keys=ON")
 
-    # Migrate: drop submenus table if it lacks the description column
+    # Migrate: drop submenus table if it lacks description or menu_order columns
     try:
         cols = {row[1] for row in conn.execute("PRAGMA table_info(submenus)").fetchall()}
-        if cols and 'description' not in cols:
+        if cols and ('description' not in cols or 'menu_order' not in cols):
             conn.execute("DROP TABLE IF EXISTS submenus")
     except Exception:
         pass
@@ -256,15 +257,16 @@ def _walk_and_insert(directory: Path, menu_root: Path, conn: sqlite3.Connection)
                 name_parts = entry.name.replace('-', ' ').replace('_', ' ').split()
                 camel_name = ''.join(word.capitalize() for word in name_parts)
 
-                # Check for category.yaml with display name/description
+                # Check for category.yaml with display name/description/order
                 cat_yaml = entry / "category.yaml"
                 cat_data = _parse_yaml_file(cat_yaml) if cat_yaml.exists() else None
                 display_name = cat_data.get('name', camel_name) if cat_data else camel_name
                 description = cat_data.get('description', '') if cat_data else ''
+                menu_order = cat_data.get('order', 50) if cat_data else 50
 
                 conn.execute(
-                    "INSERT OR REPLACE INTO submenus (path, name, parent_menu, description) VALUES (?, ?, ?, ?)",
-                    (rel_path, display_name, parent_menu, description)
+                    "INSERT OR REPLACE INTO submenus (path, name, parent_menu, description, menu_order) VALUES (?, ?, ?, ?, ?)",
+                    (rel_path, display_name, parent_menu, description, menu_order)
                 )
                 # Recurse into submenu
                 _walk_and_insert(entry, menu_root, conn)
@@ -477,7 +479,7 @@ def get_menu_items(db_path: Path, parent_menu: str, current_os: str, current_dis
 
     # 1. Submenus
     rows = conn.execute(
-        "SELECT path, name, description FROM submenus WHERE parent_menu = ? ORDER BY name",
+        "SELECT path, name, description, menu_order FROM submenus WHERE parent_menu = ? ORDER BY menu_order, name",
         (parent_menu,)
     ).fetchall()
     for row in rows:
@@ -486,7 +488,7 @@ def get_menu_items(db_path: Path, parent_menu: str, current_os: str, current_dis
             'path': row['path'],
             'name': row['name'],
             'description': row['description'],
-            'order': 0,
+            'order': row['menu_order'],
         })
 
     # Build the set of OS values to match against supported_os lists.

@@ -58,7 +58,14 @@ install() {
     log_step "Step 3: Setting system clock to $(date +%F) ${USER_TIME}:00..."
 
     date -s "$(date +%F) ${USER_TIME}:00"
-    hwclock --systohc
+    # Sync hardware clock — /sbin/hwclock may not be present in all VM guests
+    if command -v hwclock &>/dev/null; then
+        hwclock --systohc
+    elif [[ -x /sbin/hwclock ]]; then
+        /sbin/hwclock --systohc
+    else
+        log_info "hwclock not found — skipping RTC sync (chrony will handle it)"
+    fi
 
     #######################################
     # STEP 4: Refresh package lists
