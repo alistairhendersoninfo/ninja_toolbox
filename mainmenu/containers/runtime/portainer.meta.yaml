@@ -7,7 +7,7 @@ type: install
 root: false
 order: 30
 hidden: false
-installed: false
+installed: true
 check_command: "docker ps --filter name=portainer --format '{{.Names}}' 2>/dev/null | grep -q portainer"
 tags:
   - containers
