@@ -62,7 +62,7 @@ install() {
 
     # Step 3: Add Docker GPG key
     log_step "Adding Docker GPG key from download.docker.com/linux/${DOCKER_DISTRO}..."
-    install -m 0755 -d /etc/apt/keyrings
+    command install -m 0755 -d /etc/apt/keyrings
     rm -f /etc/apt/keyrings/docker.gpg
 
     local gpg_url="https://download.docker.com/linux/${DOCKER_DISTRO}/gpg"
