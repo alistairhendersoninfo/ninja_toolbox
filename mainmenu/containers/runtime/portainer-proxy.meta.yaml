@@ -1,0 +1,17 @@
+name: "Portainer Proxy"
+description: "Configure nginx reverse proxy for Portainer: http://LANIP:8443 → https://localhost:9443"
+type: config
+root: true
+order: 30
+hidden: false
+installed: false
+check_command: "test -f /etc/nginx/sites-enabled/portainer"
+tags:
+  - portainer
+  - nginx
+  - proxy
+  - containers
+supported_os:
+  - kali
+  - debian
+  - ubuntu
