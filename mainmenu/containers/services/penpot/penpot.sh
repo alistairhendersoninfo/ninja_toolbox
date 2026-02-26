@@ -44,8 +44,6 @@ install() {
     log_info "Public URI: ${PENPOT_PUBLIC_URI}"
 
     cat > "${SERVICE_DIR}/docker-compose.yml" <<COMPOSE
-version: "3.8"
-
 services:
   penpot-frontend:
     image: penpotapp/frontend:latest
@@ -57,7 +55,6 @@ services:
       - ${SERVICE_DIR}/data/assets:/opt/data/assets
     depends_on:
       - penpot-backend
-      - penpot-exporter
     environment:
       PENPOT_FLAGS: "enable-registration enable-login-with-password"
     networks:
@@ -146,7 +143,26 @@ WantedBy=multi-user.target
 UNIT
 
     systemctl daemon-reload
-    systemctl enable --now "${SCRIPT_NAME}"
+    systemctl enable "${SCRIPT_NAME}"
+
+    log_step "Pulling Penpot images (this may take a few minutes)..."
+    docker compose -f "${SERVICE_DIR}/docker-compose.yml" pull
+
+    log_step "Starting Penpot containers..."
+    if ! docker compose -f "${SERVICE_DIR}/docker-compose.yml" up -d; then
+        log_error "Failed to start Penpot containers"
+        log_info "Check logs: journalctl -xeu penpot.service --no-pager | tail -30"
+        log_info "Or: docker compose -f ${SERVICE_DIR}/docker-compose.yml logs"
+        exit 1
+    fi
+
+    # Verify containers actually came up
+    sleep 3
+    if ! docker ps --filter name=penpot-frontend --format '{{.Names}}' | grep -q penpot-frontend; then
+        log_error "Containers started but penpot-frontend is not running"
+        log_info "Check: docker compose -f ${SERVICE_DIR}/docker-compose.yml logs"
+        exit 1
+    fi
 
     log_success "Penpot design platform installed"
     log_info "UI: ${PENPOT_PUBLIC_URI}"
