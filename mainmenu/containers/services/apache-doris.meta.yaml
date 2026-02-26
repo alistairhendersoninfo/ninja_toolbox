@@ -1,5 +1,6 @@
 name: "Apache Doris"
 description: "Real-time analytics database with MySQL-compatible interface"
+long_description: "Usage:  docker [OPTIONS] COMMAND"
 version: "1.0.0"
 author: "System"
 type: install

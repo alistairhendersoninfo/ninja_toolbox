@@ -1,5 +1,6 @@
 name: "MCP Obsidian Server"
 description: "MCP server for AI access to Obsidian vaults (read/write/search notes)"
+long_description: Run a command from a local or remote npm package
 version: "1.0.0"
 author: "bitbonsai (Mauricio Wolff)"
 type: install

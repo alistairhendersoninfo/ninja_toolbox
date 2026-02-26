@@ -1,0 +1,3 @@
+name: "Maintenance UTM"
+description: "VM guest maintenance and housekeeping utilities"
+order: 99

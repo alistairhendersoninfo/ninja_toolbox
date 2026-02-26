@@ -1,5 +1,6 @@
 name: "nftables"
 description: "Netfilter firewall with deny-all + SSH-only ruleset"
+long_description: "Usage: nft [ options ] [ cmds... ]"
 version: "1.0.0"
 author: "System"
 type: install

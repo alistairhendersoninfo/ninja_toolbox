@@ -1,5 +1,6 @@
 name: "nftables Logs"
 description: "Parse nftables firewall logs — blocked packets, top IPs, ports"
+long_description: "Usage: nft [ options ] [ cmds... ]"
 version: "1.0.0"
 author: "System"
 type: tool

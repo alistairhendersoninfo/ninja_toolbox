@@ -1,5 +1,6 @@
 name: "Claude CLI"
 description: "Anthropic's official CLI for Claude AI"
+long_description: "Usage: claude [options] [command] [prompt]"
 website: "https://claude.ai/claude-code"
 version: "1.0.0"
 author: "Anthropic"

@@ -1,5 +1,6 @@
 name: "tcpdump"
 description: "Command-line packet analyzer for network troubleshooting"
+long_description: tcpdump version 4.99.4
 type: install
 root: true
 order: 12

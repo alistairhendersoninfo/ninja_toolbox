@@ -1,0 +1,17 @@
+name: "Reset Time Sync"
+description: "Fix clock drift in UTM VM: prompt for correct time, install chrony, configure aggressive VM sync"
+type: config
+root: true
+order: 1
+hidden: false
+installed: false
+check_command: ""
+tags:
+  - maintenance
+  - utm
+  - time
+  - chrony
+supported_os:
+  - kali
+  - debian
+  - ubuntu

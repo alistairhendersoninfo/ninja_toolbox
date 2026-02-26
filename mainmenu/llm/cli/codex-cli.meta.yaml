@@ -1,5 +1,6 @@
 name: "OpenAI Codex CLI"
 description: "OpenAI's Codex command-line interface for code generation"
+long_description: If no subcommand is specified, options will be forwarded to the interactive CLI.
 version: "1.0.0"
 author: "OpenAI"
 type: install

@@ -1,5 +1,6 @@
 name: "HAProxy"
 description: "High-performance TCP/HTTP load balancer with stats dashboard"
+long_description: "Usage:  docker [OPTIONS] COMMAND"
 version: "1.0.0"
 author: "System"
 type: install

@@ -1,5 +1,6 @@
 name: "Docker CE"
 description: "Full Docker Community Edition with Compose and Buildx plugins"
+long_description: "Usage:  docker [OPTIONS] COMMAND"
 version: "1.0.0"
 author: "System"
 type: install

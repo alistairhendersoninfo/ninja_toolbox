@@ -1,5 +1,6 @@
 name: "Ory Oathkeeper"
 description: "Identity and Access Proxy — zero-trust API gateway"
+long_description: "Usage:  docker [OPTIONS] COMMAND"
 version: "1.0.0"
 author: "System"
 type: install

@@ -1,5 +1,6 @@
 name: "nftables Hardened Firewall"
 description: "Hardened firewall with SYN flood protection, rate limiting, and scan blocking"
+long_description: "Usage: nft [ options ] [ cmds... ]"
 version: "1.0.0"
 author: "System"
 type: config

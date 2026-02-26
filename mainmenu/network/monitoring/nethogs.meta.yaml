@@ -1,5 +1,6 @@
 name: "nethogs"
 description: "Monitor bandwidth usage per process in real-time"
+long_description: "Usage: /usr/bin/which [-as] args"
 type: install
 root: true
 order: 16

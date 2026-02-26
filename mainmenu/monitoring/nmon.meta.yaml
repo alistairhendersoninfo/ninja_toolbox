@@ -1,5 +1,6 @@
 name: "nmon"
 description: "Performance monitor with keyboard shortcuts for different views"
+long_description: "Usage: /usr/bin/which [-as] args"
 type: install
 root: true
 order: 21

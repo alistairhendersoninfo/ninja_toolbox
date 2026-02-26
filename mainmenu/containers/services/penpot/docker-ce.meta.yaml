@@ -1,5 +1,6 @@
 name: "Docker CE"
 description: "Install Docker CE container runtime (required for Penpot)"
+long_description: "Usage:  docker [OPTIONS] COMMAND"
 version: "1.0.0"
 author: "System"
 type: install

@@ -1,5 +1,6 @@
 name: "mtr"
 description: "Network diagnostic combining ping and traceroute"
+long_description: "mtr [options] hostname"
 type: install
 root: true
 order: 15

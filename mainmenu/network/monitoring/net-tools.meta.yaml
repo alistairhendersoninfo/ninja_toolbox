@@ -1,5 +1,6 @@
 name: "net-tools (netstat, ifconfig)"
 description: "Classic network utilities — netstat, ifconfig, route, arp"
+long_description: "usage: netstat [-vWeenNcCF] [<Af>] -r         netstat {-V|--version|-h|--help}"
 version: "1.0.0"
 author: "net-tools team"
 type: install

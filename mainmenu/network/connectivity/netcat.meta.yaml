@@ -1,5 +1,6 @@
 name: "netcat (nc)"
 description: "TCP/UDP Swiss Army knife — connect, listen, scan, and transfer data"
+long_description: "nc: invalid option -- '-'"
 version: "1.0.0"
 author: "OpenBSD Project"
 type: install

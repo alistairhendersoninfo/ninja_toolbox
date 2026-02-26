@@ -1,5 +1,6 @@
 name: "nftables Basic Firewall"
 description: "Basic firewall rules allowing SSH, HTTP, HTTPS inbound"
+long_description: "Usage: nft [ options ] [ cmds... ]"
 version: "1.0.0"
 author: "System"
 type: config
