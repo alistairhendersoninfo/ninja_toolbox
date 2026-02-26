@@ -1,0 +1,16 @@
+name: "Docker Start"
+description: "Start the Docker service — containers with restart=always auto-start"
+type: config
+root: true
+order: 12
+hidden: false
+installed: false
+check_command: ""
+tags:
+  - docker
+  - containers
+  - service
+supported_os:
+  - kali
+  - debian
+  - ubuntu

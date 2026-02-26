@@ -1,0 +1,16 @@
+name: "Portainer Stop"
+description: "Stop the Portainer container"
+type: config
+root: true
+order: 31
+hidden: false
+installed: false
+check_command: ""
+tags:
+  - portainer
+  - docker
+  - service
+supported_os:
+  - kali
+  - debian
+  - ubuntu

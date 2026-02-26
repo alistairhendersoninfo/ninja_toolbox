@@ -1,0 +1,15 @@
+name: "Nginx Stop"
+description: "Stop the nginx service"
+type: config
+root: true
+order: 41
+hidden: false
+installed: false
+check_command: ""
+tags:
+  - nginx
+  - service
+supported_os:
+  - kali
+  - debian
+  - ubuntu
