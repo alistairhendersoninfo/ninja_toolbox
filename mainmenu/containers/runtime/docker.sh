@@ -46,6 +46,9 @@ install() {
     log_step "Stopping background apt services to prevent lock conflicts..."
     systemctl stop unattended-upgrades apt-daily apt-daily-upgrade 2>/dev/null || true
     systemctl kill --kill-who=all unattended-upgrades 2>/dev/null || true
+    # Kill residual apt-get/apt processes orphaned by the stopped services
+    pkill -x apt-get 2>/dev/null || true
+    pkill -x apt     2>/dev/null || true
     sleep 1
 
     # Step 1: Remove old/conflicting packages
@@ -59,7 +62,7 @@ install() {
 
     # Step 3: Add Docker GPG key
     log_step "Adding Docker GPG key from download.docker.com/linux/${DOCKER_DISTRO}..."
-    install -m 0755 -d /etc/apt/keyrings
+    command install -m 0755 -d /etc/apt/keyrings
     rm -f /etc/apt/keyrings/docker.gpg
 
     local gpg_url="https://download.docker.com/linux/${DOCKER_DISTRO}/gpg"

@@ -129,9 +129,14 @@ wait_for_apt() {
         sleep 1
     fi
 
-    # Wait for any active apt/dpkg processes to finish
+    # Wait for any active apt/dpkg processes to finish (check all four lock files)
     local waited=0
-    while fuser /var/lib/dpkg/lock-frontend &>/dev/null 2>&1; do
+    while fuser \
+        /var/lib/dpkg/lock-frontend \
+        /var/lib/dpkg/lock \
+        /var/lib/apt/lists/lock \
+        /var/cache/apt/archives/lock \
+        &>/dev/null 2>&1; do
         if [[ $waited -eq 0 ]]; then
             log_info "Waiting for another apt/dpkg process to finish..."
         fi
