@@ -1,16 +1,21 @@
 name: "netcat (nc)"
-description: "TCP/UDP Swiss Army knife - read/write network connections"
+description: "TCP/UDP Swiss Army knife — connect, listen, scan, and transfer data"
+version: "1.0.0"
+author: "OpenBSD Project"
 type: install
 root: true
 order: 14
+hidden: false
+installed: false
 check_command: "nc -h"
+check_path: "/bin/nc"
+dependencies: []
 tags:
   - network
-  - connection
+  - connectivity
   - swiss-army
 supported_os:
   - macos
   - kali
   - debian
   - ubuntu
-installed: false
