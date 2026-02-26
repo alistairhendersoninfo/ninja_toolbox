@@ -6,7 +6,7 @@ type: install
 root: false
 order: 10
 hidden: false
-installed: false
+installed: true
 check_command: "claude --version"
 check_path: "~/.local/bin/claude"
 dependencies:
