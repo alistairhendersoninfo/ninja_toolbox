@@ -1,11 +1,18 @@
 name: "net-tools (netstat, ifconfig)"
-description: "Classic network utilities - netstat, ifconfig, route, arp"
+description: "Classic network utilities — netstat, ifconfig, route, arp"
+version: "1.0.0"
+author: "net-tools team"
 type: install
 root: true
 order: 19
+hidden: false
+installed: false
 check_command: "netstat --version"
+check_path: "/bin/netstat"
+dependencies: []
 tags:
   - network
+  - monitoring
   - legacy
   - utilities
 supported_os:
@@ -13,4 +20,3 @@ supported_os:
   - kali
   - debian
   - ubuntu
-installed: false

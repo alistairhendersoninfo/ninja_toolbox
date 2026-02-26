@@ -6,7 +6,7 @@ type: install
 root: true
 order: 20
 hidden: false
-installed: false
+installed: true
 check_command: "docker ps --filter name=penpot-frontend --format '{{.Names}}' | grep -q penpot-frontend"
 dependencies:
   - docker
