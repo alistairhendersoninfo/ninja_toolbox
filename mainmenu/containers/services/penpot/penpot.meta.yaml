@@ -1,5 +1,6 @@
 name: "Penpot"
 description: "Self-hosted open-source design and prototyping platform"
+website: "https://penpot.app"
 version: "1.0.0"
 author: "System"
 type: install

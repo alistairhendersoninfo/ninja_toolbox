@@ -6,7 +6,7 @@ type: install
 root: true
 order: 19
 hidden: false
-installed: false
+installed: true
 check_command: "netstat --version"
 check_path: "/bin/netstat"
 dependencies: []

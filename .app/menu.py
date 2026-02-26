@@ -2550,6 +2550,21 @@ def main():
         action="store_true",
         help="Force rebuild the SQLite menu cache from YAML metadata"
     )
+    parser.add_argument(
+        "--enrich",
+        action="store_true",
+        help="Fetch long_description from man pages/websites, update meta.yaml + cache"
+    )
+    parser.add_argument(
+        "--enrich-force",
+        action="store_true",
+        help="Re-fetch long descriptions even if already set"
+    )
+    parser.add_argument(
+        "--dry-run",
+        action="store_true",
+        help="With --enrich: show what would be updated without writing any files"
+    )
 
     args = parser.parse_args()
 
@@ -2565,6 +2580,14 @@ def main():
         rebuild_cache(MAIN_MENU_DIR, DB_PATH)
         print(f"Cache rebuilt: {DB_PATH}")
         return
+
+    if args.enrich or args.enrich_force:
+        cmd = [sys.executable, str(APP_DIR / 'enrich.py')]
+        if args.enrich_force:
+            cmd.append('--force')
+        if args.dry_run:
+            cmd.append('--dry-run')
+        sys.exit(subprocess.call(cmd))
 
     if args.list:
         print("\n📋 NinjaMenu - Available Scripts:\n")

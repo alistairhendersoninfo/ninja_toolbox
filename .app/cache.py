@@ -58,7 +58,9 @@ CREATE TABLE IF NOT EXISTS scripts (
     parent_menu TEXT NOT NULL,
     script_file TEXT,
     is_modular_folder BOOLEAN DEFAULT 0,
-    meta_mtime REAL
+    meta_mtime REAL,
+    long_description TEXT DEFAULT '',
+    website TEXT DEFAULT ''
 );
 
 CREATE TABLE IF NOT EXISTS submenus (
@@ -204,6 +206,15 @@ def rebuild_cache(menu_dir: Path, db_path: Path) -> None:
     except Exception:
         pass
 
+    # Migrate: drop scripts + alias_entries if they lack long_description/website columns
+    try:
+        cols = {row[1] for row in conn.execute("PRAGMA table_info(scripts)").fetchall()}
+        if cols and not {'long_description', 'website'}.issubset(cols):
+            conn.execute("DROP TABLE IF EXISTS alias_entries")
+            conn.execute("DROP TABLE IF EXISTS scripts")
+    except Exception:
+        pass
+
     # Create schema (idempotent)
     conn.executescript(_SCHEMA)
 
@@ -335,8 +346,9 @@ def _insert_script_row(conn: sqlite3.Connection, path: str, tier: int,
             (path, tier, name, description, version, author, type, root,
              menu_order, hidden, installed, check_command, check_path,
              binary_cmd, uninstall, dependencies, tags, supported_os, aliases,
-             parent_menu, script_file, is_modular_folder, meta_mtime)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+             parent_menu, script_file, is_modular_folder, meta_mtime,
+             long_description, website)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """, (
             path,
             tier,
@@ -361,6 +373,8 @@ def _insert_script_row(conn: sqlite3.Connection, path: str, tier: int,
             script_file,
             1 if is_modular else 0,
             meta_mtime,
+            data.get('long_description', ''),
+            data.get('website', ''),
         ))
         return cursor.lastrowid
     except Exception:

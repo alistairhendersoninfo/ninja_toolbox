@@ -1,5 +1,6 @@
 name: "Obsidian"
 description: "Markdown-based knowledge base and note-taking app"
+website: "https://obsidian.md"
 type: install
 root: true
 order: 10
