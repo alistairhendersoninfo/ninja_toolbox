@@ -2,13 +2,13 @@ title: NinjaMenu
 description: >-
   A terminal-based menu system that puts 50+ installation scripts at your
   fingertips. Stop hunting for install commands. Start getting things done.
-baseurl: "/ninja_toolbox"
-url: "https://alistairhendersoninfo.github.io"
+baseurl: ""
+url: "https://tool-box.ninja"
 
-#remote_theme: just-the-docs/just-the-docs
+remote_theme: just-the-docs/just-the-docs
 
-remote_theme: pages-themes/architect@v0.2.0
-plugins: - jekyll-remote-theme # add this line to the plugins list if you already have one
+plugins:
+  - jekyll-remote-theme
 
 color_scheme: ninjamenu
 logo: "/assets/images/toolbox_ninja_logo_transparent.png"
