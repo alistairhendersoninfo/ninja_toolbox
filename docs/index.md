@@ -18,7 +18,7 @@ permalink: /
 
 <img src="{{ '/assets/images/big_tracey_ninja_14213d.png' | relative_url }}" alt="Big Tracey Ninja" style="float: right; width: 120px; margin-left: 1rem;" />
 
-[Get Started]({{ site.baseurl }}/reference/getting-started){: .btn .btn-primary .fs-5 .mb-4 .mb-md-0 .mr-2 }
+[Get Started]({{ '/reference/getting-started' | relative_url }}){: .btn .btn-primary .fs-5 .mb-4 .mb-md-0 .mr-2 }
 [View on GitHub](https://github.com/alistairhendersoninfo/ninja_toolbox){: .btn .fs-5 .mb-4 .mb-md-0 }
 
 ---
