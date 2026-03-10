@@ -1,0 +1,20 @@
+name: "tmux"
+description: "Terminal multiplexer for managing multiple sessions"
+version: "1.0.0"
+author: "System"
+type: install
+root: true
+order: 20
+hidden: false
+installed: false
+check_command: "tmux -V"
+check_path: "/usr/bin/tmux"
+dependencies:
+  - apt
+tags:
+  - developer
+  - cli
+supported_os:
+  - kali
+  - debian
+  - ubuntu

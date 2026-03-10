@@ -1,0 +1,20 @@
+name: "Neovim"
+description: "Hyperextensible Vim-based text editor"
+version: "1.0.0"
+author: "System"
+type: install
+root: true
+order: 10
+hidden: false
+installed: false
+check_command: "nvim --version"
+check_path: "/usr/bin/nvim"
+dependencies:
+  - apt
+tags:
+  - developer
+  - cli
+supported_os:
+  - kali
+  - debian
+  - ubuntu

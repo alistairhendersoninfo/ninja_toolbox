@@ -1,0 +1,20 @@
+name: "Alacritty"
+description: "GPU-accelerated terminal emulator focused on simplicity and speed"
+version: "1.0.0"
+author: "System"
+type: install
+root: true
+order: 30
+hidden: false
+installed: false
+check_command: "alacritty --version"
+check_path: "/usr/bin/alacritty"
+dependencies:
+  - apt
+tags:
+  - terminal
+  - gpu-accelerated
+supported_os:
+  - kali
+  - debian
+  - ubuntu

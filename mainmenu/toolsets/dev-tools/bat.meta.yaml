@@ -1,0 +1,20 @@
+name: "bat"
+description: "Cat clone with syntax highlighting and Git integration"
+version: "1.0.0"
+author: "System"
+type: install
+root: true
+order: 60
+hidden: false
+installed: false
+check_command: "batcat --version"
+check_path: "/usr/bin/batcat"
+dependencies:
+  - apt
+tags:
+  - developer
+  - cli
+supported_os:
+  - kali
+  - debian
+  - ubuntu

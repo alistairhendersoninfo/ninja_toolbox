@@ -1,0 +1,20 @@
+name: "WezTerm"
+description: "GPU-accelerated terminal emulator with multiplexer built-in"
+version: "1.0.0"
+author: "System"
+type: install
+root: true
+order: 20
+hidden: false
+installed: false
+check_command: "wezterm --version"
+check_path: "/usr/bin/wezterm"
+dependencies:
+  - curl
+tags:
+  - terminal
+  - gpu-accelerated
+supported_os:
+  - kali
+  - debian
+  - ubuntu

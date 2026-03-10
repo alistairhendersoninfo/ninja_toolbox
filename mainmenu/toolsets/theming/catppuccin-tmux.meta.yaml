@@ -1,0 +1,16 @@
+name: "Catppuccin tmux"
+description: "Apply Catppuccin Mocha theme to tmux via TPM"
+version: "1.0.0"
+author: "System"
+type: config
+root: false
+order: 40
+hidden: false
+installed: false
+tags:
+  - theming
+  - catppuccin
+supported_os:
+  - kali
+  - debian
+  - ubuntu

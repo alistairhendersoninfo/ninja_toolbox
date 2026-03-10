@@ -1,0 +1,20 @@
+name: "lazygit"
+description: "Simple terminal UI for Git commands"
+version: "1.0.0"
+author: "System"
+type: install
+root: true
+order: 70
+hidden: false
+installed: false
+check_command: "lazygit --version"
+check_path: "/usr/local/bin/lazygit"
+dependencies:
+  - curl
+tags:
+  - developer
+  - cli
+supported_os:
+  - kali
+  - debian
+  - ubuntu
