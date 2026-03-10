@@ -43,13 +43,7 @@ install() {
         distro_id=$(. /etc/os-release && echo "$ID")
 
         case "$distro_id" in
-            ubuntu)
-                log_step "Adding Hyprland PPA for Ubuntu..."
-                pkg_install software-properties-common
-                add-apt-repository -y ppa:hyprwm/hyprland
-                pkg_update
-                ;;
-            kali|debian)
+            ubuntu|kali|debian)
                 log_step "Adding Debian Sid repo with low-priority pin for Hyprland..."
                 cat > /etc/apt/sources.list.d/debian-sid-hyprland.list <<'SIDREPO'
 # Added by ninja-toolbox for Hyprland packages
