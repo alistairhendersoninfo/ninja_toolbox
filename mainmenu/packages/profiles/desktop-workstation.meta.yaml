@@ -1,0 +1,21 @@
+name: "Desktop Workstation"
+description: "KDE Plasma desktop with Neovim, tmux, and full Catppuccin theming"
+version: "1.0.0"
+author: "System"
+type: install
+root: true
+order: 10
+hidden: false
+installed: false
+check_command: "plasmashell --version && nvim --version && tmux -V"
+dependencies:
+  - apt
+tags:
+  - bundle
+  - desktop
+  - kde
+  - theming
+supported_os:
+  - kali
+  - debian
+  - ubuntu
