@@ -1,0 +1,19 @@
+name: "Firefox ESR"
+description: "Mozilla's open-source browser (Extended Support Release)"
+version: "1.0.0"
+author: "Ninja Toolbox"
+type: install
+root: true
+order: 40
+hidden: false
+installed: false
+check_command: "firefox-esr --version"
+tags:
+  - browser
+  - web
+  - mozilla
+  - open-source
+supported_os:
+  - kali
+  - debian
+  - ubuntu

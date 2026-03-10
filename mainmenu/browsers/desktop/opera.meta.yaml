@@ -1,0 +1,21 @@
+name: "Opera"
+description: "Feature-rich browser with built-in VPN and ad blocker"
+version: "1.0.0"
+author: "Ninja Toolbox"
+type: install
+root: true
+order: 20
+hidden: false
+installed: false
+check_command: "opera --version"
+dependencies:
+  - curl
+  - gnupg
+tags:
+  - browser
+  - web
+  - opera
+supported_os:
+  - kali
+  - debian
+  - ubuntu
