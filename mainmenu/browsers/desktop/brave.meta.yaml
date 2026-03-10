@@ -1,0 +1,21 @@
+name: "Brave"
+description: "Privacy-focused browser with built-in ad and tracker blocking"
+version: "1.0.0"
+author: "Ninja Toolbox"
+type: install
+root: true
+order: 30
+hidden: false
+installed: false
+check_command: "brave-browser --version"
+dependencies:
+  - curl
+  - gnupg
+tags:
+  - browser
+  - web
+  - privacy
+supported_os:
+  - kali
+  - debian
+  - ubuntu

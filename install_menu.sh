@@ -16,7 +16,7 @@
 
 #######################################
 # MENU SYSTEM INSTALLER
-# Installs: Python3, pip, textual, gum, whiptail, dialog
+# Installs: Python3, pip, textual, gum, gh CLI, whiptail, dialog
 #######################################
 
 set -euo pipefail
@@ -162,7 +162,60 @@ else
 fi
 
 #######################################
-# STEP 3: Python virtual environment
+# STEP 3: Install GitHub CLI (gh)
+#######################################
+log_step "Installing GitHub CLI (gh)..."
+
+if command -v gh &>/dev/null; then
+    log_info "GitHub CLI already installed: $(gh --version | head -1)"
+else
+    if [[ "$OS_TYPE" == "linux" ]]; then
+        mkdir -p /etc/apt/keyrings
+        curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg \
+            -o /etc/apt/keyrings/githubcli-archive-keyring.gpg
+        chmod go+r /etc/apt/keyrings/githubcli-archive-keyring.gpg
+        echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" \
+            | tee /etc/apt/sources.list.d/github-cli.list > /dev/null
+        apt-get update -qq
+        apt-get install -y gh
+    elif [[ "$OS_TYPE" == "macos" ]]; then
+        brew install gh
+    fi
+    log_success "GitHub CLI installed"
+fi
+
+# Authenticate gh if not already logged in
+if command -v gh &>/dev/null; then
+    if gh auth status &>/dev/null 2>&1; then
+        log_info "GitHub CLI already authenticated"
+    else
+        echo ""
+        read -rp "Would you like to authenticate GitHub CLI (gh) now? (y/n) " gh_answer
+        if [[ "$gh_answer" =~ ^[Yy]$ ]]; then
+            log_info "Starting GitHub CLI authentication..."
+            log_info "This enables PR workflows (create, merge, review)"
+            # Run as the actual user, not root — gh auth stores tokens per-user
+            if [[ "$OS_TYPE" == "linux" && $EUID -eq 0 && -n "${SUDO_USER:-}" ]]; then
+                sudo -u "$SUDO_USER" gh auth login
+            else
+                gh auth login
+            fi
+            if gh auth status &>/dev/null 2>&1; then
+                log_success "GitHub CLI authenticated"
+            else
+                log_warn "GitHub CLI authentication skipped or failed"
+                log_info "You can authenticate later with: gh auth login"
+            fi
+        else
+            log_info "Skipping GitHub CLI authentication"
+            log_info "You can authenticate later with: gh auth login"
+        fi
+    fi
+fi
+
+#######################################
+# STEP 4: Python virtual environment
+# (was Step 3 before gh CLI was added)
 #######################################
 log_step "Setting up Python virtual environment..."
 
@@ -193,7 +246,7 @@ log_success "Python packages installed"
 deactivate
 
 #######################################
-# STEP 4: Create launcher script
+# STEP 5: Create launcher script
 #######################################
 log_step "Creating launcher script..."
 
@@ -213,7 +266,7 @@ chmod +x "$MENU_ROOT/.app/menu"
 log_success "Launcher script created"
 
 #######################################
-# STEP 4b: Build initial menu cache
+# STEP 5b: Build initial menu cache
 #######################################
 log_step "Building initial menu cache..."
 
@@ -227,7 +280,7 @@ deactivate
 log_success "Menu cache built"
 
 #######################################
-# STEP 5: Set permissions
+# STEP 6: Set permissions
 #######################################
 log_step "Setting permissions..."
 
@@ -253,7 +306,7 @@ chown -R "$ACTUAL_USER:$ACTUAL_GROUP" "$MENU_ROOT" 2>/dev/null || true
 log_success "Permissions set"
 
 #######################################
-# STEP 6: Create system-wide ninjamenu command
+# STEP 7: Create system-wide ninjamenu command
 #######################################
 log_step "Creating ninjamenu command in $BIN_DIR..."
 
@@ -288,7 +341,7 @@ chmod +x "$BIN_DIR/ninjamenu"
 log_success "ninjamenu command installed at $BIN_DIR/ninjamenu"
 
 #######################################
-# STEP 7: Update installed status
+# STEP 8: Update installed status
 #######################################
 if [[ "$OS_TYPE" == "macos" ]]; then
     sed -i '' 's/^# installed: .*/# installed: true/' "${BASH_SOURCE[0]}"
@@ -309,6 +362,7 @@ echo -e "${GREEN}Installed components:${NC}"
 echo "  - Python 3 with venv"
 echo "  - Textual TUI framework"
 echo "  - Gum (Charm.sh) for beautiful prompts"
+echo "  - GitHub CLI (gh) for PR workflows"
 echo "  - whiptail/dialog fallback"
 echo "  - PyYAML, Rich, Typer"
 echo "  - SQLite menu cache"

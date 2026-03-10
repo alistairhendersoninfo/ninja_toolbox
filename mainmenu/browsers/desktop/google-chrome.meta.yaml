@@ -1,0 +1,21 @@
+name: "Google Chrome"
+description: "Google's fast, secure web browser"
+version: "1.0.0"
+author: "Ninja Toolbox"
+type: install
+root: true
+order: 10
+hidden: false
+installed: false
+check_command: "google-chrome --version"
+dependencies:
+  - curl
+  - gnupg
+tags:
+  - browser
+  - web
+  - google
+supported_os:
+  - kali
+  - debian
+  - ubuntu
