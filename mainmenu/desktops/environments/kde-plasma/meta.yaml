@@ -1,0 +1,21 @@
+name: "KDE Plasma"
+description: "Full-featured KDE Plasma desktop with Wayland support"
+version: "1.0.0"
+author: "System"
+type: install
+root: true
+order: 10
+hidden: false
+installed: false
+check_command: "plasmashell --version"
+dependencies:
+  - apt
+tags:
+  - desktop
+  - kde
+  - plasma
+  - wayland
+supported_os:
+  - kali
+  - debian
+  - ubuntu

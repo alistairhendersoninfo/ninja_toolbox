@@ -1,0 +1,20 @@
+name: "Cinnamon"
+description: "Traditional desktop environment forked from GNOME 3"
+version: "1.0.0"
+author: "System"
+type: install
+root: true
+order: 20
+hidden: false
+installed: false
+check_command: "cinnamon --version"
+dependencies:
+  - apt
+tags:
+  - desktop
+  - cinnamon
+  - gtk
+supported_os:
+  - kali
+  - debian
+  - ubuntu

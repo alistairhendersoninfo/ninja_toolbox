@@ -1,0 +1,21 @@
+name: "Hyprland"
+description: "Dynamic tiling Wayland compositor with animations"
+version: "1.0.0"
+author: "System"
+type: install
+root: true
+order: 30
+hidden: false
+installed: false
+check_command: "hyprctl version"
+dependencies:
+  - apt
+tags:
+  - desktop
+  - hyprland
+  - wayland
+  - tiling
+supported_os:
+  - kali
+  - debian
+  - ubuntu

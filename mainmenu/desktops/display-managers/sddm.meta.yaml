@@ -1,0 +1,20 @@
+name: "SDDM"
+description: "Simple Desktop Display Manager with Breeze theme"
+version: "1.0.0"
+author: "System"
+type: install
+root: true
+order: 10
+hidden: false
+installed: false
+check_command: "sddm --version"
+check_path: "/usr/bin/sddm"
+dependencies:
+  - apt
+tags:
+  - display-manager
+  - sddm
+supported_os:
+  - kali
+  - debian
+  - ubuntu
