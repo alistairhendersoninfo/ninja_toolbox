@@ -1,0 +1,20 @@
+name: "fd"
+description: "Fast and user-friendly alternative to find"
+version: "1.0.0"
+author: "System"
+type: install
+root: true
+order: 40
+hidden: false
+installed: false
+check_command: "fdfind --version"
+check_path: "/usr/bin/fdfind"
+dependencies:
+  - apt
+tags:
+  - developer
+  - cli
+supported_os:
+  - kali
+  - debian
+  - ubuntu

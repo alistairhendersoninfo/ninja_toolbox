@@ -1,0 +1,20 @@
+name: "ripgrep"
+description: "Blazing fast recursive grep replacement"
+version: "1.0.0"
+author: "System"
+type: install
+root: true
+order: 30
+hidden: false
+installed: false
+check_command: "rg --version"
+check_path: "/usr/bin/rg"
+dependencies:
+  - apt
+tags:
+  - developer
+  - cli
+supported_os:
+  - kali
+  - debian
+  - ubuntu

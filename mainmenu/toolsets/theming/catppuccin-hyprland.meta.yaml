@@ -1,0 +1,16 @@
+name: "Catppuccin Hyprland"
+description: "Apply Catppuccin Mocha to Hyprland, Waybar, and Wofi"
+version: "1.0.0"
+author: "System"
+type: config
+root: false
+order: 50
+hidden: false
+installed: false
+tags:
+  - theming
+  - catppuccin
+supported_os:
+  - kali
+  - debian
+  - ubuntu

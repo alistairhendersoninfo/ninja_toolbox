@@ -1,0 +1,19 @@
+name: "Catppuccin KDE"
+description: "Catppuccin Mocha theme for KDE Plasma and Kvantum"
+version: "1.0.0"
+author: "System"
+type: install
+root: false
+order: 10
+hidden: false
+installed: false
+check_command: "test -d $HOME/.local/share/color-schemes/Catppuccin*"
+dependencies:
+  - git
+tags:
+  - theming
+  - catppuccin
+supported_os:
+  - kali
+  - debian
+  - ubuntu
