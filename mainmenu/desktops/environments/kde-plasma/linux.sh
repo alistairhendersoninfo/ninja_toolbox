@@ -14,7 +14,7 @@ KDE_PACKAGES=(
     dolphin
     konsole
     kde-spectacle
-    system-settings
+    systemsettings
     plasma-nm
     plasma-pa
 )

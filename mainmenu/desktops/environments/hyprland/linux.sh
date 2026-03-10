@@ -30,25 +30,68 @@ install() {
 
     require_root
 
-    # Check if hyprland is available in the repos before attempting install
-    log_step "Checking if Hyprland is available in repositories..."
-    if ! apt-cache show hyprland &>/dev/null; then
-        log_error "Hyprland is not available in your current repositories."
-        echo ""
-        echo "Hyprland may not be packaged for your distribution version."
-        echo "Manual installation options:"
-        echo "  1. Add the Hyprland repository: https://wiki.hyprland.org/Getting-Started/Installation/"
-        echo "  2. Build from source: https://github.com/hyprwm/Hyprland"
-        echo "  3. On Debian Sid/Trixie or Ubuntu 24.04+, Hyprland may be available natively"
-        echo ""
-        exit 1
-    fi
-
     log_step "Updating package list..."
     pkg_update
 
+    # Check if hyprland is available in the repos; if not, add a source
+    log_step "Checking if Hyprland is available in repositories..."
+    if ! apt-cache show hyprland &>/dev/null; then
+        log_info "Hyprland not found in current repos — adding package source..."
+
+        # Detect distro to pick the right repo strategy
+        local distro_id
+        distro_id=$(. /etc/os-release && echo "$ID")
+
+        case "$distro_id" in
+            ubuntu)
+                log_step "Adding Hyprland PPA for Ubuntu..."
+                pkg_install software-properties-common
+                add-apt-repository -y ppa:hyprwm/hyprland
+                pkg_update
+                ;;
+            kali|debian)
+                log_step "Adding Debian Sid repo with low-priority pin for Hyprland..."
+                cat > /etc/apt/sources.list.d/debian-sid-hyprland.list <<'SIDREPO'
+# Added by ninja-toolbox for Hyprland packages
+deb http://deb.debian.org/debian sid main
+SIDREPO
+                # Pin Sid to very low priority so it only provides explicitly requested packages
+                cat > /etc/apt/preferences.d/debian-sid-hyprland.pref <<'SIDPIN'
+# Only pull packages from Sid when explicitly requested (-t sid)
+Package: *
+Pin: release n=sid
+Pin-Priority: 50
+SIDPIN
+                pkg_update
+                ;;
+            *)
+                log_error "Hyprland is not available in your current repositories."
+                echo ""
+                echo "Unsupported distro ($distro_id) for automatic repo setup."
+                echo "Manual installation options:"
+                echo "  1. https://wiki.hyprland.org/Getting-Started/Installation/"
+                echo "  2. Build from source: https://github.com/hyprwm/Hyprland"
+                echo ""
+                exit 1
+                ;;
+        esac
+
+        # Verify it's now available
+        if ! apt-cache show hyprland &>/dev/null; then
+            log_error "Hyprland still not available after adding repo."
+            echo "Check your network connection and try again."
+            exit 1
+        fi
+        log_success "Hyprland package source added successfully"
+    fi
+
     log_step "Installing Hyprland and companion packages..."
-    pkg_install "${HYPRLAND_PACKAGES[@]}"
+    # If we added the Sid repo, use -t sid to pull from it
+    if [[ -f /etc/apt/sources.list.d/debian-sid-hyprland.list ]]; then
+        apt-get install -y -t sid "${HYPRLAND_PACKAGES[@]}"
+    else
+        pkg_install "${HYPRLAND_PACKAGES[@]}"
+    fi
 
     log_step "Creating default Hyprland configuration..."
     mkdir -p "$HYPR_CONFIG_DIR"
@@ -212,6 +255,10 @@ uninstall() {
     log_step "Removing Hyprland packages..."
     apt-get remove -y "${HYPRLAND_PACKAGES[@]}" 2>/dev/null || true
     apt-get autoremove -y
+
+    log_step "Removing Hyprland repo sources if added by ninja-toolbox..."
+    rm -f /etc/apt/sources.list.d/debian-sid-hyprland.list
+    rm -f /etc/apt/preferences.d/debian-sid-hyprland.pref
 
     log_step "Removing session entry..."
     rm -f /usr/share/wayland-sessions/hyprland.desktop
