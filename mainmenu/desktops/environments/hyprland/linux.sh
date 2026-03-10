@@ -20,7 +20,7 @@ HYPRLAND_PACKAGES=(
 )
 
 REAL_USER="${SUDO_USER:-$USER}"
-REAL_HOME="$(eval echo "~${REAL_USER}")"
+REAL_HOME=$(getent passwd "$REAL_USER" | cut -d: -f6)
 HYPR_CONFIG_DIR="${REAL_HOME}/.config/hypr"
 
 install() {
@@ -168,14 +168,14 @@ bind = $mainMod SHIFT, 0, movetoworkspace, 10
 bindm = $mainMod, mouse:272, movewindow
 bindm = $mainMod, mouse:273, resizewindow
 HYPRCONF
-        chown "${REAL_USER}:${REAL_USER}" "${HYPR_CONFIG_DIR}/hyprland.conf"
+        chown -h "${REAL_USER}:${REAL_USER}" "${HYPR_CONFIG_DIR}/hyprland.conf"
         log_info "Default configuration written to ${HYPR_CONFIG_DIR}/hyprland.conf"
     else
         log_info "Existing Hyprland config found, skipping config generation"
     fi
 
     # Fix ownership of config directory
-    chown -R "${REAL_USER}:${REAL_USER}" "${HYPR_CONFIG_DIR}"
+    chown -Rh "${REAL_USER}:${REAL_USER}" "${HYPR_CONFIG_DIR}"
 
     # Create wayland session desktop file if not provided by the package
     log_step "Ensuring Hyprland session entry exists..."
