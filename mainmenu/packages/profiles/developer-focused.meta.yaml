@@ -1,0 +1,21 @@
+name: "Developer Focused"
+description: "Hyprland tiling WM with kitty, full dev toolchain, and Catppuccin theming"
+version: "1.0.0"
+author: "System"
+type: install
+root: true
+order: 20
+hidden: false
+installed: false
+check_command: "hyprctl version && kitty --version && nvim --version"
+dependencies:
+  - apt
+tags:
+  - bundle
+  - developer
+  - hyprland
+  - theming
+supported_os:
+  - kali
+  - debian
+  - ubuntu
