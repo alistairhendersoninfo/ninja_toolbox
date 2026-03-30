@@ -10,8 +10,10 @@ install() {
     log_info "Log file: $LOG_FILE"
     require_root
 
-    # Check if already installed
-    if command -v cursor &>/dev/null || [[ -f /usr/bin/cursor ]] || [[ -f /opt/Cursor/cursor ]]; then
+    # Check if already installed (cursor legacy or agent new installer)
+    if command -v cursor &>/dev/null || command -v agent &>/dev/null \
+        || [[ -f /usr/bin/cursor ]] || [[ -f /opt/Cursor/cursor ]] \
+        || [[ -f "$HOME/.local/bin/agent" ]]; then
         log_info "Cursor IDE already installed"
         mark_installed true
         return 0
@@ -20,10 +22,17 @@ install() {
     log_step "Downloading and running Cursor installer..."
     curl -fsS https://cursor.com/install | bash
 
-    if command -v cursor &>/dev/null || [[ -f /usr/bin/cursor ]] || [[ -f /opt/Cursor/cursor ]]; then
+    if command -v cursor &>/dev/null || command -v agent &>/dev/null \
+        || [[ -f /usr/bin/cursor ]] || [[ -f /opt/Cursor/cursor ]] \
+        || [[ -f "$HOME/.local/bin/agent" ]]; then
         log_success "Cursor IDE installed successfully!"
         echo ""
-        echo "Run 'cursor' to launch Cursor IDE"
+        if command -v cursor &>/dev/null; then
+            echo "Run 'cursor' to launch Cursor IDE"
+        elif command -v agent &>/dev/null || [[ -f "$HOME/.local/bin/agent" ]]; then
+            echo "Run 'agent' to launch Cursor Agent"
+            echo "You may need to add ~/.local/bin to your PATH first"
+        fi
         echo ""
         mark_installed true
     else

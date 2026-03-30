@@ -7,8 +7,8 @@ root: true
 order: 10
 hidden: false
 installed: false
-check_command: "cursor --version"
-check_path: "/usr/bin/cursor:/opt/Cursor/cursor"
+check_command: "cursor --version || agent --version"
+check_path: "/usr/bin/cursor:/opt/Cursor/cursor:~/.local/bin/agent"
 supported_os:
   - macos
   - kali
