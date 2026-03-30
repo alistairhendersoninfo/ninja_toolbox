@@ -30,6 +30,14 @@ install() {
 
     require_root
 
+    # Clean up any stale Sid repo left by a previous failed run (unsigned variant)
+    if [[ -f /etc/apt/sources.list.d/debian-sid-hyprland.list ]] && \
+       ! grep -q 'signed-by' /etc/apt/sources.list.d/debian-sid-hyprland.list; then
+        log_info "Removing stale unsigned Sid repo from previous run..."
+        rm -f /etc/apt/sources.list.d/debian-sid-hyprland.list
+        rm -f /etc/apt/preferences.d/debian-sid-hyprland.pref
+    fi
+
     log_step "Updating package list..."
     pkg_update
 
@@ -44,10 +52,18 @@ install() {
 
         case "$distro_id" in
             ubuntu|kali|debian)
+                log_step "Installing Debian archive keyring..."
+                pkg_install debian-archive-keyring 2>/dev/null || {
+                    # If the package isn't available, fetch the keys directly
+                    log_info "Fetching Debian archive signing keys..."
+                    curl -fsSL https://ftp-master.debian.org/keys/archive-key-12.asc | gpg --dearmor -o /usr/share/keyrings/debian-archive-keyring.gpg 2>/dev/null || true
+                    curl -fsSL https://ftp-master.debian.org/keys/archive-key-12-security.asc | gpg --dearmor -o /usr/share/keyrings/debian-archive-security-keyring.gpg 2>/dev/null || true
+                }
+
                 log_step "Adding Debian Sid repo with low-priority pin for Hyprland..."
                 cat > /etc/apt/sources.list.d/debian-sid-hyprland.list <<'SIDREPO'
 # Added by ninja-toolbox for Hyprland packages
-deb http://deb.debian.org/debian sid main
+deb [signed-by=/usr/share/keyrings/debian-archive-keyring.gpg] http://deb.debian.org/debian sid main
 SIDREPO
                 # Pin Sid to very low priority so it only provides explicitly requested packages
                 cat > /etc/apt/preferences.d/debian-sid-hyprland.pref <<'SIDPIN'
